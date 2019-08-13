@@ -242,7 +242,6 @@ Header
   transform: translateY(-50%);
   height: 16px;
   width: 16px;
-
 }
 
 .cd-search input {
@@ -465,7 +464,7 @@ Sidebar
 .cd-side-nav>ul>li>a {
   padding-left: calc(5% + 24px);
   border-bottom: 1px solid #373d44;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .cd-side-nav>ul>li>a::before {
@@ -482,7 +481,6 @@ Sidebar
   transform: translateY(-50%);
   height: 16px;
   width: 16px;
-  /*background: url(../img/cd-nav-icons.svg) no-repeat 0 0;*/
 }
 
 .cd-side-nav .count {
@@ -686,7 +684,7 @@ Sidebar
   }
 
   .cd-side-nav>ul>li>a {
-    padding: 1em 1em 1em 30px;
+    padding: 1em 1em 1em 20px;
     text-align: left;
     border-bottom: none;
   }
@@ -980,6 +978,12 @@ Dashboard page style
   padding: 16px 10px;
   vertical-align: middle;
 }
+
+/* -------------------------------- 
+
+Login page
+
+-------------------------------- */
 
 .admin-login-btn {
   background-color: #1ab4e0;
@@ -1329,25 +1333,28 @@ Common style
 }
 
 .price-section {
+  /*
   background: #ddd;
   height: 60px;
   border: 1px dashed #b7b7b7;
   border-radius: 6px;
   display: flex;
   justify-content: space-evenly;
-  align-items: center;
+*/
+  text-align: center;
   margin: 25px 0 40px 0;
 }
 
+/*
 .price-section .bdr {
   width: 1px;
   height: 60px;
   border-left: 1px dashed #b7b7b7;
   margin: 0;
 }
-
-.price-section span {
-  font-size: 20px;
+*/
+.price-section p:first-child {
+  font-size: 24px;
   font-weight: 400;
   color: #222222;
 }
@@ -1456,8 +1463,11 @@ Common style
 }
 
 .buttons-cont .reset-btn {
-  border: 1px solid #222222 !important;
-  color: #222222;
+  color: #ffffff;
+}
+
+.buttons-cont .save-later-btn {
+  background: #ffb93c !important;
 }
 
 .table-bordered>tbody>tr>td,
@@ -1519,8 +1529,8 @@ Common style
 /* On mouse-over, add a grey background color */
 /*
 .custom-checkbox:hover input ~ .checkmark {
-    background-color: #dd2d3e;
-    border: 1px solid #dd2d3e;
+  background-color: #dd2d3e;
+  border: 1px solid #dd2d3e;
 }
 */
 
@@ -1697,7 +1707,11 @@ Common style
   text-decoration: none;
 }
 
-
+.map-area iframe{
+  height: 400px;
+  width: 100%;
+  border: 0;
+}
 
 @media (max-width: 767px) {
   .cd-main-content .content-wrapper {

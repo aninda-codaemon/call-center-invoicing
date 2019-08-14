@@ -8,24 +8,24 @@ function Header() {
         <img src={logo} alt="" className="logo-small" />
         Roadside Assistance
       </a>
-      <a href="#" className="cd-nav-trigger">
+      <a className="cd-nav-trigger">
         <span />
       </a>
       <nav className="cd-nav">
         <ul className="cd-top-nav">
           <li className="has-children account">
-            <a href="#" className="refresh">
+            <a className="refresh">
               <i className="fa fa-refresh" aria-hidden="true" />
             </a>
-            <a href="#">
+            <a>
               Account <i className="fa fa-angle-down" aria-hidden="true" />
             </a>
             <ul>
               <li>
-                <a href="#">Edit Account</a>
+                <a>Edit Account</a>
               </li>
               <li>
-                <a href="#">Logout</a>
+                <a>Logout</a>
               </li>
             </ul>
           </li>

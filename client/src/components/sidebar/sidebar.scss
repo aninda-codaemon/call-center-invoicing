@@ -1,0 +1,50 @@
+@import "../../assets/sass/mixin";
+@import "../../assets/sass/variables";
+
+.sidebar {
+  background-color: #222;
+  flex: 0 0 18%;
+
+  @include desk {
+    flex: 0 0 21%;
+  }
+
+  @include lap {
+    flex: 0 0 23%;
+  }
+
+  @include tab {
+    flex: 0 0 30%;
+  }
+
+  @include mobile {
+    flex: 0 0 33%;
+  }
+
+  ul {
+    li {
+      color: #ffffff;
+      @include font-size(14);
+      padding:15px 30px;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      @include mobile {
+        padding:15px 15px;
+      }
+
+      &.active{
+        background-color: $theme-red;
+      }
+
+      &:hover{
+        background-color: $theme-red;
+      }
+
+      i{
+        @include font-size(20);
+        width: 28px;
+      }
+    }
+  }
+}

@@ -1,23 +1,15 @@
-import React from 'react';
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
-
-import Login from './pages/Login';
-import Dasboard from './pages/Dashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import InvoiceOverview from './pages/InvoiceOverview';
+import React from "react";
+import "./App.scss";
+import { BrowserRouter as Router, Route } from "react-router-dom";
+import Login from "./pages/login/login";
+import AllPurchaseOrders from "./pages/all-purchase-orders/all-purchase-orders";
 
 function App() {
   return (
     <Router>
-      <Switch>
-        <Route path="/" exact component={Login}/>
-        <Route path="/dashboard" component={Dasboard}/>
-        <Route path="/admin-dashboard" component={AdminDashboard}/>
-        <Route path="/invoice-overview" component={InvoiceOverview}/>
-      </Switch>
+      <Route path="/" exact component={Login} />
+      <Route path="/all-purchase-orders" component={AllPurchaseOrders} />
     </Router>
-      
-  
   );
 }
 

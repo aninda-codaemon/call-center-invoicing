@@ -1,9 +1,23 @@
 @import "../../assets/sass/mixin";
 @import "../../assets/sass/variables";
 
+.all-purchase {
+  padding-left: 0px;
+  padding-right: 30px;
+
+  @include mobile {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+}
+
 .data-table-area {
-  padding: 30px;
-  flex: 1;
+  padding: 30px 0;
+
+  @include mobile {
+    padding: 15px 0;
+  }
 
   .btn-danger {
     width: auto;
@@ -12,7 +26,7 @@
 
   .export {
     color: $theme-red;
-    font-weight: 700;
+    font-weight: bold;
 
     i {
       margin-left: 10px;
@@ -21,24 +35,133 @@
     }
   }
 
+  .hr-scroll {
+    overflow-y: hidden;
+    overflow-x: auto;
+  }
+
   .table-content {
     margin-top: 20px;
+    min-width: 1050px;
 
     header {
       height: 50px;
       background-color: #222222;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       padding: 0 10px;
       color: #fff;
       font-size: 12px;
-      justify-content: space-between;
+
+      & > div {
+        margin-right: 10px;
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        &:last-child {
+          margin-right: 0px;
+        }
+      }
     }
 
-    .table-body{
+    .table-body {
       @extend header;
       background-color: #fff;
       color: #222222;
+
+      .btn {
+        font-weight: bold;
+
+        &.btn-danger {
+          border-radius: auto;
+        }
+      }
+
+      & > div {
+        margin-right: 10px;
+
+        &:last-child {
+          margin-right: 0px;
+        }
+
+        &.status {
+          font-weight: 700;
+          text-transform: uppercase;
+
+          &.paid {
+            color: #34d293;
+          }
+
+          &.dispatched {
+            color: #157ffb;
+          }
+
+          &.yet-to-pay {
+            color: #dd2d3e;
+          }
+
+          &.visited {
+            color: #ffb93c;
+          }
+        }
+      }
+    }
+
+    .check-box-area {
+      width: 18px;
+    }
+
+    .invoice {
+      width: 77px;
+    }
+
+    .fname {
+      width: 78px;
+    }
+
+    .lname {
+      width: 78px;
+    }
+
+    .phone {
+      width: 100px;
+    }
+
+    .service-type {
+      width: 89px;
+    }
+
+    .status {
+      width: 70px;
+    }
+
+    .amount {
+      width: 60px;
+    }
+
+    .data-opened {
+      flex: 1;
+    }
+
+    .dispatching-system {
+      width: 123px;
+
+      button {
+        width: 100%;
+      }
+    }
+
+    .edit {
+      width: 30px;
+      text-align: center;
+      color: #888888;
+      @include font-size(20);
+
+      i {
+        cursor: pointer;
+      }
     }
   }
 }

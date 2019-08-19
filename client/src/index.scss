@@ -3,6 +3,7 @@
 @import './assets/sass/mixin';
 @import './assets/sass/variables';
 
+
 body {
   margin: 0;
   font-family: "Roboto", sans-serif;
@@ -128,10 +129,9 @@ ul {
 }
 
 .content-area {
-  display: flex;
-  align-items: stretch;
   padding-top: 60px;
   min-height: 100vh;
+  padding-left: 0;
 
   @include mobile-small {
     padding-top: 40px;
@@ -192,6 +192,61 @@ ul {
       display: block;
     }
   }
+}
 
+.search-area{
+  display: flex;
+  @include mobile {
+    margin-bottom: 20px;
+  }
+  input{
+    max-width: 300px;
+    margin-right: 10px;
+  }
+  .btn{
+    @include mobile {
+      margin:0 !important;
+    }
+  }
+}
 
+.main-content {
+  & > .col-md-3 {
+    flex: 0 0 20%;
+    max-width: 20%;
+
+    @include desk {
+      flex: 0 0 25%;
+      max-width: 25%;
+    }
+
+    @include tab {
+      flex: 0 0 30%;
+      max-width: 30%;
+    }
+
+    @include mobile {
+      display: none;
+    }
+  }
+
+  & > .col-md-9 {
+    flex: 0 0 80%;
+    max-width: 80%;
+
+    @include desk {
+      flex: 0 0 75%;
+      max-width: 75%;
+    }
+
+    @include tab {
+      flex: 0 0 70%;
+      max-width: 70%;
+    }
+
+    @include mobile {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
 }

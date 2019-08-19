@@ -1,0 +1,34 @@
+@import "../../assets/sass/mixin";
+@import "../../assets/sass/variables";
+
+ul.sidebarnav {
+  li {
+    color: #ffffff;
+    @include font-size(14);
+    padding: 15px 30px;
+    cursor: pointer;
+    transition: all 0.2s;
+    list-style: none;
+
+    @include lap {
+      padding: 15px 20px;
+    }
+
+    @include mobile {
+      padding: 15px 15px;
+    }
+
+    &.active {
+      background-color: $theme-red;
+    }
+
+    &:hover {
+      background-color: $theme-red;
+    }
+
+    i.fa {
+      @include font-size(20);
+      width: 28px;
+    }
+  }
+}

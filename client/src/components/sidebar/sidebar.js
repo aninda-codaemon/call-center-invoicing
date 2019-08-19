@@ -1,15 +1,26 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./sidebar.scss";
+import SidebarNav from "../sidebarnav/sidebarnav";
 
 function Sidebar() {
+  const [height, setHeight] = useState({
+    height: 0
+  });
+
+  const updateHeight = () => {
+    setHeight({
+      height: window.innerHeight - 60
+    });
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", updateHeight);
+    window.addEventListener("load", updateHeight);
+  }, []);
+
   return (
-    <aside className="sidebar">
-      <ul>
-        <li className="active"><i className="fa fa-file-text-o" aria-hidden="true"></i> All Purchase Orders</li>
-        <li><i className="fa fa-plus-square-o" aria-hidden="true"></i> New Purchase Order</li>
-        <li><i className="fa fa-scissors" aria-hidden="true"></i> Refund Request</li>
-        <li><i className="fa fa-phone" aria-hidden="true"></i> Call Agents</li>
-      </ul>
+    <aside className="sidebar" style={height}>
+      <SidebarNav/>
     </aside>
   );
 }

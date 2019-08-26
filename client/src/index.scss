@@ -44,6 +44,19 @@ ul {
       @include font-size(16);
     }
 
+    &[filled="true"] {
+      &~label {
+        color: $theme-red;
+        top: 6px;
+        @include font-size(13);
+        font-weight: 600;
+
+        @include mobile-small {
+          top: 4px;
+        }
+      }
+    }
+
     &:focus {
       outline: none;
       border-color: $theme-red;
@@ -59,27 +72,13 @@ ul {
         }
       }
     }
-
-    &:valid {
-      &:not(:placeholder-shown) {
-        &~label {
-          color: $theme-red;
-          top: 6px;
-          @include font-size(13);
-          font-weight: 600;
-
-          @include mobile-small {
-            top: 4px;
-          }
-        }
-      }
-    }
   }
 
   label {
     color: #888888;
     font-size: 18px;
     font-weight: normal;
+    text-transform: capitalize;
     position: absolute;
     left: 16px;
     top: 16px;
@@ -93,17 +92,33 @@ ul {
   }
 }
 
-.btn.btn-danger {
-  width: 100%;
-  height: 58px;
-  border-radius: 6px;
-  background-color: $theme-red;
-  font-weight: 700;
+.btn {
+  &.btn-danger {
+    width: 100%;
+    height: 58px;
+    border-radius: 6px;
+    background-color: $theme-red;
+    font-weight: 700;
 
-  @include mobile-small {
-    height: 48px;
+    @include mobile-small {
+      height: 48px;
+    }
+  }
+
+  &.btn-info {
+    @extend .btn-danger;
+    background-color: #34d293;
+    border-color: #34d293;
+  }
+
+  &.btn-warning {
+    @extend .btn-danger;
+    background-color: #ffb93c;
+    color: #fff;
   }
 }
+
+
 
 .forgot-password {
   text-align: center;
@@ -194,24 +209,40 @@ ul {
   }
 }
 
-.search-area{
+.textarea {
+  @include font-size(18);
+  padding: 10px 15px 10px;
+  @include border-radius(6px);
+  border: 1px solid #b7b7b7;
+  width: 100%;
+  resize: none;
+  
+  &:focus{
+    outline: none;
+  }
+}
+
+.search-area {
   display: flex;
+
   @include mobile {
     margin-bottom: 20px;
   }
-  input{
+
+  input {
     max-width: 300px;
     margin-right: 10px;
   }
-  .btn{
+
+  .btn {
     @include mobile {
-      margin:0 !important;
+      margin: 0 !important;
     }
   }
 }
 
 .main-content {
-  & > .col-md-3 {
+  &>.col-md-3 {
     flex: 0 0 20%;
     max-width: 20%;
 
@@ -230,7 +261,7 @@ ul {
     }
   }
 
-  & > .col-md-9 {
+  &>.col-md-9 {
     flex: 0 0 80%;
     max-width: 80%;
 

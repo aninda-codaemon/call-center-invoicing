@@ -1,5 +1,6 @@
 import React from "react";
 import innerBanner from "../../assets/img/dashboard-banner.jpg";
+import "./inner-banner.scss";
 
 function InnerBanner() {
   return (

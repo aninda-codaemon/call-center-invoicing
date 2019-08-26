@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./login.scss";
 import logo from "../../assets/img/logo.png";
 import { Button } from "react-bootstrap";
+import Input from "../../components/input/input";
 
 function Login() {
   const initialLoginData = {
@@ -34,30 +35,22 @@ function Login() {
         <div className="login-form-area">
           <form onSubmit={handleSubmit}>
             <fieldset>
-              <div className="form-group">
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  className="float-input"
-                  value={loginData.email}
-                  onChange={handleChange}
-                  required
-                />
-                <label htmlFor="email">Email*</label>
-              </div>
-              <div className="form-group">
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  className="float-input"
-                  value={loginData.password}
-                  onChange={handleChange}
-                  required
-                />
-                <label htmlFor="password">Password*</label>
-              </div>
+              <Input
+                type="email"
+                name="email"
+                value={loginData.email}
+                onChange={handleChange}
+                required={true}
+                label="Email*"
+              />
+              <Input
+                type="password"
+                name="password"
+                value={loginData.password}
+                onChange={handleChange}
+                required={true}
+                label="Password*"
+              />
             </fieldset>
             <Button variant="danger" type="submit">
               SIGN IN

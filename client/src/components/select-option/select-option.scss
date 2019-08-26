@@ -1,0 +1,21 @@
+@import "../../assets/sass/mixin";
+@import "../../assets/sass/variables";
+
+.custom-select {
+  width: 100%;
+  height: 58px;
+  @include border-radius(6px);
+  border: 1px solid #b7b7b7;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: transparent;
+  padding: 8px 15px;
+  @include font-size(18);
+  background: url("../../assets/img/dropdown-arrow.png") no-repeat center right;
+
+  &:focus {
+    box-shadow: none;
+    border: 1px solid $theme-red;
+  }
+}

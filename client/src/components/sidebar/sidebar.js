@@ -9,18 +9,25 @@ function Sidebar() {
 
   const updateHeight = () => {
     setHeight({
-      height: window.innerHeight - 60
+      height: document.documentElement.scrollHeight - 60
     });
   };
 
   useEffect(() => {
-    window.addEventListener("resize", updateHeight);
-    window.addEventListener("load", updateHeight);
+    let mounted = true;
+    if (mounted) {
+      updateHeight();
+      window.addEventListener("resize", updateHeight);
+    }
+    return () => {
+      mounted = false;
+      window.removeEventListener("resize", updateHeight);
+    };
   }, []);
 
   return (
     <aside className="sidebar" style={height}>
-      <SidebarNav/>
+      <SidebarNav />
     </aside>
   );
 }

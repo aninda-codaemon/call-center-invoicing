@@ -44,9 +44,15 @@ function NewPurchaseOrder() {
 
   // form handler
   const handleChange = e => {
+    console.log('hi');
     switch (e.target.name) {
       case "anyonewithvehicle":
-        e.target.value === "No" ? handleShow("Service will not be performed on unattended vehicles") : handleClose();
+        e.target.value === "No"
+          ? handleShow(
+              "Service will not be performed on unattended vehicles",
+              "noOne"
+            )
+          : handleClose();
         break;
 
       case "servicetype":
@@ -55,12 +61,17 @@ function NewPurchaseOrder() {
         } else if (e.target.value === "Towing") {
           towingToggle(true);
         } else {
-          setServiceInfo(initialServiceData)
+          setServiceInfo(initialServiceData);
         }
         break;
-      
-      case "fueltype" : 
-        e.target.value === "Diesel Gas" ? handleShow("Service will not be performed, we cannot service diesel engines") : handleClose();
+
+      case "fueltype":
+        e.target.value === "Diesel Gas"
+          ? handleShow(
+              "Service will not be performed, we cannot service diesel engines",
+              "fuel"
+            )
+          : handleClose();
         break;
     }
 
@@ -79,14 +90,31 @@ function NewPurchaseOrder() {
   // modal state
   const initModalData = {
     isShown: false,
-    text: ""
+    text: "",
+    id: ""
   };
 
   const [modal, setModal] = useState(initModalData);
 
   // modal handler
-  const handleClose = () => setModal(initModalData);
-  const handleShow = (text) => setModal({...modal, isShown: true, text});
+  const handleClose = () => {
+    if (modal.id === "fuel") {
+      setModal(initModalData);
+      towingModalShow();
+    } else {
+      setModal(initModalData);
+    }
+  };
+  const handleShow = (text, id) => setModal({ ...modal, isShown: true, text, id });
+
+  //modal for convert to towing
+  const [towingModal, setTowingModal] = useState(false);
+  const towingModalClose = () => setTowingModal(false);
+  const towingModalShow = () => setTowingModal(true);
+  const covertToTowing = () => {
+    towingModalClose();
+    setNewData({...newData, servicetype: "Towing"});
+  };
 
   // serviceinfo state
   const initialServiceData = {
@@ -541,24 +569,29 @@ function NewPurchaseOrder() {
           aria-hidden="true"
           onClick={handleClose}
         ></i>
-        <Modal.Body className="text-center">
-          {modal.text}
-        </Modal.Body>
+        <Modal.Body className="text-center">{modal.text}</Modal.Body>
       </Modal>
 
       {/* alert for convert the service type into Towing */}
 
-      {/* <Modal show={modal.isShown} onHide={handleClose} className="error-bg">
+      <Modal show={towingModal} onHide={handleClose} className="error-bg">
         <i
           className="fa fa-times-circle close-icon"
           aria-hidden="true"
           onClick={handleClose}
         ></i>
         <Modal.Body className="text-center">
-          {modal.text}
+          Press OK button to convert the service type into Towing!
         </Modal.Body>
-      </Modal> */}
-
+        <Modal.Footer>
+          <Button variant="secondary" size="sm" onClick={towingModalClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" onClick={covertToTowing}>
+            Ok
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </React.Fragment>
   );
 }

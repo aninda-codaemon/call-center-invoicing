@@ -44,7 +44,6 @@ function NewPurchaseOrder() {
 
   // form handler
   const handleChange = e => {
-    console.log('hi');
     switch (e.target.name) {
       case "anyonewithvehicle":
         e.target.value === "No"
@@ -73,6 +72,13 @@ function NewPurchaseOrder() {
             )
           : handleClose();
         break;
+
+      case "fourwheelsturn":
+        e.target.value === "No"
+          ? fourwheelsToggle(true)
+          : fourwheelsToggle(false);
+        break;
+      default:
     }
 
     setNewData({
@@ -105,7 +111,8 @@ function NewPurchaseOrder() {
       setModal(initModalData);
     }
   };
-  const handleShow = (text, id) => setModal({ ...modal, isShown: true, text, id });
+  const handleShow = (text, id) =>
+    setModal({ ...modal, isShown: true, text, id });
 
   //modal for convert to towing
   const [towingModal, setTowingModal] = useState(false);
@@ -113,7 +120,8 @@ function NewPurchaseOrder() {
   const towingModalShow = () => setTowingModal(true);
   const covertToTowing = () => {
     towingModalClose();
-    setNewData({...newData, servicetype: "Towing"});
+    setNewData({ ...newData, servicetype: "Towing" });
+    towingToggle(true);
   };
 
   // serviceinfo state
@@ -126,11 +134,20 @@ function NewPurchaseOrder() {
   const [serviceInfo, setServiceInfo] = useState(initialServiceData);
 
   const fuelfluidsToggle = value => {
-    setServiceInfo({ ...serviceInfo, fuelfluids: value, towing: false });
+    setServiceInfo({
+      ...serviceInfo,
+      fuelfluids: value,
+      towing: false,
+      fourwheelsturn: false
+    });
   };
 
   const towingToggle = value => {
     setServiceInfo({ ...serviceInfo, towing: value, fuelfluids: false });
+  };
+
+  const fourwheelsToggle = value => {
+    setServiceInfo({ ...serviceInfo, fourwheelsturn: value });
   };
 
   return (

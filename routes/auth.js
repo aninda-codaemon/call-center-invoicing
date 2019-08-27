@@ -44,6 +44,8 @@ router.post('/', [
   const userExist = await UserModel.getUserByEmail(email);
   if (userExist.error) {
     return res.status(400).json({ errors: [{msg: exist.error}]});
+  }  else if (userExist.result[0] && userExist.result[0].status === 0) {
+    return res.status(400).json({ errors: [{msg: 'Invalid login credentials!'}]});
   } else if (userExist.result[0]) {
     const isMatch = await bcrypt.compare(password, userExist.result[0].password);
     if (isMatch) {

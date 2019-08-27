@@ -2,7 +2,11 @@
 @import "../../assets/sass/variables";
 
 .invoice-wrap {
-  padding: 50px 60px;
+  padding: 50px 20px;
+
+  @include mobile {
+    margin-right: -15px;
+  }
 
   .invoice-title {
     max-width: 40%;
@@ -120,7 +124,7 @@
       box-shadow: none;
     }
 
-    .custom-control-input:checked~.custom-control-label{
+    .custom-control-input:checked~.custom-control-label {
       background-color: #f5e4e5;
       border-color: $theme-red;
     }
@@ -133,4 +137,14 @@
       text-transform: uppercase;
     }
   }
+}
+
+.close-icon {
+  color: $theme-red;
+  position: absolute;
+  right: 5px;
+  top: 4px;
+  @include font-size(20);
+  cursor: pointer;
+  z-index: 100;
 }

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./new-purchase-order.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
-import { Row, Col, Button, Container } from "react-bootstrap";
+import { Row, Col, Button, Container, Modal } from "react-bootstrap";
 import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
@@ -30,15 +30,24 @@ function NewPurchaseOrder() {
     baseprice: 0,
     additionalprice: 0,
     paymentemail: "",
-    paymentamount: 0,
-    paymenttotalamount: 0,
+    paymentamount: null,
+    paymenttotalamount: null,
     sendpaymentto: "phone"
   };
 
   const [newData, setNewData] = useState(initialData);
+  const [showModal, setShowModal] = useState(false);
 
+  // modal handler
+  const handleClose = () => setShowModal(false);
+  const handleShow = () => setShowModal(true);
+
+  // form handler
   const handleChange = e => {
-    console.log({ [e.target.name]: e.target.value });
+    if(e.target.name === 'anyonewithvehicle') {
+      e.target.value === 'No' ? handleShow() : handleClose();
+    }
+
     setNewData({
       ...newData,
       [e.target.name]: e.target.value
@@ -56,10 +65,10 @@ function NewPurchaseOrder() {
       <Header />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
-          <Col md={3}>
+          <Col md={3} className="align-self-stretch">
             <Sidebar />
           </Col>
-          <Col md={9}>
+          <Col md={9} className="right-part">
             <InnerBanner />
             <section className="invoice-wrap">
               <form onSubmit={handleSubmit}>
@@ -413,6 +422,14 @@ function NewPurchaseOrder() {
           </Col>
         </Row>
       </Container>
+
+      {/* alert for no one with the vehicle */}
+
+      <Modal show={showModal} onHide={handleClose} className="error-bg">
+        <i className="fa fa-times-circle close-icon" aria-hidden="true" onClick={handleClose}></i>
+        <Modal.Body className="text-center">Service will not be performed on unattended vehicles </Modal.Body>
+      </Modal>
+      
     </React.Fragment>
   );
 }

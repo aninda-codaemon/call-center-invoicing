@@ -18,10 +18,14 @@ function SidebarNav() {
         </NavLink>
       </li>
       <li>
-        <i className="fa fa-scissors" aria-hidden="true" /> Refund Request
+        <NavLink activeClassName="active" to="/refund-request">
+          <i className="fa fa-scissors" aria-hidden="true" /> Refund Request
+        </NavLink>
       </li>
       <li>
+      <NavLink activeClassName="active" to="/call-agents">
         <i className="fa fa-phone" aria-hidden="true" /> Call Agents
+        </NavLink>
       </li>
     </ul>
   );

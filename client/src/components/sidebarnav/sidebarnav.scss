@@ -2,18 +2,26 @@
 @import "../../assets/sass/variables";
 
 ul.sidebarnav {
+  position: fixed;
+  width: calc(20% - 27px);
+
+  @include desk {
+    width: calc(25% - 26px);
+  }
+
+  @include tab {
+    width: calc(30% - 25.5px);
+  }
+
+  @include mobile {
+    position: relative;
+    width: auto;
+  }
+
   li {
     cursor: pointer;
     transition: all 0.2s;
     list-style: none;
-
-    @include lap {
-      padding: 15px 20px;
-    }
-
-    @include mobile {
-      padding: 15px 15px;
-    }
 
     a {
       padding: 15px 30px;
@@ -21,6 +29,10 @@ ul.sidebarnav {
       color: #ffffff;
       @include font-size(14);
       text-decoration: none;
+
+      @include tab {
+        padding: 15px;
+      }
 
       &.active {
         background-color: $theme-red;

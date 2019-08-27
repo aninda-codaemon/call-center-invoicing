@@ -22,6 +22,10 @@ function NewPurchaseOrder() {
     anyonewithvehicle: "",
     keysforvehicle: "",
     fourwheelsturn: "",
+    frontwheelsturn: "",
+    backwheelsturn: "",
+    neutral: "",
+    fueltype: "",
     pickuplocation: "",
     pickupnotes: "",
     origin: "",
@@ -30,22 +34,34 @@ function NewPurchaseOrder() {
     baseprice: 0,
     additionalprice: 0,
     paymentemail: "",
-    paymentamount: null,
-    paymenttotalamount: null,
+    paymentamount: undefined,
+    paymenttotalamount: undefined,
     sendpaymentto: "phone"
   };
 
+  // form state
   const [newData, setNewData] = useState(initialData);
-  const [showModal, setShowModal] = useState(false);
-
-  // modal handler
-  const handleClose = () => setShowModal(false);
-  const handleShow = () => setShowModal(true);
 
   // form handler
   const handleChange = e => {
-    if(e.target.name === 'anyonewithvehicle') {
-      e.target.value === 'No' ? handleShow() : handleClose();
+    switch (e.target.name) {
+      case "anyonewithvehicle":
+        e.target.value === "No" ? handleShow("Service will not be performed on unattended vehicles") : handleClose();
+        break;
+
+      case "servicetype":
+        if (e.target.value === "Fuel / Fluids") {
+          fuelfluidsToggle(true);
+        } else if (e.target.value === "Towing") {
+          towingToggle(true);
+        } else {
+          setServiceInfo(initialServiceData)
+        }
+        break;
+      
+      case "fueltype" : 
+        e.target.value === "Diesel Gas" ? handleShow("Service will not be performed, we cannot service diesel engines") : handleClose();
+        break;
     }
 
     setNewData({
@@ -58,6 +74,35 @@ function NewPurchaseOrder() {
     e.preventDefault();
     console.log(newData);
     setNewData(initialData);
+  };
+
+  // modal state
+  const initModalData = {
+    isShown: false,
+    text: ""
+  };
+
+  const [modal, setModal] = useState(initModalData);
+
+  // modal handler
+  const handleClose = () => setModal(initModalData);
+  const handleShow = (text) => setModal({...modal, isShown: true, text});
+
+  // serviceinfo state
+  const initialServiceData = {
+    fuelfluids: false,
+    towing: false,
+    fourwheelsturn: false
+  };
+
+  const [serviceInfo, setServiceInfo] = useState(initialServiceData);
+
+  const fuelfluidsToggle = value => {
+    setServiceInfo({ ...serviceInfo, fuelfluids: value, towing: false });
+  };
+
+  const towingToggle = value => {
+    setServiceInfo({ ...serviceInfo, towing: value, fuelfluids: false });
   };
 
   return (
@@ -197,7 +242,7 @@ function NewPurchaseOrder() {
                     Pricing may increase due to additional equipment needs
                   </h4>
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <SelectOption
                         label="Service Type *"
                         name="servicetype"
@@ -212,7 +257,7 @@ function NewPurchaseOrder() {
                         ]}
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6} hidden={!serviceInfo.towing}>
                       <SelectOption
                         label="Problem Type *"
                         name="problemtype"
@@ -241,9 +286,8 @@ function NewPurchaseOrder() {
                         ]}
                       />
                     </Col>
-                  </Row>
-                  <Row>
-                    <Col>
+
+                    <Col sm={6}>
                       <SelectOption
                         label="Will anyone be with the vehicle? *"
                         name="anyonewithvehicle"
@@ -252,7 +296,8 @@ function NewPurchaseOrder() {
                         options={["yes", "No"]}
                       />
                     </Col>
-                    <Col>
+
+                    <Col sm={6}>
                       <SelectOption
                         label="Do you have keys for the vehicle? *"
                         name="keysforvehicle"
@@ -261,15 +306,54 @@ function NewPurchaseOrder() {
                         options={["yes", "No"]}
                       />
                     </Col>
-                  </Row>
-                  <Row>
-                    <Col xs={12} sm={6}>
+
+                    <Col sm={6} hidden={!serviceInfo.towing}>
+                      <SelectOption
+                        label="Will the vehicle go in neutral? *"
+                        name="fueltype"
+                        value={newData.neutral}
+                        onChange={handleChange}
+                        options={["yes", "No"]}
+                      />
+                    </Col>
+
+                    <Col sm={6} hidden={!serviceInfo.towing}>
                       <SelectOption
                         label="Do all four wheels on the vehicle turn? *"
                         name="fourwheelsturn"
                         value={newData.fourwheelsturn}
                         onChange={handleChange}
                         options={["yes", "No"]}
+                      />
+                    </Col>
+
+                    <Col sm={6} hidden={!serviceInfo.fourwheelsturn}>
+                      <SelectOption
+                        label="Will both front wheels turn? *"
+                        name="frontwheelsturn"
+                        value={newData.frontwheelsturn}
+                        onChange={handleChange}
+                        options={["yes", "No"]}
+                      />
+                    </Col>
+
+                    <Col sm={6} hidden={!serviceInfo.fourwheelsturn}>
+                      <SelectOption
+                        label="Will both back wheels turn? *"
+                        name="backwheelsturn"
+                        value={newData.backwheelsturn}
+                        onChange={handleChange}
+                        options={["yes", "No"]}
+                      />
+                    </Col>
+
+                    <Col sm={6} hidden={!serviceInfo.fuelfluids}>
+                      <SelectOption
+                        label="Do you need regular gas or diesel? *"
+                        name="fueltype"
+                        value={newData.fueltype}
+                        onChange={handleChange}
+                        options={["regular gas", "diesel gas"]}
                       />
                     </Col>
                   </Row>
@@ -383,16 +467,42 @@ function NewPurchaseOrder() {
                     <p>Send payment link to</p>
                     <Row>
                       <Col>
-                      <div className="custom-control custom-radio">
-                        <input type="radio" className="custom-control-input" id="paymenttophone" name="sendpaymentto" onChange={handleChange} value="phone" checked = {newData.sendpaymentto === "phone"}/>
-                        <label className="custom-control-label" htmlFor="paymenttophone">Phone</label>
-                      </div> 
+                        <div className="custom-control custom-radio">
+                          <input
+                            type="radio"
+                            className="custom-control-input"
+                            id="paymenttophone"
+                            name="sendpaymentto"
+                            onChange={handleChange}
+                            value="phone"
+                            checked={newData.sendpaymentto === "phone"}
+                          />
+                          <label
+                            className="custom-control-label"
+                            htmlFor="paymenttophone"
+                          >
+                            Phone
+                          </label>
+                        </div>
                       </Col>
                       <Col>
-                      <div className="custom-control custom-radio">
-                        <input type="radio" className="custom-control-input" id="paymenttoemail" name="sendpaymentto" onChange={handleChange} value="email" checked = {newData.sendpaymentto === "email"}/>
-                        <label className="custom-control-label" htmlFor="paymenttoemail">Email</label>
-                      </div> 
+                        <div className="custom-control custom-radio">
+                          <input
+                            type="radio"
+                            className="custom-control-input"
+                            id="paymenttoemail"
+                            name="sendpaymentto"
+                            onChange={handleChange}
+                            value="email"
+                            checked={newData.sendpaymentto === "email"}
+                          />
+                          <label
+                            className="custom-control-label"
+                            htmlFor="paymenttoemail"
+                          >
+                            Email
+                          </label>
+                        </div>
                       </Col>
                     </Row>
                   </div>
@@ -423,13 +533,32 @@ function NewPurchaseOrder() {
         </Row>
       </Container>
 
-      {/* alert for no one with the vehicle */}
+      {/* alert for no one with the vehicle and diesel gas */}
 
-      <Modal show={showModal} onHide={handleClose} className="error-bg">
-        <i className="fa fa-times-circle close-icon" aria-hidden="true" onClick={handleClose}></i>
-        <Modal.Body className="text-center">Service will not be performed on unattended vehicles </Modal.Body>
+      <Modal show={modal.isShown} onHide={handleClose} className="error-bg">
+        <i
+          className="fa fa-times-circle close-icon"
+          aria-hidden="true"
+          onClick={handleClose}
+        ></i>
+        <Modal.Body className="text-center">
+          {modal.text}
+        </Modal.Body>
       </Modal>
-      
+
+      {/* alert for convert the service type into Towing */}
+
+      {/* <Modal show={modal.isShown} onHide={handleClose} className="error-bg">
+        <i
+          className="fa fa-times-circle close-icon"
+          aria-hidden="true"
+          onClick={handleClose}
+        ></i>
+        <Modal.Body className="text-center">
+          {modal.text}
+        </Modal.Body>
+      </Modal> */}
+
     </React.Fragment>
   );
 }

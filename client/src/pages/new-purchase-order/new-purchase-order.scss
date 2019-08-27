@@ -1,25 +1,136 @@
-.inner-banner{
-    margin-left: -30px;
-    margin-right: -15px;
-    figure{
-        position: relative;
-        img{
-            width: 100%;
-        }
-        figcaption{
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top:0;
-            left: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+@import "../../assets/sass/mixin";
+@import "../../assets/sass/variables";
 
-            h1{
-                color: #fff;
-                font-weight: normal;
-            }
-        }
+.invoice-wrap {
+  padding: 50px 60px;
+
+  .invoice-title {
+    max-width: 40%;
+    margin: 0 auto 40px auto;
+
+    .float-input {
+      background-color: rgba(221, 45, 62, 0.2);
+      border-color: $theme-red;
+
+      &~label {
+        font-weight: 400;
+      }
     }
+  }
+
+  .info-area {
+    border-bottom: 1px dashed #b7b7b7;
+    padding-bottom: 30px;
+    margin-bottom: 50px;
+
+    h2 {
+      text-transform: capitalize;
+      color: $text-color;
+      @include font-size(30);
+      font-weight: 400;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    h4 {
+      color: #888888;
+      font-weight: 400;
+      @include font-size(14);
+      text-align: center;
+      margin-top: -20px;
+      margin-bottom: 30px;
+    }
+
+    .calculate-cost {
+      max-width: 220px;
+      margin: 20px auto;
+
+      .btn {
+        @include font-size(15);
+        text-transform: uppercase;
+      }
+    }
+
+    .cost-details {
+      text-align: center;
+      margin-top: 40px;
+
+      h3 {
+        font-weight: 400;
+        color: $text-color;
+        @include font-size(30);
+        margin-bottom: 10px;
+      }
+
+      p {
+        color: $text-color;
+        margin-bottom: 10px;
+        @include font-size(14);
+      }
+    }
+
+    .map {
+      border: 0;
+      width: 100%;
+      height: 350px;
+      margin-top: 30px;
+    }
+
+    .send-payment-link {
+      max-width: 362px;
+      margin: 0 auto;
+
+      p {
+        color: #888888;
+        @include font-size(14);
+        text-align: center;
+        margin-bottom: 20px;
+      }
+    }
+
+    .custom-control {
+      padding-left: 0;
+
+      label.custom-control-label {
+        display: block;
+        background-color: #efefef;
+        border: 1px solid #dddddd;
+        @include border-radius(6px);
+        padding: 12px 38px;
+
+        &::before {
+          left: 0.6rem;
+          top: 0.8rem;
+          width: 1.2rem;
+          height: 1.2rem;
+        }
+
+        &::after {
+          left: 0.55rem;
+          top: 0.75rem;
+          width: 1.3rem;
+          height: 1.3rem;
+        }
+      }
+    }
+
+    .custom-control-input:checked~.custom-control-label::before {
+      border-color: $theme-red;
+      background-color: $theme-red;
+      box-shadow: none;
+    }
+
+    .custom-control-input:checked~.custom-control-label{
+      background-color: #f5e4e5;
+      border-color: $theme-red;
+    }
+  }
+
+  .buttons-area {
+    .btn {
+      font-weight: 700;
+      @include font-size(15);
+      text-transform: uppercase;
+    }
+  }
 }

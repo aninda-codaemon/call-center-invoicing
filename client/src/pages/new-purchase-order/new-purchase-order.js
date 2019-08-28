@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./new-purchase-order.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
@@ -6,6 +6,13 @@ import { Row, Col, Button, Container, Modal } from "react-bootstrap";
 import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
+import {
+  vehicle_make,
+  vehicle_color,
+  service_type,
+  problem_type,
+  pickup_location
+} from "../../assets/data/staticdata";
 
 function NewPurchaseOrder() {
   const initialData = {
@@ -78,6 +85,37 @@ function NewPurchaseOrder() {
           ? fourwheelsToggle(true)
           : fourwheelsToggle(false);
         break;
+
+      case "pickuplocation":
+        e.target.value === "Highway"
+          ? setCost({ ...cost, highway: 18 })
+          : setCost({ ...cost, highway: 0 });
+        break;
+
+      case "keysforvehicle":
+        e.target.value === "No"
+          ? setCost({ ...cost, nokeys: 23 })
+          : setCost({ ...cost, nokeys: 0 });
+        break;
+
+      case "neutral":
+        e.target.value === "No"
+          ? setCost({ ...cost, noneutral: 17 })
+          : setCost({ ...cost, noneutral: 0 });
+        break;
+
+      case "frontwheelsturn":
+        e.target.value === "No"
+          ? setCost({ ...cost, nofrontwheelsturn: 26 })
+          : setCost({ ...cost, nofrontwheelsturn: 0 });
+        break;
+
+      case "backwheelsturn":
+        e.target.value === "No"
+          ? setCost({ ...cost, nobackwheelsturn: 29 })
+          : setCost({ ...cost, nobackwheelsturn: 0 });
+        break;
+
       default:
     }
 
@@ -90,7 +128,7 @@ function NewPurchaseOrder() {
   const handleSubmit = e => {
     e.preventDefault();
     console.log(newData);
-    setNewData({...initialData});
+    setNewData({ ...initialData });
   };
 
   // modal state
@@ -150,8 +188,47 @@ function NewPurchaseOrder() {
 
   //reset form data to initial state
   const resetForm = () => {
-    setNewData({...initialData});
-  }
+    setNewData({ ...initialData });
+  };
+
+  //cost calculation
+  const initialCost = {
+    highway: 0,
+    nokeys: 0,
+    noneutral: 0,
+    nofrontwheelsturn: 0,
+    nobackwheelsturn: 0,
+    nobothwheelsturn: 0
+  };
+
+  const [cost, setCost] = useState(initialCost);
+
+  const totalCost = obj => {
+    let total = 0;
+    for (let key in obj) {
+      total += parseFloat(obj[key]);
+    }
+    console.log(total)
+    return total;
+  };
+
+  const bothWheelsNotTurn = () => {
+    if (cost.nofrontwheelsturn > 0 && cost.nobackwheelsturn > 0) {
+      setCost({
+        ...cost,
+        nofrontwheelsturn: 0,
+        nobackwheelsturn: 0,
+        nobothwheelsturn: 39
+      });
+      totalCost(cost);
+    } else {
+      totalCost(cost);
+    }
+  };
+
+  useEffect(() => {
+    bothWheelsNotTurn();
+  },[cost]);
 
   return (
     <React.Fragment>
@@ -228,22 +305,7 @@ function NewPurchaseOrder() {
                         name="make"
                         value={newData.make}
                         onChange={handleChange}
-                        options={[
-                          "AM General",
-                          "AMC",
-                          "Acura",
-                          "Alfa Romeo",
-                          "Aston Martin",
-                          "Audi",
-                          "BACKDRAFT",
-                          "BMW",
-                          "Bentley",
-                          "Buick",
-                          "Cadillac",
-                          "Chevrolet",
-                          "Chrysler",
-                          "Daewoo"
-                        ]}
+                        options={vehicle_make}
                       />
                     </Col>
                   </Row>
@@ -264,22 +326,7 @@ function NewPurchaseOrder() {
                         name="color"
                         value={newData.color}
                         onChange={handleChange}
-                        options={[
-                          "Beige",
-                          "Black",
-                          "Blue",
-                          "Brown",
-                          "Burgundy",
-                          "Champagne",
-                          "Gold",
-                          "Gray",
-                          "Gray Violet",
-                          "Green",
-                          "Light Blue",
-                          "Light Brown",
-                          "Light Gray",
-                          "Light Green"
-                        ]}
+                        options={vehicle_color}
                       />
                     </Col>
                   </Row>
@@ -296,13 +343,7 @@ function NewPurchaseOrder() {
                         name="servicetype"
                         value={newData.servicetype}
                         onChange={handleChange}
-                        options={[
-                          "Fuel / Fluids",
-                          "Jump Start",
-                          "Lockout",
-                          "Towing",
-                          "Tire Change"
-                        ]}
+                        options={service_type}
                       />
                     </Col>
                     <Col xl={6} hidden={!serviceInfo.towing}>
@@ -311,27 +352,7 @@ function NewPurchaseOrder() {
                         name="problemtype"
                         value={newData.problemtype}
                         onChange={handleChange}
-                        options={[
-                          "Won't Start",
-                          "Belt Broken",
-                          "Brakes",
-                          "Engine Fire",
-                          "Engine Problem",
-                          "Fuel System Problem",
-                          "Head / Brake lights",
-                          "Ignition Problems",
-                          "Items Hanging",
-                          "Key Stuck In Ignition",
-                          "Multiple Tire / No Spare",
-                          "Oil / Fuel Leak",
-                          "Overheating",
-                          "Stuck in Park / Gear",
-                          "Tire Pressure Low",
-                          "Transmission Problem",
-                          "Vandalism",
-                          "Windshield (Cracked / Broken)",
-                          "Other"
-                        ]}
+                        options={problem_type}
                       />
                     </Col>
 
@@ -358,7 +379,7 @@ function NewPurchaseOrder() {
                     <Col xl={6} hidden={!serviceInfo.towing}>
                       <SelectOption
                         label="Will the vehicle go in neutral? *"
-                        name="fueltype"
+                        name="neutral"
                         value={newData.neutral}
                         onChange={handleChange}
                         options={["yes", "No"]}
@@ -415,7 +436,7 @@ function NewPurchaseOrder() {
                         name="pickuplocation"
                         value={newData.pickuplocation}
                         onChange={handleChange}
-                        options={["House", "Business", "Highway", "Apartment"]}
+                        options={pickup_location}
                       />
                     </Col>
                     <Col sm={6}>
@@ -461,7 +482,8 @@ function NewPurchaseOrder() {
                       Base Price: <strong>$ {newData.baseprice}</strong>
                     </p>
                     <p>
-                      Additional Price: <strong>$ {newData.additionalprice}</strong>
+                      Additional Price:{" "}
+                      <strong>$ {newData.additionalprice}</strong>
                     </p>
                   </div>
                   <iframe
@@ -567,7 +589,11 @@ function NewPurchaseOrder() {
                       </Button>
                     </Col>
                     <Col lg={4}>
-                      <Button variant="danger" type="button" onClick={resetForm}>
+                      <Button
+                        variant="danger"
+                        type="button"
+                        onClick={resetForm}
+                      >
                         reset
                       </Button>
                     </Col>

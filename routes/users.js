@@ -12,11 +12,36 @@ const router = express.Router();
 // @access    Private
 router.get('/', authMiddleware, async (req, res) => {
   const userId = req.user.id;
-  const users = await UserModel.getUsers(2);
+  const roleId = req.body.role_id || 2;
+
+  // Pagination
+  const sortBy = req.body.sort_by || 'first_name';
+  const sortOrder = req.body.sort_order || 'ASC';
+  const fetchPage = req.body.fetch_page || 1;
+  const perPage = req.body.per_page || 3;
+  
+  const users = await UserModel.getUsers(roleId);
+  total_users = users.result.length;
+  total_pages = parseInt(Math.ceil(total_users/perPage));
+  start_page = (perPage * (fetchPage - 1));
+  next_start = (perPage * fetchPage);
+  next_page = 0; // Count for next page records
+  const sql_query = `SELECT id, role_id, first_name, last_name, email_id, contact_no, status FROM user WHERE role_id=${roleId} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+  dataArray = await UserModel.getSortedUsers(sql_query); // perPage, start_page
+  
   if (users.error) {
     return res.status(500).json({ errors: [{msg: 'Internal server error!'}] });
   } else {
-    return res.status(200).json({ errors: [], data: {msg: 'Users listed', users: users.result}});
+    return res.status(200).json({ errors: [], data: {
+      msg: 'Users listed', 
+      users: dataArray.result,
+      total_users,
+      fetchPage, 
+      perPage,
+      start_page,
+      next_start,
+      next_page
+    }});
   }  
 });
 

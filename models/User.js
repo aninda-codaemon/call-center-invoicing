@@ -76,7 +76,21 @@ User.getUserById = async (id) => {
 User.getUsers = async (user_role) => {
   let response = {};
   try {
-    const [result, fields] = await pool.query('SELECT id, role_id, first_name, last_name, email_id, contact_no, status FROM `user` WHERE role_id=? ORDER BY id ASC', []);        
+    const [result, fields] = await pool.query('SELECT id, role_id, first_name, last_name, email_id, contact_no, status FROM `user` WHERE role_id=? ORDER BY id ASC', [user_role]);
+    console.log(result);
+    response.result = result;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
+User.getSortedUsers = async (sqlQuery) => {
+  let response = {};
+  try {
+    const [result, fields] = await pool.query(sqlQuery);
     console.log(result);
     response.result = result;
     return response;

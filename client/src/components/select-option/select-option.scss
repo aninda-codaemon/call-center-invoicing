@@ -15,12 +15,17 @@
   @include font-size(18);
   background: url("../../assets/img/dropdown-arrow.png") no-repeat center right;
 
+  @include mobile-small {
+    height: 48px;
+    @include font-size(16);
+  }
+
   &:focus {
     box-shadow: none;
     border: 1px solid $theme-red;
   }
 
-  &~label{
+  &~label {
     display: none;
     transition: all 0.2s;
   }
@@ -28,6 +33,10 @@
   &[filled="true"] {
     padding-top: 24px;
     color: $text-color;
+
+    @include mobile-small {
+      padding-top: 20px;
+    }
 
     &~label {
       display: block;

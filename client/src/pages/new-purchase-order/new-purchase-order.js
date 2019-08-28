@@ -34,8 +34,8 @@ function NewPurchaseOrder() {
     baseprice: 0,
     additionalprice: 0,
     paymentemail: "",
-    paymentamount: undefined,
-    paymenttotalamount: undefined,
+    paymentamount: 0,
+    paymenttotalamount: 0,
     sendpaymentto: "phone"
   };
 
@@ -90,7 +90,7 @@ function NewPurchaseOrder() {
   const handleSubmit = e => {
     e.preventDefault();
     console.log(newData);
-    setNewData(initialData);
+    setNewData({...initialData});
   };
 
   // modal state
@@ -135,10 +135,8 @@ function NewPurchaseOrder() {
 
   const fuelfluidsToggle = value => {
     setServiceInfo({
-      ...serviceInfo,
-      fuelfluids: value,
-      towing: false,
-      fourwheelsturn: false
+      ...initialServiceData,
+      fuelfluids: value
     });
   };
 
@@ -149,6 +147,11 @@ function NewPurchaseOrder() {
   const fourwheelsToggle = value => {
     setServiceInfo({ ...serviceInfo, fourwheelsturn: value });
   };
+
+  //reset form data to initial state
+  const resetForm = () => {
+    setNewData({...initialData});
+  }
 
   return (
     <React.Fragment>
@@ -174,7 +177,7 @@ function NewPurchaseOrder() {
                 <div className="info-area">
                   <h2>Caller Info</h2>
                   <Row>
-                    <Col>
+                    <Col sm={6} lg={4}>
                       <Input
                         type="text"
                         name="fname"
@@ -184,7 +187,7 @@ function NewPurchaseOrder() {
                         label="First Name *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6} lg={4}>
                       <Input
                         type="text"
                         name="lname"
@@ -194,7 +197,7 @@ function NewPurchaseOrder() {
                         label="Last Name *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6} lg={4}>
                       <Input
                         type="tel"
                         name="phone"
@@ -209,7 +212,7 @@ function NewPurchaseOrder() {
                 <div className="info-area">
                   <h2>Vehicle Info</h2>
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="year"
@@ -219,7 +222,7 @@ function NewPurchaseOrder() {
                         label="Year *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <SelectOption
                         label="Make *"
                         name="make"
@@ -245,7 +248,7 @@ function NewPurchaseOrder() {
                     </Col>
                   </Row>
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="model"
@@ -255,7 +258,7 @@ function NewPurchaseOrder() {
                         label="Model *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <SelectOption
                         label="Color *"
                         name="color"
@@ -287,7 +290,7 @@ function NewPurchaseOrder() {
                     Pricing may increase due to additional equipment needs
                   </h4>
                   <Row>
-                    <Col sm={6}>
+                    <Col xl={6}>
                       <SelectOption
                         label="Service Type *"
                         name="servicetype"
@@ -302,7 +305,7 @@ function NewPurchaseOrder() {
                         ]}
                       />
                     </Col>
-                    <Col sm={6} hidden={!serviceInfo.towing}>
+                    <Col xl={6} hidden={!serviceInfo.towing}>
                       <SelectOption
                         label="Problem Type *"
                         name="problemtype"
@@ -332,7 +335,7 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    <Col sm={6}>
+                    <Col xl={6}>
                       <SelectOption
                         label="Will anyone be with the vehicle? *"
                         name="anyonewithvehicle"
@@ -342,7 +345,7 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    <Col sm={6}>
+                    <Col xl={6}>
                       <SelectOption
                         label="Do you have keys for the vehicle? *"
                         name="keysforvehicle"
@@ -352,7 +355,7 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    <Col sm={6} hidden={!serviceInfo.towing}>
+                    <Col xl={6} hidden={!serviceInfo.towing}>
                       <SelectOption
                         label="Will the vehicle go in neutral? *"
                         name="fueltype"
@@ -362,7 +365,7 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    <Col sm={6} hidden={!serviceInfo.towing}>
+                    <Col xl={6} hidden={!serviceInfo.towing}>
                       <SelectOption
                         label="Do all four wheels on the vehicle turn? *"
                         name="fourwheelsturn"
@@ -372,7 +375,7 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    <Col sm={6} hidden={!serviceInfo.fourwheelsturn}>
+                    <Col xl={6} hidden={!serviceInfo.fourwheelsturn}>
                       <SelectOption
                         label="Will both front wheels turn? *"
                         name="frontwheelsturn"
@@ -382,7 +385,7 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    <Col sm={6} hidden={!serviceInfo.fourwheelsturn}>
+                    <Col xl={6} hidden={!serviceInfo.fourwheelsturn}>
                       <SelectOption
                         label="Will both back wheels turn? *"
                         name="backwheelsturn"
@@ -392,7 +395,7 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    <Col sm={6} hidden={!serviceInfo.fuelfluids}>
+                    <Col xl={6} hidden={!serviceInfo.fuelfluids}>
                       <SelectOption
                         label="Do you need regular gas or diesel? *"
                         name="fueltype"
@@ -406,7 +409,7 @@ function NewPurchaseOrder() {
                 <div className="info-area">
                   <h2>Pickup-Drop Location</h2>
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <SelectOption
                         label="Pickup Location *"
                         name="pickuplocation"
@@ -415,7 +418,7 @@ function NewPurchaseOrder() {
                         options={["House", "Business", "Highway", "Apartment"]}
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="pickupnotes"
@@ -426,7 +429,7 @@ function NewPurchaseOrder() {
                     </Col>
                   </Row>
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="origin"
@@ -435,7 +438,7 @@ function NewPurchaseOrder() {
                         label="Origin"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="destination"
@@ -458,8 +461,7 @@ function NewPurchaseOrder() {
                       Base Price: <strong>$ {newData.baseprice}</strong>
                     </p>
                     <p>
-                      Additional Price:{" "}
-                      <strong>$ {newData.additionalprice}</strong>
+                      Additional Price: <strong>$ {newData.additionalprice}</strong>
                     </p>
                   </div>
                   <iframe
@@ -479,21 +481,20 @@ function NewPurchaseOrder() {
                     label="Email *"
                   />
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="paymentamount"
-                        value={newData.paymentamount}
+                        value={`$ ${newData.paymentamount}`}
                         onChange={handleChange}
                         label="Amount *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="paymenttotalamount"
-                        value={newData.paymenttotalamount}
-                        onChange={handleChange}
+                        value={`$ ${newData.paymenttotalamount}`}
                         label="Total Amount *"
                         readOnly="readOnly"
                       />
@@ -555,18 +556,18 @@ function NewPurchaseOrder() {
 
                 <div className="buttons-area">
                   <Row>
-                    <Col>
+                    <Col lg={4}>
                       <Button variant="warning" type="button">
                         save for later
                       </Button>
                     </Col>
-                    <Col>
+                    <Col lg={4}>
                       <Button variant="info" type="submit">
                         send payment link
                       </Button>
                     </Col>
-                    <Col>
-                      <Button variant="danger" type="button">
+                    <Col lg={4}>
+                      <Button variant="danger" type="button" onClick={resetForm}>
                         reset
                       </Button>
                     </Col>

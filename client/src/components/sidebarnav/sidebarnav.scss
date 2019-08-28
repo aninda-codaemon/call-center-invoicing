@@ -34,6 +34,10 @@ ul.sidebarnav {
         padding: 15px;
       }
 
+      @include mobile-small {
+        padding: 10px 15px;
+      }
+
       &.active {
         background-color: $theme-red;
       }

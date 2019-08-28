@@ -76,7 +76,7 @@ ul {
 
   label {
     color: #888888;
-    font-size: 18px;
+    @include font-size(18);
     font-weight: normal;
     text-transform: capitalize;
     position: absolute;
@@ -88,6 +88,7 @@ ul {
 
     @include mobile-small {
       top: 12px;
+      @include font-size(16);
     }
   }
 }

@@ -29,6 +29,7 @@ ul.sidebarnav {
       color: #ffffff;
       @include font-size(14);
       text-decoration: none;
+      display: flex;
 
       @include tab {
         padding: 15px;

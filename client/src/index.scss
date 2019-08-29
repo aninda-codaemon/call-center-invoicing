@@ -231,6 +231,9 @@ ul {
   input {
     max-width: 300px;
     margin-right: 10px;
+    @include mobile {
+      max-width: 100%;
+    }
   }
 
   .btn {

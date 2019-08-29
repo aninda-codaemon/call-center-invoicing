@@ -208,7 +208,7 @@ function NewPurchaseOrder() {
     for (let key in obj) {
       total += parseFloat(obj[key]);
     }
-    console.log(total)
+    console.log(total);
     return total;
   };
 
@@ -228,7 +228,7 @@ function NewPurchaseOrder() {
 
   useEffect(() => {
     bothWheelsNotTurn();
-  },[cost]);
+  }, [cost]);
 
   return (
     <React.Fragment>
@@ -346,15 +346,18 @@ function NewPurchaseOrder() {
                         options={service_type}
                       />
                     </Col>
-                    <Col xl={6} hidden={!serviceInfo.towing}>
-                      <SelectOption
-                        label="Problem Type *"
-                        name="problemtype"
-                        value={newData.problemtype}
-                        onChange={handleChange}
-                        options={problem_type}
-                      />
-                    </Col>
+                    
+                    {serviceInfo.towing && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Problem Type *"
+                          name="problemtype"
+                          value={newData.problemtype}
+                          onChange={handleChange}
+                          options={problem_type}
+                        />
+                      </Col>
+                    )}
 
                     <Col xl={6}>
                       <SelectOption
@@ -376,55 +379,65 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    <Col xl={6} hidden={!serviceInfo.towing}>
-                      <SelectOption
-                        label="Will the vehicle go in neutral? *"
-                        name="neutral"
-                        value={newData.neutral}
-                        onChange={handleChange}
-                        options={["yes", "No"]}
-                      />
-                    </Col>
+                    {serviceInfo.towing && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Will the vehicle go in neutral? *"
+                          name="neutral"
+                          value={newData.neutral}
+                          onChange={handleChange}
+                          options={["yes", "No"]}
+                        />
+                      </Col>
+                    )}
 
-                    <Col xl={6} hidden={!serviceInfo.towing}>
-                      <SelectOption
-                        label="Do all four wheels on the vehicle turn? *"
-                        name="fourwheelsturn"
-                        value={newData.fourwheelsturn}
-                        onChange={handleChange}
-                        options={["yes", "No"]}
-                      />
-                    </Col>
+                    {serviceInfo.towing && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Do all four wheels on the vehicle turn? *"
+                          name="fourwheelsturn"
+                          value={newData.fourwheelsturn}
+                          onChange={handleChange}
+                          options={["yes", "No"]}
+                        />
+                      </Col>
+                    )}
 
-                    <Col xl={6} hidden={!serviceInfo.fourwheelsturn}>
-                      <SelectOption
-                        label="Will both front wheels turn? *"
-                        name="frontwheelsturn"
-                        value={newData.frontwheelsturn}
-                        onChange={handleChange}
-                        options={["yes", "No"]}
-                      />
-                    </Col>
+                    {serviceInfo.fourwheelsturn && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Will both front wheels turn? *"
+                          name="frontwheelsturn"
+                          value={newData.frontwheelsturn}
+                          onChange={handleChange}
+                          options={["yes", "No"]}
+                        />
+                      </Col>
+                    )}
 
-                    <Col xl={6} hidden={!serviceInfo.fourwheelsturn}>
-                      <SelectOption
-                        label="Will both back wheels turn? *"
-                        name="backwheelsturn"
-                        value={newData.backwheelsturn}
-                        onChange={handleChange}
-                        options={["yes", "No"]}
-                      />
-                    </Col>
+                    {serviceInfo.fourwheelsturn && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Will both back wheels turn? *"
+                          name="backwheelsturn"
+                          value={newData.backwheelsturn}
+                          onChange={handleChange}
+                          options={["yes", "No"]}
+                        />
+                      </Col>
+                    )}
 
-                    <Col xl={6} hidden={!serviceInfo.fuelfluids}>
-                      <SelectOption
-                        label="Do you need regular gas or diesel? *"
-                        name="fueltype"
-                        value={newData.fueltype}
-                        onChange={handleChange}
-                        options={["regular gas", "diesel gas"]}
-                      />
-                    </Col>
+                    {serviceInfo.fuelfluids && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Do you need regular gas or diesel? *"
+                          name="fueltype"
+                          value={newData.fueltype}
+                          onChange={handleChange}
+                          options={["regular gas", "diesel gas"]}
+                        />
+                      </Col>
+                    )}
                   </Row>
                 </div>
                 <div className="info-area">

@@ -7,6 +7,7 @@ import NewPurchaseOrder from "./pages/new-purchase-order/new-purchase-order";
 import RefundRequest from "./pages/refund-request/refund-request";
 import CallAgents from "./pages/call-agents/call-agents";
 import CreateNewAgent from "./pages/create-new-agent/create-new-agent";
+import InvoiceOverview from "./pages/invoice-overview/invoice-overview";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/refund-request" component={RefundRequest} />
       <Route path="/call-agents" component={CallAgents} />
       <Route path="/create-new-agent" component={CreateNewAgent} />
+      <Route path="/invoice-overview" component={InvoiceOverview} />
     </Router>
   );
 }

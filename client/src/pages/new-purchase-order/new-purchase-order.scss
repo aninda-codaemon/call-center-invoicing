@@ -2,11 +2,24 @@
 @import "../../assets/sass/variables";
 
 .invoice-wrap {
-  padding: 50px 60px;
+  padding: 50px 20px 50px 5px;
+
+  @include mobile {
+    padding: 20px 0px 20px 15px;
+  }
 
   .invoice-title {
     max-width: 40%;
     margin: 0 auto 40px auto;
+
+    @include mobile {
+      max-width: 50%;
+      margin-bottom: 30px;
+    }
+
+    @include mobile-small {
+      max-width: 100%;
+    }
 
     .float-input {
       background-color: rgba(221, 45, 62, 0.2);
@@ -23,6 +36,15 @@
     padding-bottom: 30px;
     margin-bottom: 50px;
 
+    @include tab {
+      margin-bottom: 40px;
+    }
+
+    @include mobile {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+    }
+
     h2 {
       text-transform: capitalize;
       color: $text-color;
@@ -30,6 +52,14 @@
       font-weight: 400;
       text-align: center;
       margin-bottom: 28px;
+
+      @include mobile {
+        margin-bottom: 20px;
+      }
+      
+      @include mobile-small {
+        @include font-size(23);
+      }
     }
 
     h4 {
@@ -39,6 +69,14 @@
       text-align: center;
       margin-top: -20px;
       margin-bottom: 30px;
+
+      @include mobile {
+        margin-bottom: 20px;
+      }
+
+      @include mobile-small {
+        @include font-size(13);
+      }
     }
 
     .calculate-cost {
@@ -55,11 +93,19 @@
       text-align: center;
       margin-top: 40px;
 
+      @include mobile-small {
+        margin-top:20px;
+      }
+
       h3 {
         font-weight: 400;
         color: $text-color;
         @include font-size(30);
         margin-bottom: 10px;
+
+        @include mobile-small {
+          @include font-size(23);
+        }
       }
 
       p {
@@ -74,6 +120,11 @@
       width: 100%;
       height: 350px;
       margin-top: 30px;
+
+      @include mobile-small {
+        margin-top:10px;
+      }
+
     }
 
     .send-payment-link {
@@ -120,7 +171,7 @@
       box-shadow: none;
     }
 
-    .custom-control-input:checked~.custom-control-label{
+    .custom-control-input:checked~.custom-control-label {
       background-color: #f5e4e5;
       border-color: $theme-red;
     }
@@ -131,6 +182,20 @@
       font-weight: 700;
       @include font-size(15);
       text-transform: uppercase;
+
+      @include tab {
+        margin-bottom: 0.5rem;
+      }
     }
   }
+}
+
+.close-icon {
+  color: $theme-red;
+  position: absolute;
+  right: 5px;
+  top: 4px;
+  @include font-size(20);
+  cursor: pointer;
+  z-index: 100;
 }

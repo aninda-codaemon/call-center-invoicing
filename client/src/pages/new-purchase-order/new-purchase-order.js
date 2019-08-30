@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./new-purchase-order.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
-import { Row, Col, Button, Container } from "react-bootstrap";
+import { Row, Col, Button, Container, Modal } from "react-bootstrap";
 import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
+import {
+  vehicle_make,
+  vehicle_color,
+  service_type,
+  problem_type,
+  pickup_location
+} from "../../assets/data/staticdata";
 
 function NewPurchaseOrder() {
   const initialData = {
@@ -22,6 +29,10 @@ function NewPurchaseOrder() {
     anyonewithvehicle: "",
     keysforvehicle: "",
     fourwheelsturn: "",
+    frontwheelsturn: "",
+    backwheelsturn: "",
+    neutral: "",
+    fueltype: "",
     pickuplocation: "",
     pickupnotes: "",
     origin: "",
@@ -35,10 +46,79 @@ function NewPurchaseOrder() {
     sendpaymentto: "phone"
   };
 
+  // form state
   const [newData, setNewData] = useState(initialData);
 
+  // form handler
   const handleChange = e => {
-    console.log({ [e.target.name]: e.target.value });
+    switch (e.target.name) {
+      case "anyonewithvehicle":
+        e.target.value === "No"
+          ? handleShow(
+              "Service will not be performed on unattended vehicles",
+              "noOne"
+            )
+          : handleClose();
+        break;
+
+      case "servicetype":
+        if (e.target.value === "Fuel / Fluids") {
+          fuelfluidsToggle(true);
+        } else if (e.target.value === "Towing") {
+          towingToggle(true);
+        } else {
+          setServiceInfo(initialServiceData);
+        }
+        break;
+
+      case "fueltype":
+        e.target.value === "Diesel Gas"
+          ? handleShow(
+              "Service will not be performed, we cannot service diesel engines",
+              "fuel"
+            )
+          : handleClose();
+        break;
+
+      case "fourwheelsturn":
+        e.target.value === "No"
+          ? fourwheelsToggle(true)
+          : fourwheelsToggle(false);
+        break;
+
+      case "pickuplocation":
+        e.target.value === "Highway"
+          ? setCost({ ...cost, highway: 18 })
+          : setCost({ ...cost, highway: 0 });
+        break;
+
+      case "keysforvehicle":
+        e.target.value === "No"
+          ? setCost({ ...cost, nokeys: 23 })
+          : setCost({ ...cost, nokeys: 0 });
+        break;
+
+      case "neutral":
+        e.target.value === "No"
+          ? setCost({ ...cost, noneutral: 17 })
+          : setCost({ ...cost, noneutral: 0 });
+        break;
+
+      case "frontwheelsturn":
+        e.target.value === "No"
+          ? setCost({ ...cost, nofrontwheelsturn: 26 })
+          : setCost({ ...cost, nofrontwheelsturn: 0 });
+        break;
+
+      case "backwheelsturn":
+        e.target.value === "No"
+          ? setCost({ ...cost, nobackwheelsturn: 29 })
+          : setCost({ ...cost, nobackwheelsturn: 0 });
+        break;
+
+      default:
+    }
+
     setNewData({
       ...newData,
       [e.target.name]: e.target.value
@@ -48,18 +128,117 @@ function NewPurchaseOrder() {
   const handleSubmit = e => {
     e.preventDefault();
     console.log(newData);
-    setNewData(initialData);
+    setNewData({ ...initialData });
   };
+
+  // modal state
+  const initModalData = {
+    isShown: false,
+    text: "",
+    id: ""
+  };
+
+  const [modal, setModal] = useState(initModalData);
+
+  // modal handler
+  const handleClose = () => {
+    if (modal.id === "fuel") {
+      setModal(initModalData);
+      towingModalShow();
+    } else {
+      setModal(initModalData);
+    }
+  };
+  const handleShow = (text, id) =>
+    setModal({ ...modal, isShown: true, text, id });
+
+  //modal for convert to towing
+  const [towingModal, setTowingModal] = useState(false);
+  const towingModalClose = () => setTowingModal(false);
+  const towingModalShow = () => setTowingModal(true);
+  const covertToTowing = () => {
+    towingModalClose();
+    setNewData({ ...newData, servicetype: "Towing" });
+    towingToggle(true);
+  };
+
+  // serviceinfo state
+  const initialServiceData = {
+    fuelfluids: false,
+    towing: false,
+    fourwheelsturn: false
+  };
+
+  const [serviceInfo, setServiceInfo] = useState(initialServiceData);
+
+  const fuelfluidsToggle = value => {
+    setServiceInfo({
+      ...initialServiceData,
+      fuelfluids: value
+    });
+  };
+
+  const towingToggle = value => {
+    setServiceInfo({ ...serviceInfo, towing: value, fuelfluids: false });
+  };
+
+  const fourwheelsToggle = value => {
+    setServiceInfo({ ...serviceInfo, fourwheelsturn: value });
+  };
+
+  //reset form data to initial state
+  const resetForm = () => {
+    setNewData({ ...initialData });
+  };
+
+  //cost calculation
+  const initialCost = {
+    highway: 0,
+    nokeys: 0,
+    noneutral: 0,
+    nofrontwheelsturn: 0,
+    nobackwheelsturn: 0,
+    nobothwheelsturn: 0
+  };
+
+  const [cost, setCost] = useState(initialCost);
+
+  const totalCost = obj => {
+    let total = 0;
+    for (let key in obj) {
+      total += parseFloat(obj[key]);
+    }
+    console.log(total);
+    return total;
+  };
+
+  const bothWheelsNotTurn = () => {
+    if (cost.nofrontwheelsturn > 0 && cost.nobackwheelsturn > 0) {
+      setCost({
+        ...cost,
+        nofrontwheelsturn: 0,
+        nobackwheelsturn: 0,
+        nobothwheelsturn: 39
+      });
+      totalCost(cost);
+    } else {
+      totalCost(cost);
+    }
+  };
+
+  useEffect(() => {
+    bothWheelsNotTurn();
+  }, [cost]);
 
   return (
     <React.Fragment>
       <Header />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
-          <Col md={3}>
+          <Col md={3} className="align-self-stretch">
             <Sidebar />
           </Col>
-          <Col md={9}>
+          <Col md={9} className="right-part">
             <InnerBanner />
             <section className="invoice-wrap">
               <form onSubmit={handleSubmit}>
@@ -75,7 +254,7 @@ function NewPurchaseOrder() {
                 <div className="info-area">
                   <h2>Caller Info</h2>
                   <Row>
-                    <Col>
+                    <Col sm={6} lg={4}>
                       <Input
                         type="text"
                         name="fname"
@@ -85,7 +264,7 @@ function NewPurchaseOrder() {
                         label="First Name *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6} lg={4}>
                       <Input
                         type="text"
                         name="lname"
@@ -95,7 +274,7 @@ function NewPurchaseOrder() {
                         label="Last Name *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6} lg={4}>
                       <Input
                         type="tel"
                         name="phone"
@@ -110,7 +289,7 @@ function NewPurchaseOrder() {
                 <div className="info-area">
                   <h2>Vehicle Info</h2>
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="year"
@@ -120,33 +299,18 @@ function NewPurchaseOrder() {
                         label="Year *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <SelectOption
                         label="Make *"
                         name="make"
                         value={newData.make}
                         onChange={handleChange}
-                        options={[
-                          "AM General",
-                          "AMC",
-                          "Acura",
-                          "Alfa Romeo",
-                          "Aston Martin",
-                          "Audi",
-                          "BACKDRAFT",
-                          "BMW",
-                          "Bentley",
-                          "Buick",
-                          "Cadillac",
-                          "Chevrolet",
-                          "Chrysler",
-                          "Daewoo"
-                        ]}
+                        options={vehicle_make}
                       />
                     </Col>
                   </Row>
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="model"
@@ -156,28 +320,13 @@ function NewPurchaseOrder() {
                         label="Model *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <SelectOption
                         label="Color *"
                         name="color"
                         value={newData.color}
                         onChange={handleChange}
-                        options={[
-                          "Beige",
-                          "Black",
-                          "Blue",
-                          "Brown",
-                          "Burgundy",
-                          "Champagne",
-                          "Gold",
-                          "Gray",
-                          "Gray Violet",
-                          "Green",
-                          "Light Blue",
-                          "Light Brown",
-                          "Light Gray",
-                          "Light Green"
-                        ]}
+                        options={vehicle_color}
                       />
                     </Col>
                   </Row>
@@ -188,53 +337,29 @@ function NewPurchaseOrder() {
                     Pricing may increase due to additional equipment needs
                   </h4>
                   <Row>
-                    <Col>
+                    <Col xl={6}>
                       <SelectOption
                         label="Service Type *"
                         name="servicetype"
                         value={newData.servicetype}
                         onChange={handleChange}
-                        options={[
-                          "Fuel / Fluids",
-                          "Jump Start",
-                          "Lockout",
-                          "Towing",
-                          "Tire Change"
-                        ]}
+                        options={service_type}
                       />
                     </Col>
-                    <Col>
-                      <SelectOption
-                        label="Problem Type *"
-                        name="problemtype"
-                        value={newData.problemtype}
-                        onChange={handleChange}
-                        options={[
-                          "Won't Start",
-                          "Belt Broken",
-                          "Brakes",
-                          "Engine Fire",
-                          "Engine Problem",
-                          "Fuel System Problem",
-                          "Head / Brake lights",
-                          "Ignition Problems",
-                          "Items Hanging",
-                          "Key Stuck In Ignition",
-                          "Multiple Tire / No Spare",
-                          "Oil / Fuel Leak",
-                          "Overheating",
-                          "Stuck in Park / Gear",
-                          "Tire Pressure Low",
-                          "Transmission Problem",
-                          "Vandalism",
-                          "Windshield (Cracked / Broken)",
-                          "Other"
-                        ]}
-                      />
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
+                    
+                    {serviceInfo.towing && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Problem Type *"
+                          name="problemtype"
+                          value={newData.problemtype}
+                          onChange={handleChange}
+                          options={problem_type}
+                        />
+                      </Col>
+                    )}
+
+                    <Col xl={6}>
                       <SelectOption
                         label="Will anyone be with the vehicle? *"
                         name="anyonewithvehicle"
@@ -243,7 +368,8 @@ function NewPurchaseOrder() {
                         options={["yes", "No"]}
                       />
                     </Col>
-                    <Col>
+
+                    <Col xl={6}>
                       <SelectOption
                         label="Do you have keys for the vehicle? *"
                         name="keysforvehicle"
@@ -252,32 +378,81 @@ function NewPurchaseOrder() {
                         options={["yes", "No"]}
                       />
                     </Col>
-                  </Row>
-                  <Row>
-                    <Col xs={12} sm={6}>
-                      <SelectOption
-                        label="Do all four wheels on the vehicle turn? *"
-                        name="fourwheelsturn"
-                        value={newData.fourwheelsturn}
-                        onChange={handleChange}
-                        options={["yes", "No"]}
-                      />
-                    </Col>
+
+                    {serviceInfo.towing && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Will the vehicle go in neutral? *"
+                          name="neutral"
+                          value={newData.neutral}
+                          onChange={handleChange}
+                          options={["yes", "No"]}
+                        />
+                      </Col>
+                    )}
+
+                    {serviceInfo.towing && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Do all four wheels on the vehicle turn? *"
+                          name="fourwheelsturn"
+                          value={newData.fourwheelsturn}
+                          onChange={handleChange}
+                          options={["yes", "No"]}
+                        />
+                      </Col>
+                    )}
+
+                    {serviceInfo.fourwheelsturn && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Will both front wheels turn? *"
+                          name="frontwheelsturn"
+                          value={newData.frontwheelsturn}
+                          onChange={handleChange}
+                          options={["yes", "No"]}
+                        />
+                      </Col>
+                    )}
+
+                    {serviceInfo.fourwheelsturn && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Will both back wheels turn? *"
+                          name="backwheelsturn"
+                          value={newData.backwheelsturn}
+                          onChange={handleChange}
+                          options={["yes", "No"]}
+                        />
+                      </Col>
+                    )}
+
+                    {serviceInfo.fuelfluids && (
+                      <Col xl={6}>
+                        <SelectOption
+                          label="Do you need regular gas or diesel? *"
+                          name="fueltype"
+                          value={newData.fueltype}
+                          onChange={handleChange}
+                          options={["regular gas", "diesel gas"]}
+                        />
+                      </Col>
+                    )}
                   </Row>
                 </div>
                 <div className="info-area">
                   <h2>Pickup-Drop Location</h2>
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <SelectOption
                         label="Pickup Location *"
                         name="pickuplocation"
                         value={newData.pickuplocation}
                         onChange={handleChange}
-                        options={["House", "Business", "Highway", "Apartment"]}
+                        options={pickup_location}
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="pickupnotes"
@@ -288,7 +463,7 @@ function NewPurchaseOrder() {
                     </Col>
                   </Row>
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="origin"
@@ -297,7 +472,7 @@ function NewPurchaseOrder() {
                         label="Origin"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="destination"
@@ -341,21 +516,20 @@ function NewPurchaseOrder() {
                     label="Email *"
                   />
                   <Row>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="paymentamount"
-                        value={newData.paymentamount}
+                        value={`$ ${newData.paymentamount}`}
                         onChange={handleChange}
                         label="Amount *"
                       />
                     </Col>
-                    <Col>
+                    <Col sm={6}>
                       <Input
                         type="text"
                         name="paymenttotalamount"
-                        value={newData.paymenttotalamount}
-                        onChange={handleChange}
+                        value={`$ ${newData.paymenttotalamount}`}
                         label="Total Amount *"
                         readOnly="readOnly"
                       />
@@ -374,16 +548,42 @@ function NewPurchaseOrder() {
                     <p>Send payment link to</p>
                     <Row>
                       <Col>
-                      <div className="custom-control custom-radio">
-                        <input type="radio" className="custom-control-input" id="paymenttophone" name="sendpaymentto" onChange={handleChange} value="phone" checked = {newData.sendpaymentto === "phone"}/>
-                        <label className="custom-control-label" htmlFor="paymenttophone">Phone</label>
-                      </div> 
+                        <div className="custom-control custom-radio">
+                          <input
+                            type="radio"
+                            className="custom-control-input"
+                            id="paymenttophone"
+                            name="sendpaymentto"
+                            onChange={handleChange}
+                            value="phone"
+                            checked={newData.sendpaymentto === "phone"}
+                          />
+                          <label
+                            className="custom-control-label"
+                            htmlFor="paymenttophone"
+                          >
+                            Phone
+                          </label>
+                        </div>
                       </Col>
                       <Col>
-                      <div className="custom-control custom-radio">
-                        <input type="radio" className="custom-control-input" id="paymenttoemail" name="sendpaymentto" onChange={handleChange} value="email" checked = {newData.sendpaymentto === "email"}/>
-                        <label className="custom-control-label" htmlFor="paymenttoemail">Email</label>
-                      </div> 
+                        <div className="custom-control custom-radio">
+                          <input
+                            type="radio"
+                            className="custom-control-input"
+                            id="paymenttoemail"
+                            name="sendpaymentto"
+                            onChange={handleChange}
+                            value="email"
+                            checked={newData.sendpaymentto === "email"}
+                          />
+                          <label
+                            className="custom-control-label"
+                            htmlFor="paymenttoemail"
+                          >
+                            Email
+                          </label>
+                        </div>
                       </Col>
                     </Row>
                   </div>
@@ -391,18 +591,22 @@ function NewPurchaseOrder() {
 
                 <div className="buttons-area">
                   <Row>
-                    <Col>
+                    <Col lg={4}>
                       <Button variant="warning" type="button">
                         save for later
                       </Button>
                     </Col>
-                    <Col>
+                    <Col lg={4}>
                       <Button variant="info" type="submit">
                         send payment link
                       </Button>
                     </Col>
-                    <Col>
-                      <Button variant="danger" type="button">
+                    <Col lg={4}>
+                      <Button
+                        variant="danger"
+                        type="button"
+                        onClick={resetForm}
+                      >
                         reset
                       </Button>
                     </Col>
@@ -413,6 +617,38 @@ function NewPurchaseOrder() {
           </Col>
         </Row>
       </Container>
+
+      {/* alert for no one with the vehicle and diesel gas */}
+
+      <Modal show={modal.isShown} onHide={handleClose} className="error-bg">
+        <i
+          className="fa fa-times-circle close-icon"
+          aria-hidden="true"
+          onClick={handleClose}
+        ></i>
+        <Modal.Body className="text-center">{modal.text}</Modal.Body>
+      </Modal>
+
+      {/* alert for convert the service type into Towing */}
+
+      <Modal show={towingModal} onHide={handleClose} className="error-bg">
+        <i
+          className="fa fa-times-circle close-icon"
+          aria-hidden="true"
+          onClick={handleClose}
+        ></i>
+        <Modal.Body className="text-center">
+          Press OK button to convert the service type into Towing!
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" size="sm" onClick={towingModalClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" onClick={covertToTowing}>
+            Ok
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </React.Fragment>
   );
 }

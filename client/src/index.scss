@@ -76,7 +76,7 @@ ul {
 
   label {
     color: #888888;
-    font-size: 18px;
+    @include font-size(18);
     font-weight: normal;
     text-transform: capitalize;
     position: absolute;
@@ -88,6 +88,7 @@ ul {
 
     @include mobile-small {
       top: 12px;
+      @include font-size(16);
     }
   }
 }
@@ -117,8 +118,6 @@ ul {
     color: #fff;
   }
 }
-
-
 
 .forgot-password {
   text-align: center;
@@ -216,8 +215,8 @@ ul {
   border: 1px solid #b7b7b7;
   width: 100%;
   resize: none;
-  
-  &:focus{
+
+  &:focus {
     outline: none;
   }
 }
@@ -232,6 +231,9 @@ ul {
   input {
     max-width: 300px;
     margin-right: 10px;
+    @include mobile {
+      max-width: 100%;
+    }
   }
 
   .btn {
@@ -279,5 +281,20 @@ ul {
       flex: 0 0 100%;
       max-width: 100%;
     }
+  }
+}
+
+.error-bg {
+  .modal-content {
+    background-color: #f5e4e5;
+    border-color: $theme-red;
+  }
+}
+
+.right-part {
+  min-height: calc(100vh - 60px);
+
+  @include mobile {
+    min-height: calc(100vh - 40px);
   }
 }

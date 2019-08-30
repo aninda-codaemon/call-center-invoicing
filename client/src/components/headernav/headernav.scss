@@ -26,6 +26,7 @@ ul.headernav {
       color: $theme-red;
       font-weight: 300;
       @include font-size(20);
+      cursor: pointer;
 
       @include mobile-small {
         @include font-size(16);

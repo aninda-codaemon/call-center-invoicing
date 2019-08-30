@@ -346,7 +346,7 @@ function NewPurchaseOrder() {
                         options={service_type}
                       />
                     </Col>
-                    
+
                     {serviceInfo.towing && (
                       <Col xl={6}>
                         <SelectOption
@@ -537,6 +537,7 @@ function NewPurchaseOrder() {
                   </Row>
                   <div className="form-group">
                     <textarea
+                      rows="4"
                       name="paymentnotes"
                       className="textarea"
                       value={newData.paymentnotes}

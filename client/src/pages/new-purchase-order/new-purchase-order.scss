@@ -131,6 +131,10 @@
       max-width: 362px;
       margin: 0 auto;
 
+      &.invoice{
+        margin-top: 15px;
+      }
+
       p {
         color: #888888;
         @include font-size(14);

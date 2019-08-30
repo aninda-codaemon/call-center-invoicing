@@ -5,6 +5,7 @@ import Sidebar from "../../components/sidebar/sidebar";
 import Pagination from "../../components/pagination/pagination";
 import SortingIcon from "../../components/sortingicon/sortingicon";
 import { Row, Col, Button, Container } from "react-bootstrap";
+import { Link } from 'react-router-dom';
 
 function AllPurchaseOrders() {
   return (
@@ -83,7 +84,7 @@ function AllPurchaseOrders() {
                       </Button>
                     </div>
                     <div className="edit">
-                      <i className="fa fa-pencil" aria-hidden="true" />
+                      <Link to="/invoice-overview"><i className="fa fa-pencil" aria-hidden="true" /></Link>
                     </div>
                   </div>
                   <div className="table-body">

@@ -6,7 +6,7 @@ import SortingIcon from "../../components/sortingicon/sortingicon";
 import { Row, Col, Button, Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-function CallAgents() {
+function Users() {
   return (
     <React.Fragment>
       <Header />
@@ -36,9 +36,9 @@ function CallAgents() {
                     </form>
                   </Col>
                   <Col className="text-right">
-                    <Link to="/create-new-agent">
-                      <Button variant="primary" className="create-new-agent">
-                        Create New Agent
+                    <Link to="/create-new-user">
+                      <Button variant="primary" className="create-new-user">
+                        Create New User
                       </Button>
                     </Link>
                   </Col>
@@ -75,7 +75,7 @@ function CallAgents() {
                     <div className="phone">7363524284</div>
                     <div className="dispatching-system">
                       <Button variant="danger" size="sm">
-                        Delete
+                        Block
                       </Button>
                     </div>
                     <div className="edit">
@@ -95,7 +95,7 @@ function CallAgents() {
                     <div className="phone">7363524284</div>
                     <div className="dispatching-system">
                       <Button variant="danger" size="sm">
-                        Delete
+                        Block
                       </Button>
                     </div>
                     <div className="edit">
@@ -113,4 +113,4 @@ function CallAgents() {
   );
 }
 
-export default CallAgents;
+export default Users;

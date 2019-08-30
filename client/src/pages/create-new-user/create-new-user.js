@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import "./create-new-agent.scss";
+import "./create-new-user.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { Row, Col, Button, Container } from "react-bootstrap";
 import Input from "../../components/input/input";
 
-function CreateNewAgent() {
+function CreateNewUser() {
   const initialData = {
     fname: "",
     lname: "",
@@ -79,8 +79,7 @@ function CreateNewAgent() {
                       name="phone"
                       value={newAgent.phone}
                       onChange={handleChange}
-                      required={true}
-                      label="Phone *"
+                      label="Phone"
                     />
                   </Col>
                   <Col md={6}>
@@ -118,4 +117,4 @@ function CreateNewAgent() {
   );
 }
 
-export default CreateNewAgent;
+export default CreateNewUser;

@@ -4,7 +4,7 @@ import logo from "../../assets/img/logo.png";
 import { Button } from "react-bootstrap";
 import Input from "../../components/input/input";
 
-function Login() {
+function Login({history}) {
   const initialLoginData = {
     email: "",
     password: ""
@@ -52,7 +52,7 @@ function Login() {
                 label="Password*"
               />
             </fieldset>
-            <Button variant="danger" type="submit">
+            <Button variant="danger" type="button" onClick={() => history.push("/all-purchase-orders")}>
               SIGN IN
             </Button>
           </form>

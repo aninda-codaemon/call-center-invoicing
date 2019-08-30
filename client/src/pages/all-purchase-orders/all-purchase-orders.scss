@@ -24,7 +24,7 @@
     height: auto;
   }
 
-  .btn-primary.create-new-agent {
+  .btn-primary.create-new-user {
     background-color: #157ffb;
     font-weight: bold;
     @include font-size(14);
@@ -85,6 +85,9 @@
 
         &.btn-danger {
           border-radius: auto;
+          &:hover{
+            background-color: $theme-red-hover;
+          }
         }
       }
 
@@ -168,9 +171,20 @@
 
     .edit {
       width: 30px;
-      text-align: center;
       color: #888888;
       @include font-size(20);
+
+      a{
+        color: #888888;
+        text-align: center;
+        width: 30px;
+        transition: all 0.2s;
+        display: block;
+
+        &:hover{
+          color: $theme-red;
+        }
+      }
 
       i {
         cursor: pointer;

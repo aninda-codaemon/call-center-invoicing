@@ -23,8 +23,8 @@ function SidebarNav() {
         </NavLink>
       </li>
       <li>
-      <NavLink activeClassName="active" to="/call-agents">
-        <i className="fa fa-phone" aria-hidden="true" /> Call Agents
+      <NavLink activeClassName="active" to="/users">
+        <i className="fa fa-phone" aria-hidden="true" /> Users
         </NavLink>
       </li>
     </ul>

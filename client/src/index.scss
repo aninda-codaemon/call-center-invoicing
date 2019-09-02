@@ -45,7 +45,7 @@ ul {
     }
 
     &[filled="true"] {
-      & ~ label {
+      &~label {
         color: $theme-red;
         top: 6px;
         @include font-size(13);
@@ -61,7 +61,7 @@ ul {
       outline: none;
       border-color: $theme-red;
 
-      & ~ label {
+      &~label {
         color: $theme-red;
         top: 6px;
         @include font-size(13);
@@ -106,6 +106,7 @@ ul {
 
   textarea {
     resize: none;
+
     @include mobile-small {
       @include font-size(16);
     }
@@ -140,19 +141,23 @@ ul {
 
 .forgot-password {
   text-align: center;
-  @include font-size(14);
-  text-decoration: underline;
-  color: #fff;
   margin-top: 20px;
-  cursor: pointer;
 
-  @include mobile-small {
-    margin-top: 15px;
+  a {
+    @include font-size(14);
+    text-decoration: underline;
+    color: #fff;
+    cursor: pointer;
+
+    @include mobile-small {
+      margin-top: 15px;
+    }
+
+    &:hover {
+      text-decoration: none;
+    }
   }
 
-  &:hover {
-    text-decoration: none;
-  }
 }
 
 .form-group {
@@ -216,12 +221,12 @@ ul {
     height: 0;
     width: 0;
 
-    &:checked ~ .checkmark {
+    &:checked~.checkmark {
       background-color: $theme-red;
       border: 1px solid $theme-red;
     }
 
-    &:checked ~ .checkmark:after {
+    &:checked~.checkmark:after {
       display: block;
     }
   }
@@ -250,6 +255,7 @@ ul {
   input {
     max-width: 300px;
     margin-right: 10px;
+
     @include mobile {
       max-width: 100%;
     }
@@ -263,7 +269,7 @@ ul {
 }
 
 .main-content {
-  & > .col-md-3 {
+  &>.col-md-3 {
     flex: 0 0 20%;
     max-width: 20%;
 
@@ -282,7 +288,7 @@ ul {
     }
   }
 
-  & > .col-md-9 {
+  &>.col-md-9 {
     flex: 0 0 80%;
     max-width: 80%;
 
@@ -316,4 +322,11 @@ ul {
   @include mobile {
     min-height: calc(100vh - 40px);
   }
+}
+
+.error-text {
+  color: $theme-red;
+  @include font-size(14);
+  margin-top: -10px;
+  margin-bottom: 10px;
 }

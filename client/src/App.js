@@ -8,11 +8,13 @@ import RefundRequest from "./pages/refund-request/refund-request";
 import Users from "./pages/users/users";
 import CreateNewUser from "./pages/create-new-user/create-new-user";
 import InvoiceOverview from "./pages/invoice-overview/invoice-overview";
+import ForgotPassword from "./pages/forgot-password/forgot-password";
 
 function App() {
   return (
     <Router>
       <Route path="/" exact component={Login} />
+      <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/all-purchase-orders" component={AllPurchaseOrders} />
       <Route path="/new-purchase-order" component={NewPurchaseOrder} />
       <Route path="/refund-request" component={RefundRequest} />

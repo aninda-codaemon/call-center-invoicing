@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
 const app = express();
 
@@ -10,7 +11,12 @@ dotenv.config();
 // Init body parsor
 app.use(express.json({ extended: true }));
 
-app.get('/', (req, res) => res.json({msg: 'Welcome to call center invoicing'}));
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+app.get('/', (req, res) => {
+  console.log('Server root!!');
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
 
 // Define Routes
 app.use('/api/auth', require('./routes/auth'));

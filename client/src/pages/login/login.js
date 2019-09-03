@@ -4,18 +4,18 @@ import "./login.scss";
 import logo from "../../assets/img/logo.png";
 import { Button } from "react-bootstrap";
 import Input from "../../components/input/input";
-import validate from "../../validation-rules/login-form-validation-rules";
-import useForm from "../../custom-hooks/form-validation";
+import { withFormik } from 'formik';
+import * as yup from 'yup';
 
-function Login() {
-  const { values, errors, handleChange, handleSubmit } = useForm(
-    login,
-    validate
-  );
-
-  function login() {
-    console.log(values);
-  }
+const LoginForm = (props) => {
+  const {
+    values,
+    touched,
+    errors,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+  } = props;
 
   return (
     <div className="login-wrap">
@@ -25,29 +25,27 @@ function Login() {
           <figcaption>Roadside Assistance</figcaption>
         </figure>
         <div className="login-form-area">
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit}>
             <fieldset>
               <Input
                 type="email"
                 name="email"
-                value={values.email || ""}
+                value={values.email}
                 onChange={handleChange}
-                required={true}
+                onBlur={handleBlur}
                 label="Email*"
               />
-              {errors.email && <p className="error-text">{errors.email}</p>}
+              {errors.email && touched.email && <p className="error-text">{errors.email}</p>}
 
               <Input
                 type="password"
                 name="password"
-                value={values.password || ""}
+                value={values.password}
                 onChange={handleChange}
-                required={true}
+                onBlur={handleBlur}
                 label="Password*"
               />
-              {errors.password && (
-                <p className="error-text">{errors.password}</p>
-              )}
+               {errors.password && touched.password && <p className="error-text">{errors.password}</p>}
             </fieldset>
             <Button variant="danger" type="submit">
               SIGN IN
@@ -61,5 +59,18 @@ function Login() {
     </div>
   );
 }
+
+const Login = withFormik({
+  mapPropsToValues: () => ({ email: '', password: '' }),
+  validationSchema:yup.object().shape({
+    email: yup.string().email('Invalid email').required('Email is required'),
+    password: yup.string().min(5, 'Password must be at least 5 characters long').required('Password is required')
+  }),
+  handleSubmit(values, {resetForm}){
+    console.log(values);
+    // props.history.push('/all-purchase-orders');
+    resetForm();
+  }
+})(LoginForm);
 
 export default Login;

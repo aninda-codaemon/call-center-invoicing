@@ -9,7 +9,7 @@ const useForm = (callback, validate) => {
     if (Object.keys(errors).length === 0 && isSubmitting) {
       callback();
     }
-  }, [errors]);
+  });
 
   const handleSubmit = event => {
     if (event) event.preventDefault();
@@ -17,17 +17,20 @@ const useForm = (callback, validate) => {
     setIsSubmitting(true);
   };
 
-  const handleChange = (event) => {
+  const handleChange = event => {
     event.persist();
-    setValues(values => ({ ...values, [event.target.name]: event.target.value }));
+    setValues(values => ({
+      ...values,
+      [event.target.name]: event.target.value
+    }));
   };
 
   return {
     handleChange,
     handleSubmit,
     values,
-    errors,
-  }
+    errors
+  };
 };
 
 export default useForm;

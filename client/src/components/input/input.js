@@ -5,7 +5,9 @@ function Input(props) {
   useEffect(() => {
     let inputField = document.getElementById(props.name);
     let inputValue = inputField.value.trim();
-    inputValue ? inputField.setAttribute("filled", "true") : inputField.setAttribute("filled", "false");
+    inputValue
+      ? inputField.setAttribute("filled", "true")
+      : inputField.setAttribute("filled", "false");
   });
   return (
     <div className="form-group">
@@ -17,7 +19,8 @@ function Input(props) {
         value={props.value}
         defaultValue={props.defaultValue}
         onChange={props.onChange}
-        readOnly = {props.readOnly}
+        onBlur={props.onBlur}
+        readOnly={props.readOnly}
         required={props.required}
       />
       <label htmlFor={props.name}>{props.label}</label>

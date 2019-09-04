@@ -47,9 +47,12 @@ const LoginForm = (props) => {
               />
                {errors.password && touched.password && <p className="error-text">{errors.password}</p>}
             </fieldset>
-            <Button variant="danger" type="submit">
+            <Link to="/all-purchase-orders">
+            <Button variant="danger" type="button">
               SIGN IN
             </Button>
+            </Link>
+            
           </form>
           <p className="forgot-password">
             <Link to="/forgot-password">Forgot Password?</Link>

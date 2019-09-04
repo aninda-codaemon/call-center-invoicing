@@ -9,6 +9,8 @@ import Users from "./pages/users/users";
 import CreateNewUser from "./pages/create-new-user/create-new-user";
 import InvoiceOverview from "./pages/invoice-overview/invoice-overview";
 import ForgotPassword from "./pages/forgot-password/forgot-password";
+import EditAccount from "./pages/edit-account/edit-account";
+import EditUser from "./pages/edit-user/edit-user";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
       <Route path="/new-purchase-order" component={NewPurchaseOrder} />
       <Route path="/refund-request" component={RefundRequest} />
       <Route path="/users" component={Users} />
+      <Route path="/edit-user" component={EditUser} />
+      <Route path="/edit-account" component={EditAccount} />
       <Route path="/create-new-user" component={CreateNewUser} />
       <Route path="/invoice-overview" component={InvoiceOverview} />
     </Router>

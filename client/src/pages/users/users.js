@@ -79,7 +79,7 @@ function Users() {
                       </Button>
                     </div>
                     <div className="edit">
-                      <i className="fa fa-pencil" aria-hidden="true" />
+                      <Link to="/edit-user"><i className="fa fa-pencil" aria-hidden="true" /></Link>
                     </div>
                   </div>
                   <div className="table-body">

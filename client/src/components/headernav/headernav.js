@@ -1,6 +1,7 @@
 import React from "react";
 import { Dropdown } from "react-bootstrap";
 import "./headernav.scss";
+import { Link } from "react-router-dom";
 
 function HeaderNav() {
   return (
@@ -15,8 +16,12 @@ function HeaderNav() {
           </Dropdown.Toggle>
 
           <Dropdown.Menu>
-            <Dropdown.Item href="#/action-1">Edit Account</Dropdown.Item>
-            <Dropdown.Item href="#/action-2">Logout</Dropdown.Item>
+            <Dropdown.Item as={Link} to="/edit-account">
+              Edit Account
+            </Dropdown.Item>
+            <Dropdown.Item as={Link} to="/">
+              Logout
+            </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </li>

@@ -3,18 +3,18 @@ import { Link } from "react-router-dom";
 import logo from "../../assets/img/logo.png";
 import { Button } from "react-bootstrap";
 import Input from "../../components/input/input";
-import validate from "../../validation-rules/login-form-validation-rules";
-import useForm from "../../custom-hooks/form-validation";
+import { withFormik } from 'formik';
+import * as yup from 'yup';
 
-function ForgotPassword() {
-  const { values, errors, handleChange, handleSubmit } = useForm(
-    forgotPassword,
-    validate
-  );
-
-  function forgotPassword() {
-    console.log("No errors, submit callback called!");
-  }
+const ForgotPasswordForm = (props) => {
+  const {
+    values,
+    touched,
+    errors,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+  } = props;
 
   return (
     <div className="login-wrap">
@@ -24,17 +24,17 @@ function ForgotPassword() {
           <figcaption>Roadside Assistance</figcaption>
         </figure>
         <div className="login-form-area">
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit}>
             <fieldset>
               <Input
                 type="email"
                 name="email"
-                value={values.email || ""}
+                value={values.email}
                 onChange={handleChange}
-                required={true}
+                onBlur={handleBlur}
                 label="Email*"
               />
-              {errors.email && <p className="error-text">{errors.email}</p>}
+              {errors.email && touched.email && <p className="error-text">{errors.email}</p>}
             </fieldset>
             <Button variant="danger" type="submit">
               Reset Password
@@ -46,5 +46,16 @@ function ForgotPassword() {
     </div>
   );
 }
+
+const ForgotPassword = withFormik({
+  mapPropsToValues: () => ({ email: ''}),
+  validationSchema:yup.object().shape({
+    email: yup.string().email('Invalid email').required('Email is required')
+  }),
+  handleSubmit(values, {resetForm}){
+    console.log(values);
+    resetForm();
+  }
+})(ForgotPasswordForm);
 
 export default ForgotPassword;

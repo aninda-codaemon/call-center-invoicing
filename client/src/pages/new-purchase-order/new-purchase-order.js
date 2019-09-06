@@ -6,6 +6,11 @@ import { Row, Col, Button, Container, Modal } from "react-bootstrap";
 import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
+import PlacesAutocomplete, {
+  geocodeByAddress,
+  getLatLng
+} from "react-places-autocomplete";
+
 import {
   vehicle_make,
   vehicle_color,
@@ -13,6 +18,8 @@ import {
   problem_type,
   pickup_location
 } from "../../assets/data/staticdata";
+
+import Map from "./map";
 
 function NewPurchaseOrder() {
   const initialData = {
@@ -35,19 +42,55 @@ function NewPurchaseOrder() {
     fueltype: "",
     pickuplocation: "",
     pickupnotes: "",
-    origin: "",
-    destination: "",
+    origin: {
+      lat: 40.756795,
+      lng: -73.954298
+    },
+    destination: {
+      lat: 41.756795,
+      lng: -78.954298
+    },
     calculatedcost: 0,
     baseprice: 0,
     additionalprice: 0,
     paymentemail: "",
     paymentamount: 0,
     paymenttotalamount: 0,
-    sendpaymentto: "phone"
+    sendpaymentto: "phone",
+    addressOrigin: "",
+    addressDestination: "",
+    mapIsShown: false
   };
 
   // form state
   const [newData, setNewData] = useState(initialData);
+
+  //For auto complete address
+  const handleChangeOrigin = addressOrigin => {
+    setNewData({ ...newData, addressOrigin });
+  };
+
+  const handleSelectOrigin = addressOrigin => {
+    geocodeByAddress(addressOrigin)
+      .then(results => getLatLng(results[0]))
+      .then(latLng => {
+        setNewData({ ...newData, origin: latLng })
+      })
+      .catch(error => console.error("Error", error));
+  };
+
+  const handleChangeDestination = addressDestination => {
+    setNewData({ ...newData, addressDestination});
+  };
+
+  const handleSelectDestination = addressDestination => {
+    geocodeByAddress(addressDestination)
+      .then(results => getLatLng(results[0]))
+      .then(latLng => {
+        setNewData({ ...newData, destination: latLng, mapIsShown: true })
+      })
+      .catch(error => console.error("Error", error));
+  };
 
   // form handler
   const handleChange = e => {
@@ -464,24 +507,111 @@ function NewPurchaseOrder() {
                   </Row>
                   <Row>
                     <Col sm={6}>
-                      <Input
-                        type="text"
-                        name="origin"
-                        value={newData.origin}
-                        onChange={handleChange}
-                        label="Origin"
-                      />
+                      <PlacesAutocomplete
+                        value={newData.addressOrigin}
+                        onChange={handleChangeOrigin}
+                        onSelect={handleSelectOrigin}
+                      >
+                        {({
+                          getInputProps,
+                          suggestions,
+                          getSuggestionItemProps,
+                          loading
+                        }) => (
+                          <div className="form-group">
+                            <input
+                              {...getInputProps({
+                                className: "location-search-input float-input"
+                              })}
+                            />
+                            <label>origin</label>
+
+                            <div className="autocomplete-dropdown-container">
+                              {loading && <div>Loading...</div>}
+                              {suggestions.map(suggestion => {
+                                const className = suggestion.active
+                                  ? "suggestion-item--active"
+                                  : "suggestion-item";
+                                // inline style for demonstration purpose
+                                const style = suggestion.active
+                                  ? {
+                                      backgroundColor: "#fafafa",
+                                      cursor: "pointer"
+                                    }
+                                  : {
+                                      backgroundColor: "#ffffff",
+                                      cursor: "pointer"
+                                    };
+                                return (
+                                  <div
+                                    {...getSuggestionItemProps(suggestion, {
+                                      className,
+                                      style
+                                    })}
+                                  >
+                                    <span>{suggestion.description}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </PlacesAutocomplete>
                     </Col>
                     <Col sm={6}>
-                      <Input
-                        type="text"
-                        name="destination"
-                        value={newData.destination}
-                        onChange={handleChange}
-                        label="Destination"
-                      />
+                      <PlacesAutocomplete
+                        value={newData.addressDestination}
+                        onChange={handleChangeDestination}
+                        onSelect={handleSelectDestination}
+                      >
+                        {({
+                          getInputProps,
+                          suggestions,
+                          getSuggestionItemProps,
+                          loading
+                        }) => (
+                          <div className="form-group">
+                            <input
+                              {...getInputProps({
+                                className: "location-search-input float-input"
+                              })}
+                            />
+                            <label>destination</label>
+
+                            <div className="autocomplete-dropdown-container">
+                              {loading && <div>Loading...</div>}
+                              {suggestions.map(suggestion => {
+                                const className = suggestion.active
+                                  ? "suggestion-item--active"
+                                  : "suggestion-item";
+                                // inline style for demonstration purpose
+                                const style = suggestion.active
+                                  ? {
+                                      backgroundColor: "#fafafa",
+                                      cursor: "pointer"
+                                    }
+                                  : {
+                                      backgroundColor: "#ffffff",
+                                      cursor: "pointer"
+                                    };
+                                return (
+                                  <div
+                                    {...getSuggestionItemProps(suggestion, {
+                                      className,
+                                      style
+                                    })}
+                                  >
+                                    <span>{suggestion.description}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </PlacesAutocomplete>
                     </Col>
                   </Row>
+
                   <div className="calculate-cost">
                     <Button variant="info" type="button">
                       Calculate Cost
@@ -499,11 +629,14 @@ function NewPurchaseOrder() {
                       <strong>$ {newData.additionalprice}</strong>
                     </p>
                   </div>
-                  <iframe
-                    title="myFrame"
-                    className="map"
-                    src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d14736.363660571635!2d88.35306525!3d22.57570275!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1566830445871!5m2!1sen!2sin"
-                  />
+                  {newData.mapIsShown && (
+                    <div className="map-container">
+                      <Map
+                        origin={newData.origin}
+                        destination={newData.destination}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="info-area">

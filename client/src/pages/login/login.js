@@ -4,18 +4,22 @@ import "./login.scss";
 import logo from "../../assets/img/logo.png";
 import { Button } from "react-bootstrap";
 import Input from "../../components/input/input";
-import { withFormik } from 'formik';
-import * as yup from 'yup';
+import useForm from "../form-logic/form-logic";
 
-const LoginForm = (props) => {
-  const {
-    values,
-    touched,
-    errors,
-    handleChange,
-    handleBlur,
-    handleSubmit,
-  } = props;
+const Login = () => {
+  const initialValues = {
+    email: "",
+    password: ""
+  };
+
+  const submitedSuccessfully = () => {
+    console.log("No error found, submitted successfully.")
+  };
+
+  const { handleChange, values, touched, handleBlur, validator, handleSubmit } = useForm(
+    initialValues,
+    submitedSuccessfully
+  );
 
   return (
     <div className="login-wrap">
@@ -25,7 +29,7 @@ const LoginForm = (props) => {
           <figcaption>Roadside Assistance</figcaption>
         </figure>
         <div className="login-form-area">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <fieldset>
               <Input
                 type="email"
@@ -35,8 +39,10 @@ const LoginForm = (props) => {
                 onBlur={handleBlur}
                 label="Email*"
               />
-              {errors.email && touched.email && <p className="error-text">{errors.email}</p>}
-
+              {validator.message("email", values.email, "required|email")}
+              {touched.email && validator.errorMessages.email && (
+                <p className="error-text">{validator.errorMessages.email}</p>
+              )}
               <Input
                 type="password"
                 name="password"
@@ -45,14 +51,19 @@ const LoginForm = (props) => {
                 onBlur={handleBlur}
                 label="Password*"
               />
-               {errors.password && touched.password && <p className="error-text">{errors.password}</p>}
+              {validator.message("password", values.password, "required")}
+              {touched.password && validator.errorMessages.password && (
+                <p className="error-text">{validator.errorMessages.password}</p>
+              )}
             </fieldset>
             <Link to="/all-purchase-orders">
-            <Button variant="danger" type="button">
-              SIGN IN
-            </Button>
+              <Button variant="danger" type="submit">
+                SIGN IN
+              </Button>
             </Link>
-            
+            {/* <Button variant="danger" type="submit">
+              SIGN IN
+            </Button> */}
           </form>
           <p className="forgot-password">
             <Link to="/forgot-password">Forgot Password?</Link>
@@ -61,19 +72,6 @@ const LoginForm = (props) => {
       </div>
     </div>
   );
-}
-
-const Login = withFormik({
-  mapPropsToValues: () => ({ email: '', password: '' }),
-  validationSchema:yup.object().shape({
-    email: yup.string().email('Invalid email').required('Email is required'),
-    password: yup.string().min(5, 'Password must be at least 5 characters long').required('Password is required')
-  }),
-  handleSubmit(values, {resetForm}){
-    console.log(values);
-    // props.history.push('/all-purchase-orders');
-    resetForm();
-  }
-})(LoginForm);
+};
 
 export default Login;

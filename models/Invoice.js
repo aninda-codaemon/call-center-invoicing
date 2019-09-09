@@ -30,4 +30,36 @@ Invoice.getPriceForMSA = async (msa_id) => {
   }
 };
 
+Invoice.getLastInvoiceNumber = async () => {
+  let response = {};
+  try {
+    const [result, fields] = await pool.query('SELECT id, invoice_id FROM `user_invoice` ORDER BY id DESC LIMIT 1;');
+    console.log(result);
+    if (result.length > 0) {
+      response.result = result;
+      return response;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
+Invoice.getNewInvoiceNumber = async (newInvoiceId) => {
+  let response = {};
+  try {
+    const [resultInsert, fieldsInsert] = await pool.query('INSERT INTO `user_invoice` SET invoice_id=?', [newInvoiceId]);
+    const [result, fields] = await pool.query('SELECT invoice_id FROM `user_invoice` ORDER BY id DESC LIMIT 1;');
+    response.result = result;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
 module.exports = Invoice;

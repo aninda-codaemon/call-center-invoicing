@@ -6,11 +6,7 @@ import { Row, Col, Button, Container, Modal } from "react-bootstrap";
 import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
-import PlacesAutocomplete, {
-  geocodeByAddress,
-  getLatLng
-} from "react-places-autocomplete";
-
+import AutoCompletePlaces from "./autocompleteplaces";
 import {
   vehicle_make,
   vehicle_color,
@@ -19,7 +15,16 @@ import {
   pickup_location
 } from "../../assets/data/staticdata";
 
-import Map from "./map";
+//for map
+import {
+  withScriptjs,
+  withGoogleMap,
+  GoogleMap,
+  DirectionsRenderer
+} from "react-google-maps";
+
+import { compose, withProps, lifecycle } from "recompose";
+
 
 function NewPurchaseOrder() {
   const initialData = {
@@ -42,55 +47,91 @@ function NewPurchaseOrder() {
     fueltype: "",
     pickuplocation: "",
     pickupnotes: "",
-    origin: {
-      lat: 40.756795,
-      lng: -73.954298
-    },
-    destination: {
-      lat: 41.756795,
-      lng: -78.954298
-    },
+    origin: "",
+    destination: "",
     calculatedcost: 0,
     baseprice: 0,
     additionalprice: 0,
     paymentemail: "",
     paymentamount: 0,
     paymenttotalamount: 0,
-    sendpaymentto: "phone",
-    addressOrigin: "",
-    addressDestination: "",
-    mapIsShown: false
+    sendpaymentto: "phone"
   };
 
   // form state
   const [newData, setNewData] = useState(initialData);
 
-  //For auto complete address
-  const handleChangeOrigin = addressOrigin => {
-    setNewData({ ...newData, addressOrigin });
+  //Places Auto complete Handler
+  const onSelectPlaceOrigin = ({ description }) => {
+    setNewData({ ...newData, origin: description });
   };
 
-  const handleSelectOrigin = addressOrigin => {
-    geocodeByAddress(addressOrigin)
-      .then(results => getLatLng(results[0]))
-      .then(latLng => {
-        setNewData({ ...newData, origin: latLng })
-      })
-      .catch(error => console.error("Error", error));
+  const onSelectPlaceDestination = ({ description }) => {
+    setNewData({ ...newData, destination: description });
   };
 
-  const handleChangeDestination = addressDestination => {
-    setNewData({ ...newData, addressDestination});
-  };
+  //for map
+  const { google } = window;
+  const MapWithADirectionsRenderer = compose(
+    withProps({
+      googleMapURL:
+        "https://maps.googleapis.com/maps/api/js?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&v=3.exp&libraries=geometry,drawing,places",
+      loadingElement: <div style={{ height: `100%` }} />,
+      containerElement: <div style={{ height: `400px` }} />,
+      mapElement: <div style={{ height: `100%` }} />
+    }),
+    withScriptjs,
+    withGoogleMap,
 
-  const handleSelectDestination = addressDestination => {
-    geocodeByAddress(addressDestination)
-      .then(results => getLatLng(results[0]))
-      .then(latLng => {
-        setNewData({ ...newData, destination: latLng, mapIsShown: true })
-      })
-      .catch(error => console.error("Error", error));
-  };
+    lifecycle({
+      componentDidMount() {
+        const DirectionsService = new google.maps.DirectionsService();
+
+        DirectionsService.route(
+          {
+            origin: newData.origin,
+            destination: newData.destination,
+            travelMode: google.maps.TravelMode.DRIVING
+          },
+          (result, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+              this.setState({
+                directions: result
+              });
+            } else {
+              console.error(`error fetching directions ${result}`);
+            }
+          }
+        );
+
+        //distance calculation...
+        const DistanceService = new google.maps.DistanceMatrixService();
+        DistanceService.getDistanceMatrix({
+          origins: [newData.origin],
+          destinations: [newData.destination],
+          travelMode: 'DRIVING',
+          unitSystem: google.maps.UnitSystem.METRIC,
+          avoidHighways: false,
+          avoidTolls: false
+        },(response, status) =>{
+          if (status === 'OK') {
+            if(response.rows[0].elements[0].status==='OK'){
+              console.log(response.rows[0].elements[0].distance.text)
+            }
+          } else {
+            alert('Error was: ' + status);
+          }
+        })
+      }
+    })
+  )(props => (
+    <GoogleMap
+      defaultZoom={16}
+      defaultCenter={new google.maps.LatLng(41.85073, -87.65126)}
+    >
+      {props.directions && <DirectionsRenderer directions={props.directions} />}
+    </GoogleMap>
+  ));
 
   // form handler
   const handleChange = e => {
@@ -284,7 +325,7 @@ function NewPurchaseOrder() {
           <Col md={9} className="right-part">
             <InnerBanner />
             <section className="invoice-wrap">
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} autoComplete="off">
                 <div className="invoice-title">
                   <Input
                     type="text"
@@ -507,108 +548,16 @@ function NewPurchaseOrder() {
                   </Row>
                   <Row>
                     <Col sm={6}>
-                      <PlacesAutocomplete
-                        value={newData.addressOrigin}
-                        onChange={handleChangeOrigin}
-                        onSelect={handleSelectOrigin}
-                      >
-                        {({
-                          getInputProps,
-                          suggestions,
-                          getSuggestionItemProps,
-                          loading
-                        }) => (
-                          <div className="form-group">
-                            <input
-                              {...getInputProps({
-                                className: "location-search-input float-input"
-                              })}
-                            />
-                            <label>origin</label>
-
-                            <div className="autocomplete-dropdown-container">
-                              {loading && <div>Loading...</div>}
-                              {suggestions.map(suggestion => {
-                                const className = suggestion.active
-                                  ? "suggestion-item--active"
-                                  : "suggestion-item";
-                                // inline style for demonstration purpose
-                                const style = suggestion.active
-                                  ? {
-                                      backgroundColor: "#fafafa",
-                                      cursor: "pointer"
-                                    }
-                                  : {
-                                      backgroundColor: "#ffffff",
-                                      cursor: "pointer"
-                                    };
-                                return (
-                                  <div
-                                    {...getSuggestionItemProps(suggestion, {
-                                      className,
-                                      style
-                                    })}
-                                  >
-                                    <span>{suggestion.description}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </PlacesAutocomplete>
+                      <AutoCompletePlaces
+                        label="Origin"
+                        onSelect={onSelectPlaceOrigin}
+                      />
                     </Col>
                     <Col sm={6}>
-                      <PlacesAutocomplete
-                        value={newData.addressDestination}
-                        onChange={handleChangeDestination}
-                        onSelect={handleSelectDestination}
-                      >
-                        {({
-                          getInputProps,
-                          suggestions,
-                          getSuggestionItemProps,
-                          loading
-                        }) => (
-                          <div className="form-group">
-                            <input
-                              {...getInputProps({
-                                className: "location-search-input float-input"
-                              })}
-                            />
-                            <label>destination</label>
-
-                            <div className="autocomplete-dropdown-container">
-                              {loading && <div>Loading...</div>}
-                              {suggestions.map(suggestion => {
-                                const className = suggestion.active
-                                  ? "suggestion-item--active"
-                                  : "suggestion-item";
-                                // inline style for demonstration purpose
-                                const style = suggestion.active
-                                  ? {
-                                      backgroundColor: "#fafafa",
-                                      cursor: "pointer"
-                                    }
-                                  : {
-                                      backgroundColor: "#ffffff",
-                                      cursor: "pointer"
-                                    };
-                                return (
-                                  <div
-                                    {...getSuggestionItemProps(suggestion, {
-                                      className,
-                                      style
-                                    })}
-                                  >
-                                    <span>{suggestion.description}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </PlacesAutocomplete>
+                      <AutoCompletePlaces
+                        label="Destination"
+                        onSelect={onSelectPlaceDestination}
+                      />
                     </Col>
                   </Row>
 
@@ -629,14 +578,12 @@ function NewPurchaseOrder() {
                       <strong>$ {newData.additionalprice}</strong>
                     </p>
                   </div>
-                  {newData.mapIsShown && (
-                    <div className="map-container">
-                      <Map
-                        origin={newData.origin}
-                        destination={newData.destination}
-                      />
-                    </div>
-                  )}
+
+                  <div className="map-container">
+                    {newData.origin && newData.destination && (
+                      <MapWithADirectionsRenderer />
+                    )}
+                  </div>
                 </div>
 
                 <div className="info-area">

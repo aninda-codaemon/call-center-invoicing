@@ -12,7 +12,7 @@ const router = express.Router();
 // @desc      Dummy send SMS
 // @access    Public
 router.get('/send-sms', async (req, res) => {
-  sendSMS();
+  sendSMS('From TWILIO account test for SMS!');
   res.send('SMS Twilio');
 });
 

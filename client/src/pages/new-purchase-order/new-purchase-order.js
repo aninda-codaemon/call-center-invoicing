@@ -6,6 +6,7 @@ import { Row, Col, Button, Container, Modal } from "react-bootstrap";
 import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
+import AutoCompletePlaces from "./autocompleteplaces";
 import {
   vehicle_make,
   vehicle_color,
@@ -13,6 +14,17 @@ import {
   problem_type,
   pickup_location
 } from "../../assets/data/staticdata";
+
+//for map
+import {
+  withScriptjs,
+  withGoogleMap,
+  GoogleMap,
+  DirectionsRenderer
+} from "react-google-maps";
+
+import { compose, withProps, lifecycle } from "recompose";
+
 
 function NewPurchaseOrder() {
   const initialData = {
@@ -48,6 +60,78 @@ function NewPurchaseOrder() {
 
   // form state
   const [newData, setNewData] = useState(initialData);
+
+  //Places Auto complete Handler
+  const onSelectPlaceOrigin = ({ description }) => {
+    setNewData({ ...newData, origin: description });
+  };
+
+  const onSelectPlaceDestination = ({ description }) => {
+    setNewData({ ...newData, destination: description });
+  };
+
+  //for map
+  const { google } = window;
+  const MapWithADirectionsRenderer = compose(
+    withProps({
+      googleMapURL:
+        "https://maps.googleapis.com/maps/api/js?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&v=3.exp&libraries=geometry,drawing,places",
+      loadingElement: <div style={{ height: `100%` }} />,
+      containerElement: <div style={{ height: `400px` }} />,
+      mapElement: <div style={{ height: `100%` }} />
+    }),
+    withScriptjs,
+    withGoogleMap,
+
+    lifecycle({
+      componentDidMount() {
+        const DirectionsService = new google.maps.DirectionsService();
+
+        DirectionsService.route(
+          {
+            origin: newData.origin,
+            destination: newData.destination,
+            travelMode: google.maps.TravelMode.DRIVING
+          },
+          (result, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+              this.setState({
+                directions: result
+              });
+            } else {
+              console.error(`error fetching directions ${result}`);
+            }
+          }
+        );
+
+        //distance calculation...
+        const DistanceService = new google.maps.DistanceMatrixService();
+        DistanceService.getDistanceMatrix({
+          origins: [newData.origin],
+          destinations: [newData.destination],
+          travelMode: 'DRIVING',
+          unitSystem: google.maps.UnitSystem.METRIC,
+          avoidHighways: false,
+          avoidTolls: false
+        },(response, status) =>{
+          if (status === 'OK') {
+            if(response.rows[0].elements[0].status==='OK'){
+              console.log(response.rows[0].elements[0].distance.text)
+            }
+          } else {
+            alert('Error was: ' + status);
+          }
+        })
+      }
+    })
+  )(props => (
+    <GoogleMap
+      defaultZoom={16}
+      defaultCenter={new google.maps.LatLng(41.85073, -87.65126)}
+    >
+      {props.directions && <DirectionsRenderer directions={props.directions} />}
+    </GoogleMap>
+  ));
 
   // form handler
   const handleChange = e => {
@@ -241,7 +325,7 @@ function NewPurchaseOrder() {
           <Col md={9} className="right-part">
             <InnerBanner />
             <section className="invoice-wrap">
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} autoComplete="off">
                 <div className="invoice-title">
                   <Input
                     type="text"
@@ -464,24 +548,19 @@ function NewPurchaseOrder() {
                   </Row>
                   <Row>
                     <Col sm={6}>
-                      <Input
-                        type="text"
-                        name="origin"
-                        value={newData.origin}
-                        onChange={handleChange}
+                      <AutoCompletePlaces
                         label="Origin"
+                        onSelect={onSelectPlaceOrigin}
                       />
                     </Col>
                     <Col sm={6}>
-                      <Input
-                        type="text"
-                        name="destination"
-                        value={newData.destination}
-                        onChange={handleChange}
+                      <AutoCompletePlaces
                         label="Destination"
+                        onSelect={onSelectPlaceDestination}
                       />
                     </Col>
                   </Row>
+
                   <div className="calculate-cost">
                     <Button variant="info" type="button">
                       Calculate Cost
@@ -499,11 +578,12 @@ function NewPurchaseOrder() {
                       <strong>$ {newData.additionalprice}</strong>
                     </p>
                   </div>
-                  <iframe
-                    title="myFrame"
-                    className="map"
-                    src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d14736.363660571635!2d88.35306525!3d22.57570275!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1566830445871!5m2!1sen!2sin"
-                  />
+
+                  <div className="map-container">
+                    {newData.origin && newData.destination && (
+                      <MapWithADirectionsRenderer />
+                    )}
+                  </div>
                 </div>
 
                 <div className="info-area">

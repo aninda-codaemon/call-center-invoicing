@@ -1,10 +1,20 @@
 const express = require('express');
 
+const { sendSMS } = require('../helpers/helpers');
+
 const authMiddleware = require('../middleware/auth');
 const UserModel = require('../models/User');
 const InvoiceModel = require('../models/Invoice');
 
 const router = express.Router();
+
+// @route     GET /api/order/send-sms
+// @desc      Dummy send SMS
+// @access    Public
+router.get('/send-sms', async (req, res) => {
+  sendSMS();
+  res.send('SMS Twilio');
+});
 
 // @route     POST /api/order/pricing
 // @desc      Get total pricing

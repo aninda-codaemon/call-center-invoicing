@@ -7,6 +7,7 @@ import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
 import AutoCompletePlaces from "./autocompleteplaces";
+import { geocodeByAddress, getLatLng } from "react-google-places-autocomplete";
 import {
   vehicle_make,
   vehicle_color,
@@ -15,16 +16,17 @@ import {
   pickup_location
 } from "../../assets/data/staticdata";
 
-//for map
+//map import
 import {
   withScriptjs,
   withGoogleMap,
   GoogleMap,
-  DirectionsRenderer
+  DirectionsRenderer,
+  Marker
 } from "react-google-maps";
 
 import { compose, withProps, lifecycle } from "recompose";
-
+import axios from "axios";
 
 function NewPurchaseOrder() {
   const initialData = {
@@ -47,8 +49,11 @@ function NewPurchaseOrder() {
     fueltype: "",
     pickuplocation: "",
     pickupnotes: "",
-    origin: "",
-    destination: "",
+    origin: {},
+    destination: {},
+    ozip: 0,
+    dzip: 0,
+    tmiles: 0,
     calculatedcost: 0,
     baseprice: 0,
     additionalprice: 0,
@@ -61,74 +66,135 @@ function NewPurchaseOrder() {
   // form state
   const [newData, setNewData] = useState(initialData);
 
+  //cost calculation
+  const [isCalculated, setIscalculated] = useState(false);
+
   //Places Auto complete Handler
+
   const onSelectPlaceOrigin = ({ description }) => {
-    setNewData({ ...newData, origin: description });
+    geocodeByAddress(description)
+      .then(results => getLatLng(results[0]))
+      .then(({ lat, lng }) => setNewData({ ...newData, origin: { lat, lng } }));
+
+    // //post code
+    geocodeByAddress(description).then(results => {
+      results.forEach(element => {
+        if (element.types[0] === "postal_code") {
+          setNewData({ ...newData, ozip: element.long_name });
+        }
+      });
+    });
   };
 
   const onSelectPlaceDestination = ({ description }) => {
-    setNewData({ ...newData, destination: description });
+    geocodeByAddress(description)
+      .then(results => getLatLng(results[0]))
+      .then(({ lat, lng }) =>
+        setNewData({ ...newData, destination: { lat, lng } })
+      );
+
+    //post code
+    geocodeByAddress(description).then(results => {
+      results.forEach(element => {
+        if (element.types[0] === "postal_code") {
+          setNewData({ ...newData, dzip: element.long_name });
+        }
+      });
+    });
   };
 
-  //for map
+  //Map....
+  function isEmpty(obj) {
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) return false;
+    }
+    return true;
+  }
   const { google } = window;
   const MapWithADirectionsRenderer = compose(
     withProps({
       googleMapURL:
         "https://maps.googleapis.com/maps/api/js?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&v=3.exp&libraries=geometry,drawing,places",
-      loadingElement: <div style={{ height: `100%` }} />,
-      containerElement: <div style={{ height: `400px` }} />,
-      mapElement: <div style={{ height: `100%` }} />
+      loadingElement: (
+        <div
+          style={{
+            height: `100%`
+          }}
+        />
+      ),
+      containerElement: (
+        <div
+          style={{
+            height: `400px`
+          }}
+        />
+      ),
+      mapElement: (
+        <div
+          style={{
+            height: `100%`
+          }}
+        />
+      )
     }),
     withScriptjs,
     withGoogleMap,
 
     lifecycle({
       componentDidMount() {
-        const DirectionsService = new google.maps.DirectionsService();
+        if (!isEmpty(newData.origin) && !isEmpty(newData.destination)) {
+          const DirectionsService = new google.maps.DirectionsService();
 
-        DirectionsService.route(
-          {
-            origin: newData.origin,
-            destination: newData.destination,
-            travelMode: google.maps.TravelMode.DRIVING
-          },
-          (result, status) => {
-            if (status === google.maps.DirectionsStatus.OK) {
-              this.setState({
-                directions: result
-              });
-            } else {
-              console.error(`error fetching directions ${result}`);
+          DirectionsService.route(
+            {
+              origin: newData.origin,
+              destination: newData.destination,
+              travelMode: google.maps.TravelMode.DRIVING
+            },
+            (result, status) => {
+              if (status === google.maps.DirectionsStatus.OK) {
+                this.setState({
+                  directions: result
+                });
+              } else {
+                console.error(`error fetching directions ${result}`);
+              }
             }
-          }
-        );
+          );
 
-        //distance calculation...
-        const DistanceService = new google.maps.DistanceMatrixService();
-        DistanceService.getDistanceMatrix({
-          origins: [newData.origin],
-          destinations: [newData.destination],
-          travelMode: 'DRIVING',
-          unitSystem: google.maps.UnitSystem.METRIC,
-          avoidHighways: false,
-          avoidTolls: false
-        },(response, status) =>{
-          if (status === 'OK') {
-            if(response.rows[0].elements[0].status==='OK'){
-              console.log(response.rows[0].elements[0].distance.text)
+          //distance calculation...
+          const DistanceService = new google.maps.DistanceMatrixService();
+          DistanceService.getDistanceMatrix(
+            {
+              origins: [newData.origin],
+              destinations: [newData.destination],
+              travelMode: "DRIVING",
+              unitSystem: google.maps.UnitSystem.METRIC,
+              avoidHighways: false,
+              avoidTolls: false
+            },
+            (response, status) => {
+              if (status === "OK") {
+                if (response.rows[0].elements[0].status === "OK") {
+                  let distanceKm = response.rows[0].elements[0].distance.text;
+                  console.log(distanceKm);
+                }
+              } else {
+                alert("Error was: " + status);
+              }
             }
-          } else {
-            alert('Error was: ' + status);
-          }
-        })
+          );
+        }
       }
     })
   )(props => (
     <GoogleMap
-      defaultZoom={16}
-      defaultCenter={new google.maps.LatLng(41.85073, -87.65126)}
+      defaultZoom={10}
+      defaultCenter={
+        new google.maps.LatLng(newData.origin.lat, newData.origin.lng)
+      }
     >
+      <Marker position={{ ...newData.origin }} />
       {props.directions && <DirectionsRenderer directions={props.directions} />}
     </GoogleMap>
   ));
@@ -308,6 +374,11 @@ function NewPurchaseOrder() {
     } else {
       totalCost(cost);
     }
+  };
+
+  //Calculate Cost
+  const calculateCost = () => {
+    setIscalculated(true);
   };
 
   useEffect(() => {
@@ -554,36 +625,43 @@ function NewPurchaseOrder() {
                       />
                     </Col>
                     <Col sm={6}>
-                      <AutoCompletePlaces
-                        label="Destination"
-                        onSelect={onSelectPlaceDestination}
-                      />
+                      {newData.servicetype === "Towing" && (
+                        <AutoCompletePlaces
+                          label="Destination"
+                          onSelect={onSelectPlaceDestination}
+                        />
+                      )}
                     </Col>
                   </Row>
 
                   <div className="calculate-cost">
-                    <Button variant="info" type="button">
+                    <Button
+                      variant="info"
+                      type="button"
+                      onClick={calculateCost}
+                    >
                       Calculate Cost
                     </Button>
                   </div>
-                  <div className="cost-details">
-                    <h3>
-                      Cost: <strong>$ {newData.calculatedcost}</strong>
-                    </h3>
-                    <p>
-                      Base Price: <strong>$ {newData.baseprice}</strong>
-                    </p>
-                    <p>
-                      Additional Price:{" "}
-                      <strong>$ {newData.additionalprice}</strong>
-                    </p>
-                  </div>
-
-                  <div className="map-container">
-                    {newData.origin && newData.destination && (
+                  {isCalculated && (
+                    <div className="cost-details">
+                      <h3>
+                        Cost: <strong>$ {newData.calculatedcost}</strong>
+                      </h3>
+                      <p>
+                        Base Price: <strong>$ {newData.baseprice}</strong>
+                      </p>
+                      <p>
+                        Additional Price:
+                        <strong>$ {newData.additionalprice}</strong>
+                      </p>
+                    </div>
+                  )}
+                  {isCalculated && (
+                    <div className="map-container">
                       <MapWithADirectionsRenderer />
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="info-area">

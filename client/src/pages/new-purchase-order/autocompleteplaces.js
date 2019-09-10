@@ -8,7 +8,7 @@ const AutoCompletePlaces = ({label, onSelect}) => {
         onSelect = {onSelect}
         renderInput={props => (
           <div className="form-group">
-            <input className="float-input" {...props} filled="true" autoComplete="false" />
+            <input className="float-input" {...props} filled="true" autoComplete="off" />
             <label>{label}</label>
           </div>
         )}

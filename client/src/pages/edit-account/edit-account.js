@@ -27,6 +27,8 @@ function EditAccount() {
         if (e.target.value.length > 5) {
           setErrors({ ...errors, confirmpassword: "" });
         }
+        break;
+      default:
     }
     setValues({
       ...values,

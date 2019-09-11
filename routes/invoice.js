@@ -1,10 +1,20 @@
 const express = require('express');
 const { check, validationResult } = require('express-validator');
+const { sendSMS } = require('../helpers/helpers');
 const authMiddleware = require('../middleware/auth');
 const UserModel = require('../models/User');
 const InvoiceModel = require('../models/Invoice');
+var shortUrl = require('node-url-shortener');
 
 const router = express.Router();
+
+// @route     GET /api/order/send-sms
+// @desc      Dummy send SMS
+// @access    Public
+router.get('/send-sms', async (req, res) => {
+  sendSMS('From TWILIO account test for SMS!');
+  res.send('SMS Twilio');
+});
 
 // @route     POST /api/order/pricing
 // @desc      Get total pricing
@@ -150,8 +160,12 @@ router.post('/saveinvoice', [authMiddleware, [
       calculatedcost, baseprice, additionalprice, paymentamount, paymenttotalamount, paymentemail, sendpaymentto
     };
 
+    // Create payment short url
+    const paymentUrl = getShortUrl(paymenttotalamount);
+
     if (sendpaymentto == "phone") {
       // SMS send process here
+      sendSMS('Complete your payment ' + paymentUrl);
     } else {
       // Email sent process here
     }
@@ -167,6 +181,13 @@ router.post('/saveinvoice', [authMiddleware, [
 
 
 });
+
+
+function getShortUrl(urlParam) {
+  shortUrl.short('https://www.paypal.com/in/home/'.urlParam, function (err, url) {
+    return url;
+  });
+}
 
 
 module.exports = router;

@@ -24,7 +24,7 @@ router.post('/pricing', authMiddleware, async (req, res) => {
   const total_distance = req.body.tmiles;
   const destination_zipcode = req.body.dzip;
   const service_type = req.body.servicetype;
-  const additional_charges = req.body.addlcharges || 0.00;
+  const additional_charges = parseFloat(req.body.addlcharges) || 0.00;
   const timestamp = req.body.timestamp;
 
   const msa = await InvoiceModel.getMsaFromZip(origin_zipcode);
@@ -62,7 +62,7 @@ router.post('/pricing', authMiddleware, async (req, res) => {
       }
 
       net_price = net_price + additional_charges;
-      total_price = parseFloat(net_price + (net_price * service_charges), 2).toFixed(2);
+      total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
 
       return res.status(200).json({
         errors: [], data: {

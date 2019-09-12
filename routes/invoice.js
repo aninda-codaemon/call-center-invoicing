@@ -150,7 +150,6 @@ router.post('/pricing', [authMiddleware, [
     } else {
       return res.status(400).json({ errors: [{ msg: 'No service for this location' }] });
     }
-    
   }
 });
 
@@ -174,6 +173,5 @@ router.get('/getInvoiceNumber', authMiddleware, async (req, res) => {
     }
   });
 });
-
 
 module.exports = router;

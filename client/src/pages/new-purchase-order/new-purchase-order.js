@@ -26,7 +26,7 @@ import {
 } from "react-google-maps";
 
 import { compose, withProps, lifecycle } from "recompose";
-import axios from "axios";
+import Axios from "../../custom-hooks/use-axios";
 
 function NewPurchaseOrder() {
   const initialData = {
@@ -74,11 +74,11 @@ function NewPurchaseOrder() {
   const onSelectPlaceOrigin = ({ description }) => {
     geocodeByAddress(description)
       .then(results => getLatLng(results[0]))
-      .then(({ lat, lng }) => setNewData({ ...newData, origin: { lat, lng } }));
+      .then(({ lat, lng }) => {setNewData({ ...newData, origin: { lat, lng } }); console.log({ lat, lng })});
 
-    // //post code
+    //post code
     geocodeByAddress(description).then(results => {
-      results.forEach(element => {
+      results[0].address_components.forEach(element => {
         if (element.types[0] === "postal_code") {
           setNewData({ ...newData, ozip: element.long_name });
         }
@@ -90,12 +90,12 @@ function NewPurchaseOrder() {
     geocodeByAddress(description)
       .then(results => getLatLng(results[0]))
       .then(({ lat, lng }) =>
-        setNewData({ ...newData, destination: { lat, lng } })
+        {setNewData({ ...newData, destination: { lat, lng } }); console.log({ lat, lng })}
       );
 
     //post code
     geocodeByAddress(description).then(results => {
-      results.forEach(element => {
+      results[0].address_components.forEach(element => {
         if (element.types[0] === "postal_code") {
           setNewData({ ...newData, dzip: element.long_name });
         }
@@ -103,14 +103,18 @@ function NewPurchaseOrder() {
     });
   };
 
-  //Map....
+  //For empty object check
   function isEmpty(obj) {
     for (var key in obj) {
       if (obj.hasOwnProperty(key)) return false;
     }
     return true;
   }
+
   const { google } = window;
+
+  //Map...
+
   const MapWithADirectionsRenderer = compose(
     withProps({
       googleMapURL:
@@ -158,29 +162,6 @@ function NewPurchaseOrder() {
                 });
               } else {
                 console.error(`error fetching directions ${result}`);
-              }
-            }
-          );
-
-          //distance calculation...
-          const DistanceService = new google.maps.DistanceMatrixService();
-          DistanceService.getDistanceMatrix(
-            {
-              origins: [newData.origin],
-              destinations: [newData.destination],
-              travelMode: "DRIVING",
-              unitSystem: google.maps.UnitSystem.METRIC,
-              avoidHighways: false,
-              avoidTolls: false
-            },
-            (response, status) => {
-              if (status === "OK") {
-                if (response.rows[0].elements[0].status === "OK") {
-                  let distanceKm = response.rows[0].elements[0].distance.text;
-                  console.log(distanceKm);
-                }
-              } else {
-                alert("Error was: " + status);
               }
             }
           );
@@ -358,7 +339,8 @@ function NewPurchaseOrder() {
     for (let key in obj) {
       total += parseFloat(obj[key]);
     }
-    console.log(total);
+    // console.log(total);
+    setNewData({ ...newData, additionalprice: total });
     return total;
   };
 
@@ -378,7 +360,59 @@ function NewPurchaseOrder() {
 
   //Calculate Cost
   const calculateCost = () => {
-    setIscalculated(true);
+    //calculate Distance
+    if (
+      newData.servicetype === "Towing" &&
+      !isEmpty(newData.origin) &&
+      !isEmpty(newData.destination)
+    ) {
+      const DistanceService = new google.maps.DistanceMatrixService();
+      DistanceService.getDistanceMatrix(
+        {
+          origins: [newData.origin],
+          destinations: [newData.destination],
+          travelMode: "DRIVING",
+          unitSystem: google.maps.UnitSystem.METRIC,
+          avoidHighways: false,
+          avoidTolls: false
+        },
+        (response, status) => {
+          if (status === "OK") {
+            if (response.rows[0].elements[0].status === "OK") {
+              let distanceMeter = response.rows[0].elements[0].distance.value;
+              let miles = (distanceMeter / 1600).toFixed(2);
+              setNewData({ ...newData, tmiles: miles });
+            }
+          } else {
+            alert("Error was: " + status);
+          }
+        }
+      );
+    }
+
+    //cost calculation API call
+
+    let postData = {
+      // ozip: "1503",
+      // dzip: "",
+      // tmiles: "",
+      // servicetype: "towing",
+      // addlcharges: "30.00"
+      ozip: newData.ozip,
+      dzip: newData.dzip,
+      tmiles: newData.tmiles,
+      servicetype: newData.servicetype.toLowerCase(),
+      addlcharges: newData.additionalprice
+    };
+
+    Axios("api/order/pricing", postData, "post").then(response => {
+      let data = response.data.data;
+      if (data) {
+        setNewData({...newData, baseprice: data.base_price, calculatedcost: data.net_price, paymenttotalamount: data.total_price, paymentamount: data.net_price})
+      }
+    });
+
+    // setIscalculated(true);
   };
 
   useEffect(() => {
@@ -643,8 +677,11 @@ function NewPurchaseOrder() {
                       Calculate Cost
                     </Button>
                   </div>
-                  {isCalculated && (
+                  {!isCalculated && (
                     <div className="cost-details">
+                      <h3>
+                        Distance: <strong>{newData.tmiles} miles</strong>
+                      </h3>
                       <h3>
                         Cost: <strong>$ {newData.calculatedcost}</strong>
                       </h3>

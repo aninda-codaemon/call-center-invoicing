@@ -119,7 +119,7 @@ router.post('/pricing', [authMiddleware, [
 
         if (service_type === 'towing') {
           // Base rate calculation on location timestamp pending. 
-          base_price = parseFloat(pricing['retail_tow_rate'].replace('$', '')) + night_charges;
+          base_price = parseFloat((parseFloat(pricing['retail_tow_rate'].replace('$', '')) + night_charges).toFixed(2));
           
           // Price calculation
           if (total_distance > 10) {
@@ -133,7 +133,7 @@ router.post('/pricing', [authMiddleware, [
           net_price = base_price;
         }
   
-        net_price = net_price + additional_charges;
+        net_price = parseFloat((net_price + additional_charges).toFixed(2));
         total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
   
         return res.status(200).json({

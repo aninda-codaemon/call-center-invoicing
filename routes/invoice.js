@@ -6,6 +6,7 @@ const { sendSMS, sendEmail, checkLocalTime } = require('../helpers/helpers');
 const authMiddleware = require('../middleware/auth');
 const UserModel = require('../models/User');
 const InvoiceModel = require('../models/Invoice');
+var shortUrl = require('node-url-shortener');
 
 const router = express.Router();
 
@@ -173,5 +174,92 @@ router.get('/getInvoiceNumber', authMiddleware, async (req, res) => {
     }
   });
 });
+
+// @route     POST /api/order/saveinvoice
+// @desc      save invoice details
+// @access    Private
+router.post('/saveinvoice', [authMiddleware, [
+  check('invoicenumber', 'Invalid invoice number').not().isEmpty(),
+  check('fname', 'Invalid first name').not().isEmpty(),
+  check('lname', 'Invalid last name').not().isEmpty(),
+  check('phone', 'Invalid phone number').not().isEmpty(),
+  check('year', 'Invalid car year').not().isEmpty(),
+  check('make', 'Invalid car make').not().isEmpty(),
+  check('model', 'Invalid car make').not().isEmpty(),
+  check('color', 'Invalid car color').not().isEmpty(),
+  check('servicetype', 'Invalid service type').not().isEmpty(),
+  check('problemtype', 'Invalid problem type').not().isEmpty(),
+  check('anyonewithvehicle', 'Invalid anyone with the vehicle data').not().isEmpty(),
+  check('keysforvehicle', 'Invalid keys for vehicle data').not().isEmpty(),
+  check('fourwheelsturn', 'Invalid is four wheel turn data').not().isEmpty(),
+  check('frontwheelsturn', 'Invalid is front wheel turn data').not().isEmpty(),
+  check('backwheelsturn', 'Invalid is back wheel turn data').not().isEmpty(),
+  check('neutral', 'Invalid is in nutral data').not().isEmpty(),
+  check('fueltype', 'Invalid fuel type entry').not().isEmpty(),
+  check('pickuplocation', 'Invalid pickup location').not().isEmpty(),
+  check('pickupnotes', 'Invalid pickup notes').not().isEmpty(),
+  check('originzipcode', 'Invalid origin zipcode').not().isEmpty(),
+  check('destinationzipcode', 'Invalid destination zipcode').not().isEmpty(),
+  check('totaldistance', 'Invalid total distance').not().isEmpty(),
+  check('calculatedcost', 'Invalid calculated cost').not().isEmpty(),
+  check('baseprice', 'Invalid base price').not().isEmpty(),
+  check('additionalprice', 'Invalid additional charges').not().isEmpty(),
+  check('paymentamount', 'Invalid payment amount').not().isEmpty(),
+  check('paymenttotalamount', 'Invalid payment total amount').not().isEmpty(),
+  check('paymentemail', 'Invalid payment email').isEmail(),
+  check('sendpaymentto', 'Invalid send payment link send type').not().isEmpty(),
+  //check('timestamp', 'Invalid time stamp').isEmpty()
+]], async (req, res) => {
+
+  const invoice_number = req.body.invoicenumber;
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { invoicenumber, fname, lname, phone, year, make, model, color, servicetype, problemtype,
+    anyonewithvehicle, keysforvehicle, fourwheelsturn, frontwheelsturn, backwheelsturn,
+    neutral, fueltype, pickuplocation, pickupnotes, originzipcode, destinationzipcode, totaldistance,
+    calculatedcost, baseprice, additionalprice, paymentamount, paymenttotalamount, paymentemail, sendpaymentto } = req.body;
+
+  const response = await InvoiceModel.getInvoiceById(invoice_number);
+
+  if (response.error) {
+    return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+  } else if (response.result && response.result.length > 0) {
+    let newInvoice = {
+      invoicenumber, fname, lname, phone, year, make, model, color, servicetype, problemtype,
+      anyonewithvehicle, keysforvehicle, fourwheelsturn, frontwheelsturn, backwheelsturn,
+      neutral, fueltype, pickuplocation, pickupnotes, originzipcode, destinationzipcode, totaldistance,
+      calculatedcost, baseprice, additionalprice, paymentamount, paymenttotalamount, paymentemail, sendpaymentto
+    };
+
+    // Create payment short url
+    const paymentUrl = getShortUrl(paymenttotalamount);
+
+    if (sendpaymentto == "phone") {
+      // SMS send process here
+      sendSMS('Complete your payment ' + paymentUrl);
+    } else {
+      // Email sent process here
+    }
+
+    const invoice = await InvoiceModel.saveInvoice(newInvoice);
+
+    if (invoice.error) {
+      return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+    } else {
+      return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoice.result } });
+    }
+  }
+});
+
+function getShortUrl(urlParam) {
+  shortUrl.short('https://www.paypal.com/in/home/'.urlParam, function (err, url) {
+    return url;
+  });
+}
+
 
 module.exports = router;

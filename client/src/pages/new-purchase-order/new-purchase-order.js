@@ -71,45 +71,44 @@ function NewPurchaseOrder() {
 
   //Places Auto complete Handler
 
-  const onSelectPlaceOrigin = ({ description }) => {
-    geocodeByAddress(description)
-      .then(results => getLatLng(results[0]))
-      .then(({ lat, lng }) => {setNewData({ ...newData, origin: { lat, lng } }); console.log({ lat, lng })});
+  const latZipFinder = async (description, place) => {
+    let currentData = newData;
+    try {
+      const allData = await geocodeByAddress(description);
+      const latLng = await getLatLng(allData[0]);
+      place === "origin"
+        ? (currentData.origin = latLng)
+        : (currentData.destination = latLng);
 
-    //post code
-    geocodeByAddress(description).then(results => {
-      results[0].address_components.forEach(element => {
+      //postcode
+      allData[0].address_components.forEach(element => {
         if (element.types[0] === "postal_code") {
-          setNewData({ ...newData, ozip: element.long_name });
+          place === "origin"
+            ? (currentData.ozip = element.long_name)
+            : (currentData.dzip = element.long_name);
+          setNewData(currentData);
         }
       });
-    });
+    } catch (error) {
+      console.log(error);
+    }
   };
-
+  //onselect origin
+  const onSelectPlaceOrigin = ({ description }) => {
+    latZipFinder(description, "origin");
+  };
+  //onselect destination
   const onSelectPlaceDestination = ({ description }) => {
-    geocodeByAddress(description)
-      .then(results => getLatLng(results[0]))
-      .then(({ lat, lng }) =>
-        {setNewData({ ...newData, destination: { lat, lng } }); console.log({ lat, lng })}
-      );
-
-    //post code
-    geocodeByAddress(description).then(results => {
-      results[0].address_components.forEach(element => {
-        if (element.types[0] === "postal_code") {
-          setNewData({ ...newData, dzip: element.long_name });
-        }
-      });
-    });
+    latZipFinder(description, "destination");
   };
 
   //For empty object check
-  function isEmpty(obj) {
+  const isEmpty = obj => {
     for (var key in obj) {
       if (obj.hasOwnProperty(key)) return false;
     }
     return true;
-  }
+  };
 
   const { google } = window;
 
@@ -358,9 +357,62 @@ function NewPurchaseOrder() {
     }
   };
 
+  //post data creator
+  const createPostData = (
+    ozip,
+    dzip,
+    tmiles,
+    servicetype,
+    addlcharges,
+    timestamp,
+    lat,
+    lng
+  ) => {
+    return {
+      ozip,
+      dzip,
+      tmiles,
+      servicetype: servicetype.toLowerCase(),
+      addlcharges,
+      timestamp,
+      lat,
+      lng
+    };
+  };
+
+  //fetch data common method
+  const commonFetchData = () => {
+    let postData = createPostData(
+      newData.ozip,
+      newData.dzip,
+      newData.tmiles,
+      newData.servicetype,
+      newData.additionalprice,
+      "",
+      newData.origin.lat,
+      newData.origin.lng
+    );
+
+    const fetchData = async () => {
+      let response = await Axios("api/order/pricing", postData, "post");
+      let { data } = response.data;
+      let currentData = { ...newData };
+      if (data) {
+        currentData.baseprice = data.base_price;
+        currentData.calculatedcost = data.net_price;
+        currentData.paymenttotalamount = data.total_price;
+        currentData.paymentamount = data.net_price;
+        setNewData({ ...currentData });
+        setIscalculated(true);
+      }
+    };
+
+    return fetchData();
+  }
+
   //Calculate Cost
   const calculateCost = () => {
-    //calculate Distance
+    //calculate Distance if service type is towing
     if (
       newData.servicetype === "Towing" &&
       !isEmpty(newData.origin) &&
@@ -390,30 +442,23 @@ function NewPurchaseOrder() {
       );
     }
 
-    //cost calculation API call
-
-    let postData = {
-      // ozip: "1503",
-      // dzip: "",
-      // tmiles: "",
-      // servicetype: "towing",
-      // addlcharges: "30.00"
-      ozip: newData.ozip,
-      dzip: newData.dzip,
-      tmiles: newData.tmiles,
-      servicetype: newData.servicetype.toLowerCase(),
-      addlcharges: newData.additionalprice
-    };
-
-    Axios("api/order/pricing", postData, "post").then(response => {
-      let data = response.data.data;
-      if (data) {
-        setNewData({...newData, baseprice: data.base_price, calculatedcost: data.net_price, paymenttotalamount: data.total_price, paymentamount: data.net_price})
-      }
-    });
-
-    // setIscalculated(true);
+    //calculate cost if only origin is present
+    if (
+      !isEmpty(newData.origin) &&
+      isEmpty(newData.destination) &&
+      newData.servicetype !== "Towing" &&
+      newData.servicetype !== ""
+    ) {
+      commonFetchData();
+    }
   };
+
+  //cost calculation API call if service type is towing
+  useEffect(() => {
+    if (newData.tmiles) {
+      commonFetchData();
+    }
+  }, [newData.tmiles]);
 
   useEffect(() => {
     bothWheelsNotTurn();
@@ -677,7 +722,7 @@ function NewPurchaseOrder() {
                       Calculate Cost
                     </Button>
                   </div>
-                  {!isCalculated && (
+                  {isCalculated && (
                     <div className="cost-details">
                       <h3>
                         Distance: <strong>{newData.tmiles} miles</strong>

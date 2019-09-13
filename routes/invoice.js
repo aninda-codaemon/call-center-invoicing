@@ -75,7 +75,7 @@ router.post('/pricing', [authMiddleware, [
   const lng = req.body.lng || '-73.7197139';
   const timestamp = req.body.timestamp;  
   const msa = await InvoiceModel.getMsaFromZip(origin_zipcode);
-
+  
   if (msa.error) {
     return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
   } else {

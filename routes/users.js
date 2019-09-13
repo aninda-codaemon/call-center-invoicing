@@ -17,16 +17,23 @@ router.get('/', authMiddleware, async (req, res) => {
   // Pagination
   const sortBy = req.body.sort_by || 'first_name';
   const sortOrder = req.body.sort_order || 'ASC';
+  const searchTerm = req.body.search_term || '';
   const fetchPage = req.body.fetch_page || 1;
   const perPage = req.body.per_page || 3;
-  
+  let searchQuery = '';
+
   const users = await UserModel.getUsers(roleId);
   total_users = users.result.length;
   total_pages = parseInt(Math.ceil(total_users/perPage));
   start_page = (perPage * (fetchPage - 1));
   next_start = (perPage * fetchPage);
   next_page = 0; // Count for next page records
-  const sql_query = `SELECT id, role_id, first_name, last_name, email_id, contact_no, status FROM user WHERE role_id=${roleId} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+
+  if (searchTerm !== '') {
+    searchQuery = `AND (first_name LIKE "%${searchTerm.toLowerCase()}%" OR last_name LIKE "%${searchTerm.toLowerCase()}%" OR email_id LIKE "%${searchTerm.toLowerCase()}%")`;
+  }
+  const sql_query = `SELECT id, role_id, first_name, last_name, email_id, contact_no, status FROM user WHERE role_id=${roleId} ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+  console.log(sql_query);
   dataArray = await UserModel.getSortedUsers(sql_query); // perPage, start_page
   
   if (users.error) {

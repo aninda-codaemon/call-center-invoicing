@@ -67,13 +67,13 @@ router.post('/pricing', [authMiddleware, [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const origin_zipcode = req.body.ozip;
-  const total_distance = req.body.tmiles;
-  const destination_zipcode = req.body.dzip;
-  const service_type = req.body.servicetype;
+  const origin_zipcode = req.body.ozip.toString();
+  const total_distance = parseFloat(req.body.tmiles) || 0.00;
+  const destination_zipcode = req.body.dzip.toString();
+  const service_type = req.body.servicetype.toString();
   const additional_charges = parseFloat(req.body.addlcharges) || 0.00;
-  const lat = req.body.lat || '40.7176546';
-  const lng = req.body.lng || '-73.7197139';
+  const lat = req.body.lat.toString() || '40.7176546';
+  const lng = req.body.lng.toString() || '-73.7197139';
   const timestamp = req.body.timestamp;  
   const msa = await InvoiceModel.getMsaFromZip(origin_zipcode);
   

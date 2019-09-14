@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Iframe from 'react-iframe';
 import "./new-purchase-order.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
@@ -50,7 +51,9 @@ function NewPurchaseOrder() {
     pickuplocation: "",
     pickupnotes: "",
     origin: {},
+    originaddress: "",
     destination: {},
+    destinationaddress: "",
     ozip: 0,
     dzip: 0,
     tmiles: 0,
@@ -70,16 +73,20 @@ function NewPurchaseOrder() {
   const [isCalculated, setIscalculated] = useState(false);
 
   //Places Auto complete Handler
-
   const latZipFinder = async (description, place) => {
     let currentData = newData;
     try {
       const allData = await geocodeByAddress(description);
       const latLng = await getLatLng(allData[0]);
-      place === "origin"
-        ? (currentData.origin = latLng)
-        : (currentData.destination = latLng);
-
+      
+      if (place === "origin") {
+        currentData.originaddress = description;
+        currentData.origin = latLng;
+      } else {
+        currentData.destinationaddress = description;
+        currentData.destination = latLng;
+      }
+      
       //postcode
       allData[0].address_components.forEach(element => {
         if (element.types[0] === "postal_code") {
@@ -93,6 +100,7 @@ function NewPurchaseOrder() {
       console.log(error);
     }
   };
+  
   //onselect origin
   const onSelectPlaceOrigin = ({ description }) => {
     latZipFinder(description, "origin");
@@ -179,6 +187,32 @@ function NewPurchaseOrder() {
     </GoogleMap>
   ));
 
+  const generateMapUrl = () => {
+    console.log(newData.destinationaddress);
+    console.log(newData.originaddress);
+    console.log(newData.servicetype); // === "Towing"
+    const origin_address = newData.originaddress;
+    const destination_address = newData.destinationaddress;
+    let render_url = "";
+
+    if (newData.servicetype === "Towing") {
+      render_url = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&origin=${encodeURI(origin_address)}&destination=${encodeURI(destination_address)}`;
+    } else {
+      render_url = `https://www.google.com/maps/embed/v1/place?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&q=${encodeURI(origin_address)}`;
+    }
+
+    return (
+      <Iframe
+        width="900"
+        height="600"
+        id="route_map"
+        className="map-container"
+        display="initial"
+        url={render_url}
+        />
+    );
+  }
+
   // form handler
   const handleChange = e => {
     switch (e.target.name) {
@@ -199,6 +233,7 @@ function NewPurchaseOrder() {
         } else {
           setServiceInfo(initialServiceData);
         }
+        setIscalculated(false);
         break;
 
       case "fueltype":
@@ -741,7 +776,8 @@ function NewPurchaseOrder() {
                   )}
                   {isCalculated && (
                     <div className="map-container">
-                      <MapWithADirectionsRenderer />
+                      {/* <MapWithADirectionsRenderer /> */}
+                      { generateMapUrl() }
                     </div>
                   )}
                 </div>

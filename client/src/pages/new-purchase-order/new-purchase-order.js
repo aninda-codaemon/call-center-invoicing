@@ -408,7 +408,7 @@ function NewPurchaseOrder() {
     };
 
     return fetchData();
-  }
+  };
 
   //Calculate Cost
   const calculateCost = () => {
@@ -724,9 +724,12 @@ function NewPurchaseOrder() {
                   </div>
                   {isCalculated && (
                     <div className="cost-details">
-                      <h3>
-                        Distance: <strong>{newData.tmiles} miles</strong>
-                      </h3>
+                      {newData.tmiles > 0 && (
+                        <h3>
+                          Distance: <strong>{newData.tmiles} miles</strong>
+                        </h3>
+                      )}
+
                       <h3>
                         Cost: <strong>$ {newData.calculatedcost}</strong>
                       </h3>

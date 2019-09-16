@@ -776,8 +776,8 @@ function NewPurchaseOrder() {
                   )}
                   {isCalculated && (
                     <div className="map-container">
-                      {/* <MapWithADirectionsRenderer /> */}
-                      { generateMapUrl() }
+                      <MapWithADirectionsRenderer />
+                      {/* { generateMapUrl() } */}
                     </div>
                   )}
                 </div>

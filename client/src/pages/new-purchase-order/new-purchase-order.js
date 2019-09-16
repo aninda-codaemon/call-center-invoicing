@@ -213,6 +213,7 @@ function NewPurchaseOrder() {
         id="route_map"
         className="map-container"
         display="initial"
+        frameBorder="0"
         url={render_url}
         />
     );

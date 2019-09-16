@@ -74,10 +74,14 @@ function NewPurchaseOrder() {
 
   //Places Auto complete Handler
   const latZipFinder = async (description, place) => {
+    console.log('latZipFinder');
+    console.log(place);
     let currentData = newData;
     try {
       const allData = await geocodeByAddress(description);
       const latLng = await getLatLng(allData[0]);
+      console.log(allData);
+      console.log(latLng);
       
       if (place === "origin") {
         currentData.originaddress = description;
@@ -203,7 +207,7 @@ function NewPurchaseOrder() {
 
     return (
       <Iframe
-        width="900"
+        width="100%"
         height="600"
         id="route_map"
         className="map-container"
@@ -429,17 +433,22 @@ function NewPurchaseOrder() {
     );
 
     const fetchData = async () => {
-      let response = await Axios("api/order/pricing", postData, "post");
-      let { data } = response.data;
-      let currentData = { ...newData };
-      if (data) {
-        currentData.baseprice = data.base_price;
-        currentData.calculatedcost = data.net_price;
-        currentData.paymenttotalamount = data.total_price;
-        currentData.paymentamount = data.net_price;
-        setNewData({ ...currentData });
-        setIscalculated(true);
-      }
+      try {
+        let response = await Axios("api/order/pricing", postData, "post");
+        let { data } = response.data;
+        let currentData = { ...newData };
+        if (data) {
+          currentData.baseprice = data.base_price;
+          currentData.calculatedcost = data.net_price;
+          currentData.paymenttotalamount = data.total_price;
+          currentData.paymentamount = data.net_price;
+          setNewData({ ...currentData });
+          setIscalculated(true);
+        } 
+      } catch (error) {
+        console.log('cost error');
+        console.log(error);
+      }      
     };
 
     return fetchData();
@@ -447,6 +456,8 @@ function NewPurchaseOrder() {
 
   //Calculate Cost
   const calculateCost = () => {
+    console.log('Calculate Cost');
+
     //calculate Distance if service type is towing
     if (
       newData.servicetype === "Towing" &&
@@ -476,7 +487,7 @@ function NewPurchaseOrder() {
         }
       );
     }
-
+    console.log(newData);
     //calculate cost if only origin is present
     if (
       !isEmpty(newData.origin) &&
@@ -484,7 +495,10 @@ function NewPurchaseOrder() {
       newData.servicetype !== "Towing" &&
       newData.servicetype !== ""
     ) {
+      console.log('Origin present');
       commonFetchData();
+    } else {
+      console.log('Origin not present');
     }
   };
 
@@ -776,8 +790,8 @@ function NewPurchaseOrder() {
                   )}
                   {isCalculated && (
                     <div className="map-container">
-                      <MapWithADirectionsRenderer />
-                      {/* { generateMapUrl() } */}
+                      {/* <MapWithADirectionsRenderer /> */}
+                      { generateMapUrl() }
                     </div>
                   )}
                 </div>

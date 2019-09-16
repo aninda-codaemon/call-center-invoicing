@@ -1,7 +1,7 @@
 const express = require('express');
 const {check, validationResult} = require('express-validator');
 
-const { sendSMS, sendEmail, checkLocalTime } = require('../helpers/helpers');
+const { sendSMS, sendEmail, checkLocalTime, calculateDistance } = require('../helpers/helpers');
 
 const authMiddleware = require('../middleware/auth');
 const UserModel = require('../models/User');
@@ -74,6 +74,8 @@ router.post('/pricing', [authMiddleware, [
   const additional_charges = parseFloat(req.body.addlcharges) || 0.00;
   const lat = req.body.lat.toString() || '40.7176546';
   const lng = req.body.lng.toString() || '-73.7197139';
+  const origin = req.body.oaddress.toString() || '';
+  const destination = req.body.daddress.toString() || '';
   const timestamp = req.body.timestamp;  
   const msa = await InvoiceModel.getMsaFromZip(origin_zipcode);
   

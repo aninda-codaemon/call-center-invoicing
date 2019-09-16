@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from 'axios';
 import Iframe from 'react-iframe';
 import "./new-purchase-order.scss";
 import Header from "../../components/header/header";
@@ -31,7 +32,7 @@ import Axios from "../../custom-hooks/use-axios";
 
 function NewPurchaseOrder() {
   const initialData = {
-    invoicenumber: 647003561,
+    invoicenumber: '1011290101',
     fname: "",
     lname: "",
     phone: "",
@@ -405,7 +406,9 @@ function NewPurchaseOrder() {
     addlcharges,
     timestamp,
     lat,
-    lng
+    lng,
+    oaddress,
+    daddress=''
   ) => {
     return {
       ozip,
@@ -415,7 +418,9 @@ function NewPurchaseOrder() {
       addlcharges,
       timestamp,
       lat,
-      lng
+      lng,
+      oaddress,
+      daddress
     };
   };
 
@@ -429,12 +434,15 @@ function NewPurchaseOrder() {
       newData.additionalprice,
       "",
       newData.origin.lat,
-      newData.origin.lng
+      newData.origin.lng,
+      newData.originaddress,
+      newData.destinationaddress
     );
 
     const fetchData = async () => {
       try {
         let response = await Axios("api/order/pricing", postData, "post");
+        console.log(response);
         let { data } = response.data;
         let currentData = { ...newData };
         if (data) {
@@ -444,10 +452,15 @@ function NewPurchaseOrder() {
           currentData.paymentamount = data.net_price;
           setNewData({ ...currentData });
           setIscalculated(true);
-        } 
+        }
       } catch (error) {
         console.log('cost error');
         console.log(error);
+        handleShow(
+          "This location is not servicable by our system",
+          "noOne"
+        );
+        return false;
       }      
     };
 
@@ -455,59 +468,88 @@ function NewPurchaseOrder() {
   };
 
   //Calculate Cost
-  const calculateCost = () => {
-    console.log('Calculate Cost');
-
-    //calculate Distance if service type is towing
-    if (
-      newData.servicetype === "Towing" &&
-      !isEmpty(newData.origin) &&
-      !isEmpty(newData.destination)
-    ) {
-      const DistanceService = new google.maps.DistanceMatrixService();
-      DistanceService.getDistanceMatrix(
-        {
-          origins: [newData.origin],
-          destinations: [newData.destination],
-          travelMode: "DRIVING",
-          unitSystem: google.maps.UnitSystem.METRIC,
-          avoidHighways: false,
-          avoidTolls: false
-        },
-        (response, status) => {
-          if (status === "OK") {
-            if (response.rows[0].elements[0].status === "OK") {
-              let distanceMeter = response.rows[0].elements[0].distance.value;
-              let miles = (distanceMeter / 1600).toFixed(2);
-              setNewData({ ...newData, tmiles: miles });
-            }
-          } else {
-            alert("Error was: " + status);
-          }
-        }
-      );
-    }
+  const calculateCost = async () => {
+    console.log('Calculate Cost');    
     console.log(newData);
+
     //calculate cost if only origin is present
-    if (
-      !isEmpty(newData.origin) &&
-      isEmpty(newData.destination) &&
-      newData.servicetype !== "Towing" &&
-      newData.servicetype !== ""
-    ) {
-      console.log('Origin present');
-      commonFetchData();
-    } else {
-      console.log('Origin not present');
-    }
+    // if (
+    //   !isEmpty(newData.origin) &&
+    //   isEmpty(newData.destination) &&
+    //   newData.servicetype !== "Towing" &&
+    //   newData.servicetype !== ""
+    // )
+
+    if (newData.servicetype === 'Towing') {
+      if (newData.originaddress === '' && newData.destinationaddress === '') {
+        handleShow(
+          "Please select both origin & destination address",
+          "noOne"
+        );
+        return false;
+      } else if (newData.originaddress === '') {
+        handleShow(
+          "Please select origin address",
+          "noOne"
+        );
+        return false;
+      } else if (newData.destinationaddress === '') {
+        handleShow(
+          "Please select destination address",
+          "noOne"
+        );
+        return false;
+      } else {
+        //calculate Distance if service type is towing
+        if (newData.servicetype === "Towing" && newData.originaddress !== '' && newData.destinationaddress !== '') {
+          console.log('Calculate distance');
+          const DistanceService = new google.maps.DistanceMatrixService();      
+          DistanceService.getDistanceMatrix(
+            {
+              origins: [newData.origin],
+              destinations: [newData.destination],
+              travelMode: "DRIVING",
+              unitSystem: google.maps.UnitSystem.METRIC,
+              avoidHighways: false,
+              avoidTolls: false
+            },
+            (response, status) => {
+              if (status === "OK") {
+                if (response.rows[0].elements[0].status === "OK") {
+                  let distanceMeter = response.rows[0].elements[0].distance.value;
+                  let miles = (distanceMeter / 1600).toFixed(2);                  
+                  const currentData = newData;
+                  currentData.tmiles = miles;
+                  setNewData(currentData);
+                  console.log(newData);
+                  commonFetchData();
+                }
+              } else {
+                alert("Error was: " + status);
+              }
+            }
+          );          
+        }        
+      }          
+    } else if (newData.servicetype !== 'Towing') {
+      if (newData.originaddress === '') {
+        handleShow(
+          "Please select all the required parameters",
+          "noOne"
+        );
+        return false;
+      } else {
+        commonFetchData();
+      }       
+    }    
   };
 
   //cost calculation API call if service type is towing
-  useEffect(() => {
-    if (newData.tmiles) {
-      commonFetchData();
-    }
-  }, [newData.tmiles]);
+  // useEffect(() => {
+  //   if (newData.tmiles) {
+  //     commonFetchData();
+  //   }
+  // }, [newData.tmiles]);
 
   useEffect(() => {
     bothWheelsNotTurn();

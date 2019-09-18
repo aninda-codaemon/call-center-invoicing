@@ -19,7 +19,7 @@ function HeaderNav() {
             <Dropdown.Item as={Link} to="/edit-account">
               Edit Account
             </Dropdown.Item>
-            <Dropdown.Item as={Link} to="/">
+            <Dropdown.Item as={Link} to="/logout">
               Logout
             </Dropdown.Item>
           </Dropdown.Menu>

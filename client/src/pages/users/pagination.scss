@@ -80,21 +80,6 @@
             color: #fff;
           }
         }
-
-        &.active {          
-          background-color: $theme-red;
-          color: #fff;
-          @include font-size(14);
-          padding: 3px 8px;
-          @include border-radius(3px);
-          font-weight: normal;
-          transition: all 0.2s;
-          cursor: none;
-        }
-
-        &.deactive {
-
-        }
       }
     }
   }

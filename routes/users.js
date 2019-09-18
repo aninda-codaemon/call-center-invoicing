@@ -10,9 +10,9 @@ const router = express.Router();
 // @route     GET /api/users
 // @desc      Get user list
 // @access    Private
-router.get('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   const userId = req.user.id;
-  const roleId = req.body.role_id || 2;
+  const roleId = req.body.role_id || 2;  
 
   // Pagination
   const sortBy = req.body.sort_by || 'first_name';
@@ -22,19 +22,22 @@ router.get('/', authMiddleware, async (req, res) => {
   const perPage = req.body.per_page || 3;
   let searchQuery = '';
 
-  const users = await UserModel.getUsers(roleId);
+  if (searchTerm !== '') {
+    searchQuery = `AND (first_name LIKE "%${searchTerm.toLowerCase()}%" OR last_name LIKE "%${searchTerm.toLowerCase()}%" OR email_id LIKE "%${searchTerm.toLowerCase()}%")`;
+  }
+  const sql_query = `SELECT id, role_id, first_name, last_name, email_id, contact_no, status FROM user WHERE role_id=${roleId} ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
+  console.log(sql_query);
+
+  const users = await UserModel.getSortedUsers(sql_query);
   total_users = users.result.length;
   total_pages = parseInt(Math.ceil(total_users/perPage));
   start_page = (perPage * (fetchPage - 1));
   next_start = (perPage * fetchPage);
   next_page = 0; // Count for next page records
-
-  if (searchTerm !== '') {
-    searchQuery = `AND (first_name LIKE "%${searchTerm.toLowerCase()}%" OR last_name LIKE "%${searchTerm.toLowerCase()}%" OR email_id LIKE "%${searchTerm.toLowerCase()}%")`;
-  }
-  const sql_query = `SELECT id, role_id, first_name, last_name, email_id, contact_no, status FROM user WHERE role_id=${roleId} ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
-  console.log(sql_query);
-  dataArray = await UserModel.getSortedUsers(sql_query); // perPage, start_page
+  
+  const sql_query_final = `SELECT id, role_id, first_name, last_name, email_id, contact_no, status FROM user WHERE role_id=${roleId} ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+  console.log(sql_query_final);
+  dataArray = await UserModel.getSortedUsers(sql_query_final); // perPage, start_page
   
   if (users.error) {
     return res.status(500).json({ errors: [{msg: 'Internal server error!'}] });
@@ -47,7 +50,8 @@ router.get('/', authMiddleware, async (req, res) => {
       perPage,
       start_page,
       next_start,
-      next_page
+      next_page,
+      total_pages
     }});
   }  
 });
@@ -55,7 +59,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // @route     POST /api/users
 // @desc      Create user agents
 // @access    Public
-router.post('/', [authMiddleware, [
+router.post('/create', [authMiddleware, [
     check('first_name', 'Please enter a valid first name').not().isEmpty(),
     check('last_name', 'Please enter a valid last name').not().isEmpty(),
     check('email', 'Please include a valid email').isEmail(),

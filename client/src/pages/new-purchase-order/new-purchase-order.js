@@ -29,6 +29,7 @@ import {
 
 import { compose, withProps, lifecycle } from "recompose";
 import Axios from "../../custom-hooks/use-axios";
+import { valiedEmail, isAlpha, isPhone, isEmpty } from '../../validation-rules/form-validation';
 
 function NewPurchaseOrder() {
   const initialData = {
@@ -70,6 +71,61 @@ function NewPurchaseOrder() {
   // form state
   const [newData, setNewData] = useState(initialData);
 
+  // error state
+  const initialError = {
+    fname: false,
+    lname: false,
+    phone: false,
+    year: false,
+    make: false,
+    model: false,
+    color: false,
+    servicetype: false,
+    paymentemail: false,
+    paymentamount: false
+  }
+  const [errors, setErrors] = useState(initialError);
+
+  const validateForm = () => {
+    const errorData = errors;
+    errorData.fname = isEmpty(newData.fname);
+    errorData.lname = isEmpty(newData.lname);
+    errorData.phone = isEmpty(newData.phone);
+    errorData.year = isEmpty(newData.year);
+    errorData.make = isEmpty(newData.make);
+    errorData.model = isEmpty(newData.model);
+    errorData.color = isEmpty(newData.color);
+    errorData.servicetype = isEmpty(newData.servicetype);
+    errorData.paymentemail = isEmpty(newData.paymentemail);
+    errorData.paymentamount = isEmpty(newData.paymentamount);
+    setErrors(errorData);
+
+    if (
+      !errorData.fname && !errorData.lname && !errorData.phone && !errorData.year && !errorData.make && 
+      !errorData.modal && !errorData.color && !errorData.servicetype && !errorData.paymentemail && 
+      !errorData.paymentamount) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    console.log(newData);
+    // setNewData({ ...initialData });
+
+    if (validateForm()) {
+      alert('Form validated');
+    } else {
+      handleShow(
+        "This form has errors. Please enter values for all the required fields!",
+        "noOne"
+      );
+    }
+    return false;
+  };
+
   //cost calculation
   const [isCalculated, setIscalculated] = useState(false);
 
@@ -101,6 +157,7 @@ function NewPurchaseOrder() {
           setNewData(currentData);
         }
       });
+      toggleCalculationHandle();
     } catch (error) {
       console.log(error);
     }
@@ -219,36 +276,79 @@ function NewPurchaseOrder() {
     );
   }
 
+  // Toggle calculate cost button
+  const [toggleCostCalculation, setToggleCostCalculation] = useState(false);
+  const toggleCalculationHandle = () => {
+    const currentData = newData;
+    if (currentData.servicetype === 'Towing') {
+      if (currentData.originaddress !== '' && currentData.destinationaddress !== '' && currentData.anyonewithvehicle.toLowerCase() === 'yes') {
+        setToggleCostCalculation(true);
+      } else {
+        setToggleCostCalculation(false);
+      }
+    } else if (currentData.servicetype === 'Fuel / Fluids') {
+      // Get the fuel info
+      if (currentData.originaddress !== '' && serviceInfo.fuelfluids === true && currentData.anyonewithvehicle.toLowerCase() === 'yes') {
+        setToggleCostCalculation(true);
+      } else {
+        setToggleCostCalculation(false);
+      }
+    } else {
+      if (currentData.originaddress !== '' && currentData.anyonewithvehicle.toLowerCase() === 'yes') {
+        setToggleCostCalculation(true);
+      } else {
+        setToggleCostCalculation(false);
+      }      
+    }    
+    console.log('Toggle cost calculation: ', toggleCostCalculation);
+  }
+
   // form handler
   const handleChange = e => {
+    const currentData = newData;
     switch (e.target.name) {
-      case "anyonewithvehicle":
-        e.target.value === "No"
-          ? handleShow(
-              "Service will not be performed on unattended vehicles",
-              "noOne"
-            )
-          : handleClose();
+      case "anyonewithvehicle":        
+        if (e.target.value === "No") {
+          currentData.anyonewithvehicle = 'No';
+          handleShow(
+            "Service will not be performed on unattended vehicles",
+            "noOne"
+          );          
+        } else {
+          currentData.anyonewithvehicle = 'Yes';
+          handleClose();          
+        }
+        toggleCalculationHandle();
         break;
 
       case "servicetype":
         if (e.target.value === "Fuel / Fluids") {
-          fuelfluidsToggle(true);
+          fuelfluidsToggle(false);
         } else if (e.target.value === "Towing") {
           towingToggle(true);
         } else {
           setServiceInfo(initialServiceData);
-        }
+        }        
+        currentData.servicetype = e.target.value;
+        setNewData(currentData);
+        console.log(newData.servicetype);
         setIscalculated(false);
+        toggleCalculationHandle();
         break;
 
       case "fueltype":
-        e.target.value === "Diesel Gas"
-          ? handleShow(
-              "Service will not be performed, we cannot service diesel engines",
-              "fuel"
-            )
-          : handleClose();
+        if (e.target.value === "Diesel Gas") {
+          handleShow(
+            "Service will not be performed, we cannot service diesel engines",
+            "fuel"
+          );
+          fuelfluidsToggle(false);
+        } else {
+          fuelfluidsToggle(true);
+          handleClose();
+        }
+        console.log(serviceInfo);
+        toggleCalculationHandle();
         break;
 
       case "fourwheelsturn":
@@ -295,13 +395,7 @@ function NewPurchaseOrder() {
       [e.target.name]: e.target.value
     });
   };
-
-  const handleSubmit = e => {
-    e.preventDefault();
-    console.log(newData);
-    setNewData({ ...initialData });
-  };
-
+  
   // modal state
   const initModalData = {
     isShown: false,
@@ -343,10 +437,9 @@ function NewPurchaseOrder() {
   const [serviceInfo, setServiceInfo] = useState(initialServiceData);
 
   const fuelfluidsToggle = value => {
-    setServiceInfo({
-      ...initialServiceData,
-      fuelfluids: value
-    });
+    const fuelData = serviceInfo;
+    fuelData.fuelfluids = value;
+    setServiceInfo(fuelData);
   };
 
   const towingToggle = value => {
@@ -586,9 +679,10 @@ function NewPurchaseOrder() {
                         name="fname"
                         value={newData.fname}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="First Name *"
                       />
+                      {errors.fname && <p className="error-text">Please enter a valid first name</p>}
                     </Col>
                     <Col sm={6} lg={4}>
                       <Input
@@ -596,9 +690,10 @@ function NewPurchaseOrder() {
                         name="lname"
                         value={newData.lname}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="Last Name *"
                       />
+                      {errors.lname && <p className="error-text">Please enter a valid last name</p>}
                     </Col>
                     <Col sm={6} lg={4}>
                       <Input
@@ -606,9 +701,10 @@ function NewPurchaseOrder() {
                         name="phone"
                         value={newData.phone}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="Phone Number *"
                       />
+                      {errors.phone && <p className="error-text">Please enter a valid phone number</p>}
                     </Col>
                   </Row>
                 </div>
@@ -621,9 +717,10 @@ function NewPurchaseOrder() {
                         name="year"
                         value={newData.year}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="Year *"
                       />
+                      {errors.year && <p className="error-text">Please enter the vehicle year</p>}
                     </Col>
                     <Col sm={6}>
                       <SelectOption
@@ -633,6 +730,7 @@ function NewPurchaseOrder() {
                         onChange={handleChange}
                         options={vehicle_make}
                       />
+                      {errors.make && <p className="error-text">Please select the vehicle make</p>}
                     </Col>
                   </Row>
                   <Row>
@@ -642,9 +740,10 @@ function NewPurchaseOrder() {
                         name="model"
                         value={newData.model}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="Model *"
                       />
+                      {errors.model && <p className="error-text">Please enter the vehicle model</p>}
                     </Col>
                     <Col sm={6}>
                       <SelectOption
@@ -654,6 +753,7 @@ function NewPurchaseOrder() {
                         onChange={handleChange}
                         options={vehicle_color}
                       />
+                      {errors.color && <p className="error-text">Please select the vehicle color</p>}
                     </Col>
                   </Row>
                 </div>
@@ -671,9 +771,10 @@ function NewPurchaseOrder() {
                         onChange={handleChange}
                         options={service_type}
                       />
+                      {errors.servicetype && <p className="error-text">Please select the service type</p>}
                     </Col>
 
-                    {serviceInfo.towing && (
+                    {newData.servicetype === 'Towing' && (
                       <Col xl={6}>
                         <SelectOption
                           label="Problem Type *"
@@ -705,7 +806,7 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    {serviceInfo.towing && (
+                    {newData.servicetype === 'Towing' && (
                       <Col xl={6}>
                         <SelectOption
                           label="Will the vehicle go in neutral? *"
@@ -717,7 +818,7 @@ function NewPurchaseOrder() {
                       </Col>
                     )}
 
-                    {serviceInfo.towing && (
+                    {newData.servicetype === 'Towing' && (
                       <Col xl={6}>
                         <SelectOption
                           label="Do all four wheels on the vehicle turn? *"
@@ -753,7 +854,7 @@ function NewPurchaseOrder() {
                       </Col>
                     )}
 
-                    {serviceInfo.fuelfluids && (
+                    {newData.servicetype === 'Fuel / Fluids' && (
                       <Col xl={6}>
                         <SelectOption
                           label="Do you need regular gas or diesel? *"
@@ -806,13 +907,24 @@ function NewPurchaseOrder() {
                   </Row>
 
                   <div className="calculate-cost">
-                    <Button
-                      variant="info"
-                      type="button"
-                      onClick={calculateCost}
-                    >
-                      Calculate Cost
-                    </Button>
+                    { toggleCostCalculation === false ? (
+                      <Button
+                        variant="info"
+                        type="button"
+                        onClick={calculateCost}
+                        disabled
+                      >
+                        Calculate Cost
+                      </Button>) : (
+                        <Button
+                        variant="info"
+                        type="button"
+                        onClick={calculateCost}                      
+                      >
+                        Calculate Cost
+                      </Button>
+                      )
+                    }
                   </div>
                   {isCalculated && (
                     <div className="cost-details">
@@ -851,21 +963,23 @@ function NewPurchaseOrder() {
                     onChange={handleChange}
                     label="Email *"
                   />
+                  {errors.paymentemail && <p className="error-text">Please enter a valid email</p>}
                   <Row>
                     <Col sm={6}>
                       <Input
                         type="text"
                         name="paymentamount"
-                        value={`$ ${newData.paymentamount}`}
+                        value={newData.paymentamount}
                         onChange={handleChange}
                         label="Amount *"
                       />
+                      {errors.paymentamount && <p className="error-text">Please enter the amount</p>}
                     </Col>
                     <Col sm={6}>
                       <Input
                         type="text"
                         name="paymenttotalamount"
-                        value={`$ ${newData.paymenttotalamount}`}
+                        value={newData.paymenttotalamount}
                         label="Total Amount *"
                         readOnly="readOnly"
                       />

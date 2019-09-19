@@ -343,3 +343,15 @@ ul {
   margin-top: -10px;
   margin-bottom: 10px;
 }
+
+.autocomplete-dropdown-container{
+  .suggestion-item{
+    padding:5px 0;
+    font-size: 14px;
+    border-bottom: 1px dashed #b7b7b7;
+  }
+  .suggestion-item--active{
+    @extend .suggestion-item;
+    background-color: #f5e4e5;
+  }
+}

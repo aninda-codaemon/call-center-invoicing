@@ -9,6 +9,9 @@ import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
 import AutoCompletePlaces from "./autocompleteplaces";
+
+import Locationsearch from './places';
+
 import { geocodeByAddress, getLatLng } from "react-google-places-autocomplete";
 import {
   vehicle_make,
@@ -167,6 +170,13 @@ function NewPurchaseOrder() {
   const onSelectPlaceOrigin = ({ description }) => {
     latZipFinder(description, "origin");
   };
+
+  // On change origin
+  const onChangePlaceOrigin = ({ description }) => {
+    alert('Origin change');
+    console.log(description);
+  }
+
   //onselect destination
   const onSelectPlaceDestination = ({ description }) => {
     latZipFinder(description, "destination");
@@ -891,10 +901,11 @@ function NewPurchaseOrder() {
                   </Row>
                   <Row>
                     <Col sm={6}>
-                      <AutoCompletePlaces
+                      {/* <AutoCompletePlaces
                         label="Origin"
-                        onSelect={onSelectPlaceOrigin}
-                      />
+                        onSelect={onSelectPlaceOrigin}                        
+                      /> */}
+                      <Locationsearch label="Origin" />
                     </Col>
                     <Col sm={6}>
                       {newData.servicetype === "Towing" && (

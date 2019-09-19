@@ -31,6 +31,7 @@
     "mysql2": "^1.6.5",
     "node-url-shortener": "^1.0.1",
     "react-iframe": "^1.8.0",
+    "react-places-autocomplete": "^7.2.1",
     "request-promise": "^4.2.4",
     "twilio": "^3.34.0"
   },

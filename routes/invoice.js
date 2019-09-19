@@ -146,7 +146,9 @@ router.post('/pricing', [authMiddleware, [
             net_price,
             service_charges,
             system: pricing['system'],
-            night_charges
+            night_charges,
+            mileage: parseFloat((total_distance - 10).toFixed(2)),
+            mileage_charges: over_miles_price
           }
         });
       }

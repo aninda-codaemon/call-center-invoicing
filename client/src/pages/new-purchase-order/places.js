@@ -19,7 +19,8 @@ const Locationsearch = (props) => {
   		console.log(geocode[0]);
   		const latLang = await getLatLng(geocode[0]);
   		console.log('Lat lang');
-  		console.log(latLang);
+      console.log(latLang);
+      props.onSelect({ description: address });
   	} catch (error) {
   		console.log('Geocoding error');
   		console.log(error);
@@ -36,8 +37,8 @@ const Locationsearch = (props) => {
   		console.log(geocode[0]);
   		const latLang = await getLatLng(geocode[0]);
   		console.log('Lat lang');
-  		console.log(latLang);
-
+      console.log(latLang);
+      props.onSelect({ description: address });
   	} catch (error) {
   		console.log('Geocoding error');
   		console.log(error);
@@ -48,7 +49,7 @@ const Locationsearch = (props) => {
           <div className="form-group">
             <input
               {...getInputProps({
-                placeholder: 'Search Places ...',
+                placeholder: 'Search locations',
                 className: 'location-search-input float-input',
               })}
             />

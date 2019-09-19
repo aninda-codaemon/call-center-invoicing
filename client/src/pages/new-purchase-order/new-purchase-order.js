@@ -326,11 +326,10 @@ function NewPurchaseOrder() {
           );          
         } else {
           currentData.anyonewithvehicle = 'Yes';
-          handleClose();          
+          handleClose();
         }
         toggleCalculationHandle();
         break;
-
       case "servicetype":
         if (e.target.value === "Fuel / Fluids") {
           fuelfluidsToggle(false);
@@ -338,12 +337,12 @@ function NewPurchaseOrder() {
           towingToggle(true);
         } else {
           setServiceInfo(initialServiceData);
-        }        
+        }
         currentData.servicetype = e.target.value;
         setNewData(currentData);
         console.log(newData.servicetype);
         setIscalculated(false);
-        toggleCalculationHandle();
+        toggleCalculationHandle();        
         break;
 
       case "fueltype":
@@ -528,14 +527,77 @@ function NewPurchaseOrder() {
     };
   };
 
+  // Refresh the additional cost
+  const refreshAdditionalCost = () => {
+    const data_set = newData;
+    let total_cost = 0.00;
+    console.log('Refresh additional cost: ' + data_set.servicetype);
+
+    if (data_set.pickuplocation === 'Highway') { 
+      setCost({ ...cost, highway: 18 });
+      total_cost += 18; 
+    } else { 
+      setCost({ ...cost, highway: 0 }); 
+    }
+
+    if (data_set.keysforvehicle === 'No') { 
+      setCost({ ...cost, nokeys: 23 });
+      total_cost += 23;
+    } else { 
+      setCost({ ...cost, nokeys: 0 });
+    }
+
+    // Check service type
+    if (data_set.servicetype === 'Towing') {
+      if (data_set.neutral === 'No') { 
+        setCost({ ...cost, noneutral: 17 });
+        total_cost += 17;
+      } else { 
+        setCost({ ...cost, noneutral: 0 }); 
+      }
+      
+      if (data_set.fourwheelsturn === 'No') {
+        if (data_set.frontwheelsturn === 'No' && data_set.backwheelsturn === 'No') {
+          total_cost += 39;
+        }else {
+          if (data_set.frontwheelsturn === 'No') {
+            setCost({ ...cost, nofrontwheelsturn: 26 });
+            total_cost += 26;
+          } else { 
+            setCost({ ...cost, nofrontwheelsturn: 0 }); 
+          }
+  
+          if (data_set.backwheelsturn === 'No') { 
+            setCost({ ...cost, nobackwheelsturn: 29 });
+            total_cost += 29;
+          } else { 
+            setCost({ ...cost, nobackwheelsturn: 0 }); 
+          }
+        }
+      }      
+    } else {      
+      setCost({ ...cost, noneutral: 0 });
+      setCost({ ...cost, nofrontwheelsturn: 0 });
+      setCost({ ...cost, nobackwheelsturn: 0 });
+    }
+
+    bothWheelsNotTurn();
+    console.log('Total additional cost: ' + total_cost);
+    data_set.additionalprice = total_cost;
+    setNewData(data_set);
+    return total_cost;
+  }
+
   //fetch data common method
   const commonFetchData = () => {
+    const additional_cost = refreshAdditionalCost();
+    console.log('Common fetch additional data: ', additional_cost); 
     let postData = createPostData(
       newData.ozip,
       newData.dzip,
       newData.tmiles,
       newData.servicetype,
-      newData.additionalprice,
+      additional_cost,
       "",
       newData.origin.lat,
       newData.origin.lng,
@@ -556,6 +618,19 @@ function NewPurchaseOrder() {
           currentData.paymentamount = data.net_price;
           setNewData({ ...currentData });
           setIscalculated(true);
+          
+          const mileage_charges = (parseFloat(newData.tmiles) > 10) ? (parseFloat(newData.tmiles) - 10).toFixed(2) : 0.00;
+
+          const alert_html = `
+            Base price: ${data.base_price} \n
+            Total distance: ${newData.tmiles} \n
+            Mileage: ${mileage_charges} \n
+            Mileage Charges(per mile): ${data.mileage_charges} \n
+            Extra Mileage(Mileage * Mileage Charges): ${(mileage_charges * data.mileage_charges).toFixed(2)} \n
+            Additional Charges: ${newData.additionalprice} \n
+            Total Cost(Base + Additional + Extra Mileage): ${data.net_price} 
+          `;
+          alert(alert_html);
         }
       } catch (error) {
         console.log('cost error');
@@ -574,8 +649,7 @@ function NewPurchaseOrder() {
   //Calculate Cost
   const calculateCost = async () => {
     console.log('Calculate Cost');    
-    console.log(newData);
-
+    console.log(newData);    
     //calculate cost if only origin is present
     // if (
     //   !isEmpty(newData.origin) &&
@@ -583,6 +657,9 @@ function NewPurchaseOrder() {
     //   newData.servicetype !== "Towing" &&
     //   newData.servicetype !== ""
     // )
+
+    console.log('Calculate Cost');    
+    console.log(cost);
 
     if (newData.servicetype === 'Towing') {
       if (newData.originaddress === '' && newData.destinationaddress === '') {
@@ -626,6 +703,8 @@ function NewPurchaseOrder() {
                   currentData.tmiles = miles;
                   setNewData(currentData);
                   console.log(newData);
+                  console.log('Additional cost breakup:');
+                  console.log(cost);                  
                   commonFetchData();
                 }
               } else {
@@ -643,6 +722,8 @@ function NewPurchaseOrder() {
         );
         return false;
       } else {
+        console.log('Additional cost breakup:');
+        console.log(cost);        
         commonFetchData();
       }       
     }    
@@ -903,16 +984,17 @@ function NewPurchaseOrder() {
                     <Col sm={6}>
                       {/* <AutoCompletePlaces
                         label="Origin"
-                        onSelect={onSelectPlaceOrigin}                        
+                        onSelect={onSelectPlaceOrigin}
                       /> */}
-                      <Locationsearch label="Origin" />
+                      <Locationsearch label="Origin" onSelect={onSelectPlaceOrigin} />
                     </Col>
                     <Col sm={6}>
                       {newData.servicetype === "Towing" && (
-                        <AutoCompletePlaces
-                          label="Destination"
-                          onSelect={onSelectPlaceDestination}
-                        />
+                        // <AutoCompletePlaces
+                        //   label="Destination"
+                        //   onSelect={onSelectPlaceDestination}
+                        // />
+                        <Locationsearch label="Destination" onSelect={onSelectPlaceDestination} />
                       )}
                     </Col>
                   </Row>
@@ -938,24 +1020,37 @@ function NewPurchaseOrder() {
                     }
                   </div>
                   {isCalculated && (
-                    <div className="cost-details">
-                      {newData.tmiles > 0 && (
-                        <h3>
-                          Distance: <strong>{newData.tmiles} miles</strong>
-                        </h3>
-                      )}
+                    <React.Fragment>
+                      <div className="cost-details">
+                        {newData.tmiles > 0 && (
+                          <h3>
+                            Distance: <strong>{newData.tmiles} miles</strong>
+                          </h3>
+                        )}
 
-                      <h3>
-                        Cost: <strong>$ {newData.calculatedcost}</strong>
-                      </h3>
-                      <p>
-                        Base Price: <strong>$ {newData.baseprice}</strong>
-                      </p>
-                      <p>
-                        Additional Price:
-                        <strong>$ {newData.additionalprice}</strong>
-                      </p>
-                    </div>
+                        <h3>
+                          Cost: <strong>$ {newData.calculatedcost}</strong>
+                        </h3>
+                        <p>
+                          Base Price: <strong>$ {newData.baseprice}</strong>
+                        </p>
+                        <p>
+                          Additional Price:
+                          <strong>$ {newData.additionalprice}</strong>
+                        </p>
+                      </div>
+                      {/* <div>
+                        <h5>Price Breakup:</h5>
+                        <p>Base Price: <span id="base_price"></span></p>
+                        <p>Total Distance: <span id="total_distance"></span></p>
+                        <p>Mileage: <span id="mileage"></span></p>
+                        <p>Mileage charges(per mile): <span id="mileage_charges"></span></p>
+                        <p>Extra Mileage(Mileage * Mileage Charges): <span id="extra_mieage"></span></p>
+                        <p>Additional Charges: <span id="additional_charges"></span></p>
+                        <p><hr/></p>
+                        <p>Total Cost(Base Price + Additional Charges + Extra Mileage): <span id="net_price"></span></p>
+                      </div> */}
+                    </React.Fragment>          
                   )}
                   {isCalculated && (
                     <div className="map-container">

@@ -57,6 +57,19 @@ ul {
       }
     }
 
+    &.location-search-input{
+      &~label {
+        color: $theme-red;
+        top: 6px;
+        @include font-size(13);
+        font-weight: 600;
+
+        @include mobile-small {
+          top: 4px;
+        }
+      }
+    }
+
     &:focus {
       outline: none;
       border-color: $theme-red;

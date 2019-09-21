@@ -2,6 +2,7 @@ export const AUTH_ERROR = 'AUTH_ERROR';
 export const USER_LOADED = 'USER_LOADED';
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAIL = 'LOGIN_FAIL';
+export const FORGET_PASSWORD = 'FORGET_PASSWORD';
 export const LOGOUT = 'LOGOUT';
 export const CLEAR_ERRORS = 'CLEAR_ERRORS';
 
@@ -16,5 +17,6 @@ export const CLEAR_SUCCESS = 'CLEAR_SUCCESS';
 export const CLEAR_ERROR = 'CLEAR_ERROR';
 export const USER_INFO = 'USER_INFO';
 export const USER_UPDATE = 'USER_UPDATE';
+export const USER_PASSWORD = 'USER_PASSWORD';
 
-export const SERVER_URL = 'http://18.217.104.6'; //'http://localhost:5000'; //'http://18.217.104.6';
+export const SERVER_URL = 'http://localhost:5000'; //'http://localhost:5000'; //'http://18.217.104.6';

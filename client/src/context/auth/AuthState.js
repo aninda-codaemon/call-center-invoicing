@@ -10,7 +10,10 @@ import {
   LOGOUT,
   CLEAR_ERRORS,
   USER_LOADED,
-  SERVER_URL
+  USER_PASSWORD,
+  SERVER_URL,
+  USER_ERROR,
+  FORGET_PASSWORD
 } from '../Types';
 
 import AuthContext from './authContext';
@@ -21,7 +24,8 @@ const AuthState = (props) => {
     token: localStorage.getItem('xtoken'),
     isAuthenticated: (localStorage.getItem('xtoken') ? true : false),
     user: null,
-    error: null
+    error: null,
+    success: null
   };
 
   const SERVER = SERVER_URL;
@@ -73,6 +77,29 @@ const AuthState = (props) => {
       });
     }
   }
+
+  // Forget password
+  const forget_password = async (formData) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+        
+    try {
+      const response = await axios.post(`${SERVER}/api/auth/forget-password`, formData, config);
+      dispatch({
+        type: FORGET_PASSWORD,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('Login state error');
+      dispatch({
+        type: LOGIN_FAIL,
+        payload: error.response.data.errors
+      });
+    }
+  }
   
   const logout = () => dispatch({ type: LOGOUT });
 
@@ -82,9 +109,11 @@ const AuthState = (props) => {
         isAuthenticated: state.isAuthenticated,
         user: state.user,
         error: state.error,
+        success: state.success,
         login,
         logout,
-        loadUser
+        loadUser,
+        forget_password
       }}
     >
       {props.children}

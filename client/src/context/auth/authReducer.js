@@ -4,7 +4,8 @@ import {
   LOGIN_FAIL,
   LOGOUT,
   CLEAR_ERRORS,
-  USER_LOADED
+  USER_LOADED,
+  FORGET_PASSWORD
 } from '../Types';
 
 export default (state, action) => {
@@ -29,7 +30,7 @@ export default (state, action) => {
       localStorage.removeItem('xtoken');
       return {
         ...state,
-        token: undefined,
+        token: null,
         isAuthenticated: false,
         loading: true,
         user: null,
@@ -44,5 +45,14 @@ export default (state, action) => {
         user: null,
         error: action.payload
       };
+    case FORGET_PASSWORD:
+      return {
+        ...state,
+        token: null,
+        isAuthenticated: false,
+        loading: true,
+        user: null,
+        error: [{ msg: action.payload.data.msg }]
+      }
   }
 }

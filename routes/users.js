@@ -192,7 +192,9 @@ router.get('/profile/:id', authMiddleware, async (req, res) => {
 // @route     PUT /api/users/:id
 // @desc      Update a user agent password
 // @access    Private
-router.put('/:id', authMiddleware, async (req, res) => {  
+router.put('/:id', [authMiddleware, [
+  check('password', 'Please enter the user password').not().isEmpty().escape()
+]], async (req, res) => {  
   const id = req.params.id;
   const { password } = req.body;
 
@@ -226,7 +228,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (response.error) {
       return res.status(500).json({ errors: [{msg: 'Internal server error!'}] });
     } else {
-      return res.status(200).json({ errors: [], data: {msg: 'User profile updated' }});
+      return res.status(200).json({ errors: [], data: {msg: 'User profile password updated' }});
     }
   }    
 });
@@ -262,10 +264,10 @@ router.post('/:id', [authMiddleware, [
   }    
 });
 
-// @route     POST /api/users/forget-password
-// @desc      Block a user agent
-// @access    Public
-router.post('/forget-password', [
+// @route     POST /api/users/forgot-password
+// @desc      Forget password
+// @access    Public ** Not being used
+router.post('/forgot-password', [
   check('email_id', 'Please enter a valid email id').isEmail()
 ], async (req, res) => {
   const errors = validationResult(req);

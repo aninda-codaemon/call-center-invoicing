@@ -13,7 +13,8 @@ import {
   CLEAR_SUCCESS,
   CLEAR_ERROR,
   USER_INFO,
-  USER_UPDATE
+  USER_UPDATE,
+  USER_PASSWORD
 } from '../Types';
 import UserContext from './userContext';
 import UserReducer from './userReducer';
@@ -193,6 +194,37 @@ const UserState = (props) => {
     }
   }
 
+  // Update user password
+  const update_password = async (values) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const { id, password } = values;
+    const formData = {
+      id,
+      password
+    }
+
+    try {
+      const response = await axios.put(`${SERVER_URL}/api/users/${id}`, formData, config);
+      console.log('User password response');
+      console.log(response);
+      dispatch({
+        type: USER_PASSWORD,
+        payload: response.data
+      });      
+    } catch (error) {
+      console.log('User password error');
+      dispatch({
+        type: USER_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
   const update_per_page = (value) => {
     dispatch({
       type: USER_PERPAGE,
@@ -247,7 +279,8 @@ const UserState = (props) => {
       clear_error,
       info_user,
       update_user,
-      update_status
+      update_status,
+      update_password
     }}
   >
     { props.children }

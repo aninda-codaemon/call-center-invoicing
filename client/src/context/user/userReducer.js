@@ -9,7 +9,8 @@ import {
   CLEAR_SUCCESS,
   CLEAR_ERROR,
   USER_INFO,
-  USER_UPDATE
+  USER_UPDATE,
+  USER_PASSWORD
 } from '../Types';
 
 export default (state, action) => {
@@ -74,5 +75,11 @@ export default (state, action) => {
           success: [{ msg: action.payload.data.msg }],
           error: null
         };
+    case USER_PASSWORD:
+      return {
+        ...state,
+        success: [{ msg: action.payload.data.msg }],
+        error: null
+      };
   }
 };

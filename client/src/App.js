@@ -37,7 +37,7 @@ function App() {
             <PrivateRoute path="/new-purchase-order" component={NewPurchaseOrder} />
             <PrivateRoute path="/refund-request" component={RefundRequest} />
             <PrivateRoute path="/users" component={Users} />
-            <PrivateRoute path="/edit-user" component={EditUser} />
+            <PrivateRoute path="/edit-user/:id" component={EditUser} />
             <PrivateRoute path="/edit-account" component={EditAccount} />
             <PrivateRoute path="/create-new-user" component={CreateNewUser} />
             <PrivateRoute path="/invoice-overview" component={InvoiceOverview} />

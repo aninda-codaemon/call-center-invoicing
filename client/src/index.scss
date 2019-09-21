@@ -143,6 +143,10 @@ ul {
     @extend .btn-danger;
     background-color: #34d293;
     border-color: #34d293;
+
+    &:disabled {
+      opacity: 0.2;
+    }
   }
 
   &.btn-warning {

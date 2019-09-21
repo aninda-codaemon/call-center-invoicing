@@ -8,7 +8,12 @@ import {
   USER_PERPAGE,
   USER_FETCHPAGE,
   USER_SEARCHTERM,
-  USER_SORTORDER
+  USER_SORTORDER,
+  USER_SAVE,
+  CLEAR_SUCCESS,
+  CLEAR_ERROR,
+  USER_INFO,
+  USER_UPDATE
 } from '../Types';
 import UserContext from './userContext';
 import UserReducer from './userReducer';
@@ -16,13 +21,22 @@ import UserReducer from './userReducer';
 const UserState = (props) => {
   const initialState = {
     users: [],
+    user: {
+      first_name: '',
+      last_name: '',
+      email_id: '',
+      contact_no: '',
+      password: '',
+      confirmpassword: ''
+    },
     sort_by: 'first_name',
     sort_order: 'ASC',
     search_term: '',
     fetch_page: 1,
-    per_page: 2,
+    per_page: 10,
     total_page: 0,
-    error: null
+    error: null,
+    success: null
   };
 
   const [state, dispatch] = useReducer(UserReducer, initialState);
@@ -41,8 +55,6 @@ const UserState = (props) => {
       fetch_page,
       per_page
     };
-    console.log('Form Data');
-    console.log(formData);
 
     try {
       const response = await axios.post(`${SERVER_URL}/api/users`, formData, config);
@@ -54,6 +66,97 @@ const UserState = (props) => {
       });
     } catch (error) {
       console.log('User list error');
+      dispatch({
+        type: USER_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
+  const save_user = async (values) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const formData = {
+      first_name: values.fname,
+      last_name: values.lname,
+      email: values.email,
+      phone: values.phone,
+      user_role: 2,
+      password: values.password,
+    };
+
+    try {
+      const response = await axios.post(`${SERVER_URL}/api/users/create`, formData, config);
+      console.log('User save response');
+      console.log(response);
+      dispatch({
+        type: USER_SAVE,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('User save error');
+      dispatch({
+        type: USER_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
+  const update_user = async (values) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const formData = {
+      first_name: values.fname,
+      last_name: values.lname,
+      email: values.email,
+      phone: values.phone,
+      user_role: values.user_role
+    };
+    
+    try {
+      const response = await axios.post(`${SERVER_URL}/api/users/update-user/${values.id}`, formData, config);
+      console.log('User save response');
+      console.log(response);
+      dispatch({
+        type: USER_UPDATE,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('User save error');
+      dispatch({
+        type: USER_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
+  const info_user = async (user_id) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const formData = {};
+
+    try {
+      const response = await axios.get(`${SERVER_URL}/api/users/profile/${user_id}`, formData, config);
+      console.log('User info response');
+      console.log(response);
+      dispatch({
+        type: USER_INFO,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('User info error');
       dispatch({
         type: USER_ERROR,
         payload: error.response.data.errors
@@ -89,20 +192,32 @@ const UserState = (props) => {
     });
   }
 
+  const clear_success = () => dispatch({ type: CLEAR_SUCCESS });
+
+  const clear_error = () => dispatch({ type: CLEAR_ERROR });
+
   return <UserContext.Provider
     value={{
       users: state.users,
+      user: state.user,
       sort_by: state.sort_by,
       sort_order: state.sort_order,
       search_term: state.search_term,
       fetch_page: state.fetch_page,
       per_page: state.per_page,
       total_page: state.total_page,
+      error: state.error,
+      success: state.success,
       get_users,
       update_per_page,
       update_fetch_page,
       update_search_terms,
-      update_sort_order
+      update_sort_order,
+      save_user,
+      clear_success,
+      clear_error,
+      info_user,
+      update_user
     }}
   >
     { props.children }

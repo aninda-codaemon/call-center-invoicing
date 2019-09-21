@@ -22,6 +22,7 @@ function Input(props) {
         onBlur={props.onBlur}
         readOnly={props.readOnly}
         required={props.required}
+        disabled={props.disabled}
       />
       <label htmlFor={props.name}>{props.label}</label>
     </div>

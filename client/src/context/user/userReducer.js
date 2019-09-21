@@ -4,7 +4,12 @@ import {
   USER_PERPAGE,
   USER_FETCHPAGE,
   USER_SEARCHTERM,
-  USER_SORTORDER
+  USER_SORTORDER,
+  USER_SAVE,
+  CLEAR_SUCCESS,
+  CLEAR_ERROR,
+  USER_INFO,
+  USER_UPDATE
 } from '../Types';
 
 export default (state, action) => {
@@ -36,5 +41,38 @@ export default (state, action) => {
         sort_order: action.payload.sortOrder,
         sort_by: action.payload.sortBy
       };
+    case USER_SAVE:
+      return {
+        ...state,
+        success: [{ msg: action.payload.data.msg }],
+        error: null
+      };
+    case USER_ERROR:
+      return {
+        ...state,
+        success: null,
+        error: action.payload
+      };
+    case CLEAR_SUCCESS:
+      return {
+        ...state,
+        success: null
+      };
+    case CLEAR_ERROR:
+      return {
+        ...state,
+        error: null
+      };
+    case USER_INFO:
+      return {
+        ...state,
+        user: action.payload.data.user
+      };
+    case USER_UPDATE:
+        return {
+          ...state,
+          success: [{ msg: action.payload.data.msg }],
+          error: null
+        };
   }
 };

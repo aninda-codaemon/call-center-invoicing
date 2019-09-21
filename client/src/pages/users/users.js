@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 
 import UserContext from '../../context/user/userContext';
 
-function Users() {
+function Users(props) {
   const userContext = useContext(UserContext);
   const { users, fetch_page, per_page, sort_by, sort_order, search_term, total_page } = userContext;
 
@@ -30,12 +30,21 @@ function Users() {
           <div className="email">{user.email_id}</div>
           <div className="phone">{user.contact_no}</div>
           <div className="dispatching-system">
-            <Button variant="danger" size="sm" key={user.id}>
-              Block {user.status}
-            </Button>
+            {
+              user.status === 1 ? (
+                <Button onClick={handleToggleUserStatus} variant="success" size="sm" key={user.id} primary={user.id} status={user.status}>
+                  Block
+                </Button>
+              ) : (
+                <Button onClick={handleToggleUserStatus} variant="danger" size="sm" key={user.id} primary={user.id} status={user.status}>
+                  Unblock
+                </Button>
+              )
+            }            
           </div>
           <div className="edit">
-            <Link to="/edit-user"><i className="fa fa-pencil" aria-hidden="true" /></Link>
+            <Link to={`/edit-user/${user.id}`}><i className="fa fa-pencil" aria-hidden="true" /></Link>
+            {/* <a onClick={handleEdit} datakey={user.id} ><i datakey={user.id} className="fa fa-pencil" aria-hidden="true" /></a> */}
           </div>
         </div>
       </React.Fragment>
@@ -46,6 +55,22 @@ function Users() {
 
   const handleSearchTermsChange = (e) => {
     setSearchTerms(e.target.value);
+  }
+
+  const handleEdit = (e) => {
+    e.preventDefault();
+    console.log('Handle edit: ', e.target.getAttribute('datakey'));
+    const dataKey = e.target.getAttribute('datakey');
+    userContext.info_user(dataKey);
+    window.setTimeout(() => (props.history.push(`/edit-user/${dataKey}`)), 2000);
+  }
+
+  const handleToggleUserStatus = (e) => {
+    e.preventDefault();
+    const user_id = e.target.getAttribute('primary');
+    const user_status = e.target.getAttribute('status');
+    const new_status = (user_status === '1') ? 0 : 1;
+    console.log(user_id + ' ' + user_status + ' ' + new_status);
   }
 
   const handleSearchTermsSubmit = (e) => {
@@ -84,6 +109,8 @@ function Users() {
   }
 
   useEffect(() => {
+    userContext.clear_error();
+    userContext.clear_success();
     userContext.get_users(fetch_page, per_page, sort_by, sort_order, search_term);
     //eslint-disable-next-line
   }, []);

@@ -62,7 +62,7 @@ function Pagination(){
   }
 
   const list_per_page = () => {
-    const options = [1, 2, 3];
+    const options = [10, 20, 30];
 
     return options.map(option => (
             <option

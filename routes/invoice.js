@@ -22,7 +22,7 @@ router.get('/send-sms', async (req, res) => {
 // @desc      Dummy send Mail
 // @access    Public
 router.get('/send-mail', async (req, res) => {
-  const receiver='rajib.naskar@codaemonsoftwares.com';
+  const receiver='aninda.kar@codaemonsoftwares.com';
   const mail_subject = 'Test dummy content for sendgrid';
   const mail_message = `<html>
                           <head>

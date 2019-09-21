@@ -8,6 +8,7 @@ function HeaderNav() {
     <ul className="headernav">
       <li>
         <i className="fa fa-undo" aria-hidden="true" />
+        {/* <i className="fa fa-undo fa-counter-spin" aria-hidden="true" /> */}
       </li>
       <li>
         <Dropdown alignRight>

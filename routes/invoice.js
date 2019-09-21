@@ -88,8 +88,7 @@ router.post('/pricing', [authMiddleware, [
         return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
       } else {
         const pricing = msa_price.result[0];
-        const over_miles_price = parseFloat(pricing['per_mile_rate_over_ten_miles'].replace('$', ''));
-        const chargable_miles = total_distance - 10;
+        const over_miles_price = parseFloat(pricing['per_mile_rate_over_ten_miles'].replace('$', ''));        
         const service_charges = 3.5 / 100;
         let base_price = 0.00;
         let net_price = 0.00;
@@ -125,7 +124,8 @@ router.post('/pricing', [authMiddleware, [
           
           // Price calculation
           if (total_distance > 10) {
-            net_price = base_price + ((total_distance - 10) * over_miles_price);
+            const chargable_miles = Math.ceil(total_distance - 10);
+            net_price = base_price + (chargable_miles * over_miles_price);
           } else {
             net_price = base_price;
           }

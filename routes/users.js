@@ -231,10 +231,10 @@ router.put('/:id', authMiddleware, async (req, res) => {
   }    
 });
 
-// @route     DELETE /api/users/:id
+// @route     POST /api/users/:id
 // @desc      Block a user agent
 // @access    Private
-router.delete('/:id', [authMiddleware, [
+router.post('/:id', [authMiddleware, [
   check('status', 'Please enter a valid user status').not().isEmpty()
 ]], async (req, res) => {
   const errors = validationResult(req);

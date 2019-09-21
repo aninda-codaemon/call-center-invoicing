@@ -18,9 +18,9 @@ function EditUser(props) {
   const { error, success, user } = userContext;
   
   const showForm = () => {
-      return (
-        <EditUserForm userId={user_id} />
-      );
+    return (
+      <EditUserForm userId={user_id} />
+    );
   }
 
   useEffect(() => {    

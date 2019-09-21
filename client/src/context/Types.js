@@ -17,4 +17,4 @@ export const CLEAR_ERROR = 'CLEAR_ERROR';
 export const USER_INFO = 'USER_INFO';
 export const USER_UPDATE = 'USER_UPDATE';
 
-export const SERVER_URL = 'http://localhost:5000'; //'http://localhost:5000'; //'http://18.217.104.6';
+export const SERVER_URL = 'http://18.217.104.6'; //'http://localhost:5000'; //'http://18.217.104.6';

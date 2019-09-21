@@ -138,6 +138,35 @@ const UserState = (props) => {
     }
   }
 
+  const update_status = async (values) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const formData = {
+      id: values.id,
+      status: values.status
+    };
+    
+    try {
+      const response = await axios.post(`${SERVER_URL}/api/users/${values.id}`, formData, config);
+      console.log('User status response');
+      console.log(response);
+      dispatch({
+        type: USER_UPDATE,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('User status error');
+      dispatch({
+        type: USER_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
   const info_user = async (user_id) => {
     const config = {
       headers: {
@@ -217,7 +246,8 @@ const UserState = (props) => {
       clear_success,
       clear_error,
       info_user,
-      update_user
+      update_user,
+      update_status
     }}
   >
     { props.children }

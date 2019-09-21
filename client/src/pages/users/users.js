@@ -71,6 +71,11 @@ function Users(props) {
     const user_status = e.target.getAttribute('status');
     const new_status = (user_status === '1') ? 0 : 1;
     console.log(user_id + ' ' + user_status + ' ' + new_status);
+    const values = {id: user_id, status: new_status};
+    userContext.update_status(values);
+    setTimeout(() => {
+      userContext.get_users(fetch_page, per_page, sort_by, sort_order, search_term);
+    }, 2000);    
   }
 
   const handleSearchTermsSubmit = (e) => {
@@ -78,7 +83,7 @@ function Users(props) {
     const page_no = 1;
     userContext.update_search_terms(searchTerms);
     userContext.update_fetch_page(page_no);
-    userContext.get_users(page_no, per_page, sort_by, sort_order, searchTerms);    
+    userContext.get_users(page_no, per_page, sort_by, sort_order, searchTerms);
   };
 
   const [mainCheckbox, setMainCheckbox] = useState(false);

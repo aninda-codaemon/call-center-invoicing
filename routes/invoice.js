@@ -683,7 +683,81 @@ router.get('/:invoicenumber', authMiddleware, async (req, res) => {
 // @route     GET /api/order
 // @desc      Get user list/by param order
 // @access    Private
-router.get('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
+	const user_id = req.body.userid;
+	// Pagination
+	const sortBy = req.body.sort_by || 'invoice_id';
+	const sortOrder = req.body.sort_order || 'ASC';
+	const searchTerm = req.body.search_term || '';
+	const fetchPage = req.body.fetch_page || 1;
+	const perPage = req.body.per_page || 10;
+	let searchQuery = '';
+
+	const invoices = await InvoiceModel.getAllInvoice(user_id);
+	total_invoices = invoices.result.length;
+	total_pages = parseInt(Math.ceil(total_invoices / perPage));
+	start_page = (perPage * (fetchPage - 1));
+	next_start = (perPage * fetchPage);
+	next_page = 0; // Count for next page records
+
+	if (searchTerm !== '') {
+		searchQuery = `AND (first_name LIKE "%${searchTerm.toLowerCase()}%" 
+    OR last_name LIKE "%${searchTerm.toLowerCase()}%" 
+    OR payment_email LIKE "%${searchTerm.toLowerCase()}%"
+    OR phone_number LIKE "%${searchTerm.toLowerCase()}%"
+    OR year LIKE "%${searchTerm.toLowerCase()}%"
+    OR make LIKE "%${searchTerm.toLowerCase()}%"
+    OR model LIKE "%${searchTerm.toLowerCase()}%"
+    OR color LIKE "%${searchTerm.toLowerCase()}%"
+    OR service_type LIKE "%${searchTerm.toLowerCase()}%"
+    OR problem_type LIKE "%${searchTerm.toLowerCase()}%"
+    OR status LIKE "%${searchTerm.toLowerCase()}%"
+    OR dispatcher_system LIKE "%${searchTerm.toLowerCase()}%"
+    OR pickup_location LIKE "%${searchTerm.toLowerCase()}%"
+    OR pickup_location LIKE "%${searchTerm.toLowerCase()}%"
+    OR anyone_with_vehicle LIKE "%${searchTerm.toLowerCase()}%"
+    OR keys_for_vehicle LIKE "%${searchTerm.toLowerCase()}%"
+    OR four_wheels_turn LIKE "%${searchTerm.toLowerCase()}%" 
+    OR front_wheels_turn LIKE "%${searchTerm.toLowerCase()}%"
+    OR back_wheels_turn LIKE "%${searchTerm.toLowerCase()}%"
+    OR is_neutral LIKE "%${searchTerm.toLowerCase()}%"
+    OR fuel_type LIKE "%${searchTerm.toLowerCase()}%"
+    OR pickup_notes LIKE "%${searchTerm.toLowerCase()}%" 
+    OR start_address LIKE "%${searchTerm.toLowerCase()}%"
+    OR end_address LIKE "%${searchTerm.toLowerCase()}%"
+    OR origin_zipcode LIKE "%${searchTerm.toLowerCase()}%"
+    OR destination_zipcode LIKE "%${searchTerm.toLowerCase()}%"
+    OR amount LIKE "%${searchTerm.toLowerCase()}%"
+    OR distance LIKE "%${searchTerm.toLowerCase()}%")`;
+	}
+	const sql_query = `SELECT * FROM user_invoice WHERE user_id=${user_id} ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+	console.log(sql_query);
+	dataArray = await InvoiceModel.getSortedInvoices(sql_query); // perPage, start_page
+
+	if (invoices.error) {
+		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+	} else {
+
+		return res.status(200).json({
+			errors: [], data: {
+				msg: 'Invoice List',
+				invoices: dataArray.result,
+				total_invoices,
+				fetchPage,
+				perPage,
+				start_page,
+				next_start,
+				next_page
+			}
+		});
+	}
+});
+
+
+// @route     GET /api/order/export
+// @desc      Get user list/by param order
+// @access    Private
+router.get('/export', authMiddleware, async (req, res) => {
 	let csv;
 	const csvFilePath = './csvdownload/invoice_' + Date.now() + '.csv';
 	const csvFields = [
@@ -693,14 +767,14 @@ router.get('/', authMiddleware, async (req, res) => {
 		'Back Wheels Turn', 'Front Wheels Turn', 'Is InNeutral', 'Fuel Type', 'Pick Notes', 'Date Open Fulled', 'Date Opened Timestamp',
 		'Date Edit Timestamp', 'User Id', 'MSA System', 'Dispatcher System', 'Payment Link Sent To'];
 
-	const user_id = req.body.userid || 2;
+	const user_id = req.params.userid;
 	// Pagination
-	const sortBy = req.body.sort_by || 'invoice_id';
-	const sortOrder = req.body.sort_order || 'ASC';
-	const searchTerm = req.body.search_term || '';
-	const fetchPage = req.body.fetch_page || 1;
-	const perPage = req.body.per_page || 10;
-	const is_export = req.body.isexport || 0;
+	const sortBy = req.params.sort_by || 'invoice_id';
+	const sortOrder = req.params.sort_order || 'ASC';
+	const searchTerm = req.params.search_term || '';
+	const fetchPage = req.params.fetch_page || 1;
+	const perPage = req.params.per_page || 10;
+	const is_export = req.params.isexport || 0;
 	let searchQuery = '';
 
 	const invoices = await InvoiceModel.getAllInvoice(user_id);
@@ -775,7 +849,7 @@ router.get('/', authMiddleware, async (req, res) => {
 		}
 		return res.status(200).json({
 			errors: [], data: {
-				msg: 'Invoice List',
+				msg: 'Invoice List Downloaded',
 				invoices: dataArray.result,
 				total_invoices,
 				fetchPage,

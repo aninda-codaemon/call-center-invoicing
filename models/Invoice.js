@@ -112,28 +112,6 @@ Invoice.getInvoiceByInvoiceId = async (invoice_number) => {
   }
 };
 
-Invoice.editInvoice = async (invoice) => {
-  let response = {};
-  try {
-    const [result, fields] =
-      await pool.query(`UPDATE user_invoice SET first_name=?,last_name=?,phone_number=?,year=?,make=?,model=?,
-      color=?,service_type=?,problem_type=?,anyone_with_vehicle=?,keys_for_vehicle=?,	four_wheels_turn=?,
-      front_wheels_turn=?,back_wheels_turn=?,is_neutral=?,fuel_type=?,pickup_location=?,pickup_notes=?,origin_zipcode=?,
-      destination_zipcode=?,distance=?,amount=?,payment_email=?,send_payment_to=?,user_id=?,date_edit_timestamp=? WHERE invoice_id=?`,
-        [invoice.fname, invoice.lname, invoice.phone, invoice.year, invoice.make, invoice.model, invoice.color,
-        invoice.servicetype, invoice.problemtype, invoice.anyonewithvehicle, invoice.keysforvehicle, invoice.fourwheelsturn, invoice.frontwheelsturn,
-        invoice.backwheelsturn, invoice.neutral, invoice.fueltype, invoice.pickuplocation, invoice.pickupnotes, invoice.originzipcode,
-        invoice.destinationzipcode, invoice.totaldistance, invoice.paymenttotalamount, invoice.paymentemail, invoice.sendpaymentto, invoice.userid, invoice.timeNow, invoice.invoicenumber]);
-    console.log(result);
-    response.result = invoice;
-    return response;
-  } catch (error) {
-    console.log(`Error: ${error.sqlMessage}`);
-    response.error = error.sqlMessage;
-    return response;
-  }
-};
-
 Invoice.getSortedInvoices = async (sqlQuery) => {
   let response = {};
   try {
@@ -161,4 +139,5 @@ Invoice.getAllInvoice = async (user_id) => {
     return response;
   }
 };
+
 module.exports = Invoice;

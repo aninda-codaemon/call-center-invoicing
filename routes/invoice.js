@@ -690,7 +690,8 @@ router.get('/:invoicenumber', authMiddleware, async (req, res) => {
 // @desc      Get user list/by param order
 // @access    Private
 router.post('/', authMiddleware, async (req, res) => {
-	const user_id = req.body.userid;
+	const user_id = req.user.id;
+
 	// Pagination
 	const sortBy = req.body.sort_by || 'invoice_id';
 	const sortOrder = req.body.sort_order || 'ASC';
@@ -698,17 +699,11 @@ router.post('/', authMiddleware, async (req, res) => {
 	const fetchPage = req.body.fetch_page || 1;
 	const perPage = req.body.per_page || 10;
 	let searchQuery = '';
-
-	const invoices = await InvoiceModel.getAllInvoice(user_id);
-	total_invoices = invoices.result.length;
-	total_pages = parseInt(Math.ceil(total_invoices / perPage));
-	start_page = (perPage * (fetchPage - 1));
-	next_start = (perPage * fetchPage);
-	next_page = 0; // Count for next page records
-
+	
 	if (searchTerm !== '') {
 		searchQuery = `AND (first_name LIKE "%${searchTerm.toLowerCase()}%" 
-    OR last_name LIKE "%${searchTerm.toLowerCase()}%" 
+		OR last_name LIKE "%${searchTerm.toLowerCase()}%"
+		OR  invoice_id LIKE "%${searchTerm.toLowerCase()}%" 
     OR payment_email LIKE "%${searchTerm.toLowerCase()}%"
     OR phone_number LIKE "%${searchTerm.toLowerCase()}%"
     OR year LIKE "%${searchTerm.toLowerCase()}%"
@@ -736,13 +731,24 @@ router.post('/', authMiddleware, async (req, res) => {
     OR amount LIKE "%${searchTerm.toLowerCase()}%"
     OR distance LIKE "%${searchTerm.toLowerCase()}%")`;
 	}
-	const sql_query = `SELECT * FROM user_invoice WHERE user_id=${user_id} ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+
+	const sql_query = `SELECT * FROM user_invoice WHERE 1 ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
 	console.log(sql_query);
 	dataArray = await InvoiceModel.getSortedInvoices(sql_query); // perPage, start_page
-
-	if (invoices.error) {
+	
+	if (dataArray.error) {
 		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
 	} else {
+
+		total_invoices = dataArray.result.length;
+		total_pages = parseInt(Math.ceil(total_invoices / perPage));
+		start_page = (perPage * (fetchPage - 1));
+		next_start = (perPage * fetchPage);
+		next_page = 0; // Count for next page records
+		
+		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+		console.log(sql_limit_query);
+		dataArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page
 
 		return res.status(200).json({
 			errors: [], data: {
@@ -753,7 +759,8 @@ router.post('/', authMiddleware, async (req, res) => {
 				perPage,
 				start_page,
 				next_start,
-				next_page
+				next_page,
+				total_pages
 			}
 		});
 	}

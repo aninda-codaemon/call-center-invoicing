@@ -19,4 +19,11 @@ export const USER_INFO = 'USER_INFO';
 export const USER_UPDATE = 'USER_UPDATE';
 export const USER_PASSWORD = 'USER_PASSWORD';
 
+export const INVOICE_LIST = 'INVOICE_LIST';
+export const INVOICE_ERROR = 'INVOICE_ERROR';
+export const INVOICE_SEARCHTERM = 'INVOICE_SEARCHTERM';
+export const INVOICE_FETCHPAGE = 'INVOICE_FETCHPAGE';
+export const INVOICE_PERPAGE = 'INVOICE_PERPAGE';
+export const INVOICE_SORTORDER = 'INVOICE_SORTORDER';
+
 export const SERVER_URL = 'http://localhost:5000'; //'http://localhost:5000'; //'http://18.217.104.6';

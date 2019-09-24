@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import AuthState from './context/auth/AuthState';
 import UserState from './context/user/UserState';
+import InvoiceState from './context/invoice/InvoiceState';
 
 import Login from "./pages/login/login";
 import AllPurchaseOrders from "./pages/all-purchase-orders/all-purchase-orders";
@@ -29,21 +30,23 @@ function App() {
   return (
     <AuthState>
       <UserState>
-        <Router>
-          <Switch>
-            <Route path="/" exact component={Login} />          
-            <Route path="/forgot-password" component={ForgotPassword} />
-            <PrivateRoute path="/all-purchase-orders" component={AllPurchaseOrders} />
-            <PrivateRoute path="/new-purchase-order" component={NewPurchaseOrder} />
-            <PrivateRoute path="/refund-request" component={RefundRequest} />
-            <PrivateRoute path="/users" component={Users} />
-            <PrivateRoute path="/edit-user/:id" component={EditUser} />
-            <PrivateRoute path="/edit-account" component={EditAccount} />
-            <PrivateRoute path="/create-new-user" component={CreateNewUser} />
-            <PrivateRoute path="/invoice-overview" component={InvoiceOverview} />
-            <PrivateRoute path="/logout" component={Logout} />
-          </Switch>
-        </Router>
+        <InvoiceState>
+          <Router>
+            <Switch>
+              <Route path="/" exact component={Login} />          
+              <Route path="/forgot-password" component={ForgotPassword} />
+              <PrivateRoute path="/all-purchase-orders" component={AllPurchaseOrders} />
+              <PrivateRoute path="/new-purchase-order" component={NewPurchaseOrder} />
+              <PrivateRoute path="/refund-request" component={RefundRequest} />
+              <PrivateRoute path="/users" component={Users} />
+              <PrivateRoute path="/edit-user/:id" component={EditUser} />
+              <PrivateRoute path="/edit-account" component={EditAccount} />
+              <PrivateRoute path="/create-new-user" component={CreateNewUser} />
+              <PrivateRoute path="/invoice-overview" component={InvoiceOverview} />
+              <PrivateRoute path="/logout" component={Logout} />
+            </Switch>
+          </Router>
+        </InvoiceState>
       </UserState>
     </AuthState>
   );

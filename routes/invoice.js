@@ -1,6 +1,8 @@
 const express = require('express');
-const { check, validationResult } = require('express-validator');
-const { sendSMS, sendEmail, checkLocalTime } = require('../helpers/helpers');
+const {check, validationResult} = require('express-validator');
+
+const { sendSMS, sendEmail, checkLocalTime, calculateDistance } = require('../helpers/helpers');
+
 const authMiddleware = require('../middleware/auth');
 const UserModel = require('../models/User');
 const InvoiceModel = require('../models/Invoice');
@@ -449,102 +451,106 @@ router.get('/sendEmail', async (req, res) => {
 // @desc      Get total pricing
 // @access    Private
 router.post('/pricing', [authMiddleware, [
-	check('ozip', 'Please enter a valid origin zipcode').not().isEmpty(),
-	check('servicetype', 'Please enter service type').not().isEmpty(),
-	check('lat', 'Please enter origin latitude').not().isEmpty(),
-	check('lng', 'Please enter origin longitude').not().isEmpty()
-]], async (req, res) => {
-	const errors = validationResult(req);
+  check('ozip', 'Please enter a valid origin zipcode').not().isEmpty(),
+  check('servicetype', 'Please enter service type').not().isEmpty(),
+  check('lat', 'Please enter origin latitude').not().isEmpty(),
+  check('lng', 'Please enter origin longitude').not().isEmpty()
+]], async (req, res) => {  
+  const errors = validationResult(req);
 
-	if (!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() });
-	}
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-	const origin_zipcode = req.body.ozip.toString();
-	const total_distance = parseFloat(req.body.tmiles) || 0.00;
-	const destination_zipcode = req.body.dzip.toString();
-	const service_type = req.body.servicetype.toString();
-	const additional_charges = parseFloat(req.body.addlcharges) || 0.00;
-	const lat = req.body.lat.toString() || '40.7176546';
-	const lng = req.body.lng.toString() || '-73.7197139';
-	const timestamp = req.body.timestamp;
-	const msa = await InvoiceModel.getMsaFromZip(origin_zipcode);
+  const origin_zipcode = req.body.ozip.toString();
+  const total_distance = parseFloat(req.body.tmiles) || 0.00;
+  const destination_zipcode = req.body.dzip.toString();
+  const service_type = req.body.servicetype.toString();
+  const additional_charges = parseFloat(req.body.addlcharges) || 0.00;
+  const lat = req.body.lat.toString() || '40.7176546';
+  const lng = req.body.lng.toString() || '-73.7197139';
+  const origin = req.body.oaddress.toString() || '';
+  const destination = req.body.daddress.toString() || '';
+  const timestamp = req.body.timestamp;  
+  const msa = await InvoiceModel.getMsaFromZip(origin_zipcode);
+  
+  if (msa.error) {
+    return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+  } else {
+    if (msa.result.length > 0) {
+      const msa_price = await InvoiceModel.getPriceForMSA(msa.result[0]['msa_id']);
+      if (msa_price.error) {
+        return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+      } else {
+        const pricing = msa_price.result[0];
+        const over_miles_price = parseFloat(pricing['per_mile_rate_over_ten_miles'].replace('$', ''));        
+        const service_charges = 3.5 / 100;
+        let base_price = 0.00;
+        let net_price = 0.00;
+        let total_price = 0.00;
+        let hour = 0;
+        let min = 0;
+        let night_charges = 0.00;
+        
+        // Check local time
+        const local_time = await checkLocalTime(lat, lng);
 
-	if (msa.error) {
-		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
-	} else {
-		if (msa.result.length > 0) {
-			const msa_price = await InvoiceModel.getPriceForMSA(msa.result[0]['msa_id']);
-			if (msa_price.error) {
-				return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
-			} else {
-				const pricing = msa_price.result[0];
-				const over_miles_price = parseFloat(pricing['per_mile_rate_over_ten_miles'].replace('$', ''));
-				const chargable_miles = total_distance - 10;
-				const service_charges = 3.5 / 100;
-				let base_price = 0.00;
-				let net_price = 0.00;
-				let total_price = 0.00;
-				let hour = 0;
-				let min = 0;
-				let night_charges = 0.00;
+        if (local_time !== null) {
+          console.log(`Local time is: ${local_time.hour}:${local_time.min}`);
+          hour = parseInt(local_time.hour);
+          min = parseInt(local_time.min);
+        } else {
+          hour = 7;
+          min = 0;
+        }
 
-				// Check local time
-				const local_time = await checkLocalTime(lat, lng);
+        // Calculate night time charges
+        if (hour >= 20 && hour <= 23) {
+          night_charges = 9.00;
+        } else if (hour >= 0 && hour < 7) {
+          night_charges = 13.00;
+        } else {
+          night_charges = 0.00;
+        }
 
-				if (local_time !== null) {
-					console.log(`Local time is: ${local_time.hour}:${local_time.min}`);
-					hour = parseInt(local_time.hour);
-					min = parseInt(local_time.min);
-				} else {
-					hour = 7;
-					min = 0;
-				}
-
-				// Calculate night time charges
-				if (hour >= 20 && hour <= 23) {
-					night_charges = 9.00;
-				} else if (hour >= 0 && hour < 7) {
-					night_charges = 13.00;
-				} else {
-					night_charges = 0.00;
-				}
-
-				if (service_type === 'towing') {
-					// Base rate calculation on location timestamp pending. 
-					base_price = parseFloat((parseFloat(pricing['retail_tow_rate'].replace('$', '')) + night_charges).toFixed(2));
-
-					// Price calculation
-					if (total_distance > 10) {
-						net_price = base_price + ((total_distance - 10) * over_miles_price);
-					} else {
-						net_price = base_price;
-					}
-				} else {
-					// Base rate calculation on location timestamp pending.
-					base_price = parseFloat(pricing['retail_light_service_rate'].replace('$', '')) + night_charges;
-					net_price = base_price;
-				}
-
-				net_price = parseFloat((net_price + additional_charges).toFixed(2));
-				total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
-
-				return res.status(200).json({
-					errors: [], data: {
-						msg: 'Total price',
-						base_price,
-						total_price,
-						net_price,
-						service_charges,
-						system: pricing['system'],
-						night_charges
-					}
-				});
-			}
-		} else {
-			return res.status(400).json({ errors: [{ msg: 'No service for this location' }] });
-		}
-	}
+        if (service_type === 'towing') {
+          // Base rate calculation on location timestamp pending. 
+          base_price = parseFloat((parseFloat(pricing['retail_tow_rate'].replace('$', '')) + night_charges).toFixed(2));
+          
+          // Price calculation
+          if (total_distance > 10) {
+            const chargable_miles = Math.ceil(total_distance - 10);
+            net_price = base_price + (chargable_miles * over_miles_price);
+          } else {
+            net_price = base_price;
+          }
+        } else {
+          // Base rate calculation on location timestamp pending.
+          base_price = parseFloat(pricing['retail_light_service_rate'].replace('$', '')) + night_charges;
+          net_price = base_price;
+        }
+  
+        net_price = parseFloat((net_price + additional_charges).toFixed(2));
+        total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
+  
+        return res.status(200).json({
+          errors: [], data: {
+            msg: 'Total price',
+            base_price,
+            total_price,
+            net_price,
+            service_charges,
+            system: pricing['system'],
+            night_charges,
+            mileage: parseFloat((total_distance - 10).toFixed(2)),
+            mileage_charges: over_miles_price
+          }
+        });
+      }
+    } else {
+      return res.status(400).json({ errors: [{ msg: 'No service for this location' }] });
+    }
+  }
 });
 
 // @route     GET /api/order/getInvoiceNumber
@@ -683,7 +689,88 @@ router.get('/:invoicenumber', authMiddleware, async (req, res) => {
 // @route     GET /api/order
 // @desc      Get user list/by param order
 // @access    Private
-router.get('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
+	const user_id = req.user.id;
+
+	// Pagination
+	const sortBy = req.body.sort_by || 'invoice_id';
+	const sortOrder = req.body.sort_order || 'ASC';
+	const searchTerm = req.body.search_term || '';
+	const fetchPage = req.body.fetch_page || 1;
+	const perPage = req.body.per_page || 10;
+	let searchQuery = '';
+	
+	if (searchTerm !== '') {
+		searchQuery = `AND (first_name LIKE "%${searchTerm.toLowerCase()}%" 
+		OR last_name LIKE "%${searchTerm.toLowerCase()}%"
+		OR  invoice_id LIKE "%${searchTerm.toLowerCase()}%" 
+    OR payment_email LIKE "%${searchTerm.toLowerCase()}%"
+    OR phone_number LIKE "%${searchTerm.toLowerCase()}%"
+    OR year LIKE "%${searchTerm.toLowerCase()}%"
+    OR make LIKE "%${searchTerm.toLowerCase()}%"
+    OR model LIKE "%${searchTerm.toLowerCase()}%"
+    OR color LIKE "%${searchTerm.toLowerCase()}%"
+    OR service_type LIKE "%${searchTerm.toLowerCase()}%"
+    OR problem_type LIKE "%${searchTerm.toLowerCase()}%"
+    OR status LIKE "%${searchTerm.toLowerCase()}%"
+    OR dispatcher_system LIKE "%${searchTerm.toLowerCase()}%"
+    OR pickup_location LIKE "%${searchTerm.toLowerCase()}%"
+    OR pickup_location LIKE "%${searchTerm.toLowerCase()}%"
+    OR anyone_with_vehicle LIKE "%${searchTerm.toLowerCase()}%"
+    OR keys_for_vehicle LIKE "%${searchTerm.toLowerCase()}%"
+    OR four_wheels_turn LIKE "%${searchTerm.toLowerCase()}%" 
+    OR front_wheels_turn LIKE "%${searchTerm.toLowerCase()}%"
+    OR back_wheels_turn LIKE "%${searchTerm.toLowerCase()}%"
+    OR is_neutral LIKE "%${searchTerm.toLowerCase()}%"
+    OR fuel_type LIKE "%${searchTerm.toLowerCase()}%"
+    OR pickup_notes LIKE "%${searchTerm.toLowerCase()}%" 
+    OR start_address LIKE "%${searchTerm.toLowerCase()}%"
+    OR end_address LIKE "%${searchTerm.toLowerCase()}%"
+    OR origin_zipcode LIKE "%${searchTerm.toLowerCase()}%"
+    OR destination_zipcode LIKE "%${searchTerm.toLowerCase()}%"
+    OR amount LIKE "%${searchTerm.toLowerCase()}%"
+    OR distance LIKE "%${searchTerm.toLowerCase()}%")`;
+	}
+
+	const sql_query = `SELECT * FROM user_invoice WHERE 1 ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
+	console.log(sql_query);
+	dataArray = await InvoiceModel.getSortedInvoices(sql_query); // perPage, start_page
+	
+	if (dataArray.error) {
+		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+	} else {
+
+		total_invoices = dataArray.result.length;
+		total_pages = parseInt(Math.ceil(total_invoices / perPage));
+		start_page = (perPage * (fetchPage - 1));
+		next_start = (perPage * fetchPage);
+		next_page = 0; // Count for next page records
+		
+		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+		console.log(sql_limit_query);
+		dataArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page
+
+		return res.status(200).json({
+			errors: [], data: {
+				msg: 'Invoice List',
+				invoices: dataArray.result,
+				total_invoices,
+				fetchPage,
+				perPage,
+				start_page,
+				next_start,
+				next_page,
+				total_pages
+			}
+		});
+	}
+});
+
+
+// @route     GET /api/order/export
+// @desc      Get user list/by param order
+// @access    Private
+router.get('/export', authMiddleware, async (req, res) => {
 	let csv;
 	const csvFilePath = './csvdownload/invoice_' + Date.now() + '.csv';
 	const csvFields = [
@@ -693,14 +780,14 @@ router.get('/', authMiddleware, async (req, res) => {
 		'Back Wheels Turn', 'Front Wheels Turn', 'Is InNeutral', 'Fuel Type', 'Pick Notes', 'Date Open Fulled', 'Date Opened Timestamp',
 		'Date Edit Timestamp', 'User Id', 'MSA System', 'Dispatcher System', 'Payment Link Sent To'];
 
-	const user_id = req.body.userid || 2;
+	const user_id = req.params.userid;
 	// Pagination
-	const sortBy = req.body.sort_by || 'invoice_id';
-	const sortOrder = req.body.sort_order || 'ASC';
-	const searchTerm = req.body.search_term || '';
-	const fetchPage = req.body.fetch_page || 1;
-	const perPage = req.body.per_page || 10;
-	const is_export = req.body.isexport || 0;
+	const sortBy = req.params.sort_by || 'invoice_id';
+	const sortOrder = req.params.sort_order || 'ASC';
+	const searchTerm = req.params.search_term || '';
+	const fetchPage = req.params.fetch_page || 1;
+	const perPage = req.params.per_page || 10;
+	const is_export = req.params.isexport || 0;
 	let searchQuery = '';
 
 	const invoices = await InvoiceModel.getAllInvoice(user_id);
@@ -775,7 +862,7 @@ router.get('/', authMiddleware, async (req, res) => {
 		}
 		return res.status(200).json({
 			errors: [], data: {
-				msg: 'Invoice List',
+				msg: 'Invoice List Downloaded',
 				invoices: dataArray.result,
 				total_invoices,
 				fetchPage,

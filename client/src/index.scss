@@ -57,6 +57,19 @@ ul {
       }
     }
 
+    &.location-search-input{
+      &~label {
+        color: $theme-red;
+        top: 6px;
+        @include font-size(13);
+        font-weight: 600;
+
+        @include mobile-small {
+          top: 4px;
+        }
+      }
+    }
+
     &:focus {
       outline: none;
       border-color: $theme-red;
@@ -130,6 +143,10 @@ ul {
     @extend .btn-danger;
     background-color: #34d293;
     border-color: #34d293;
+
+    &:disabled {
+      opacity: 0.2;
+    }
   }
 
   &.btn-warning {
@@ -329,4 +346,20 @@ ul {
   @include font-size(14);
   margin-top: -10px;
   margin-bottom: 10px;
+}
+
+.autocomplete-dropdown-container{
+  position: absolute;
+  left:0;
+  top:60px;
+  z-index: 100;
+  .suggestion-item{
+    padding:5px 10px;
+    font-size: 14px;
+    border-bottom: 1px dashed #b7b7b7;
+  }
+  .suggestion-item--active{
+    @extend .suggestion-item;
+    background-color: #f5e4e5;
+  }
 }

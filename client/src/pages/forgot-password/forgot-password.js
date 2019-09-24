@@ -1,17 +1,24 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/img/logo.png";
 import { Button } from "react-bootstrap";
 import Input from "../../components/input/input";
 import useForm from "../form-logic/form-logic";
 
+import AuthContext from '../../context/auth/authContext';
+
 const ForgotPassword = () => {
+  const authContext = useContext(AuthContext);
+  const { error } = authContext;
+
   const initialValues = {
     email: ""
   };
 
   const submitedSuccessfully = () => {
     console.log("No error found, submitted successfully.");
+    console.log(values);
+    authContext.forget_password(values);
   };
 
   const {
@@ -31,6 +38,7 @@ const ForgotPassword = () => {
           <figcaption>Roadside Assistance</figcaption>
         </figure>
         <div className="login-form-area">
+          {error && <p className="error-text">{error[0].msg}</p>}
           <form onSubmit={handleSubmit} noValidate>
             <fieldset>
               <Input

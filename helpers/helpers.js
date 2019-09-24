@@ -79,4 +79,26 @@ const checkLocalTime = async (lat, lng) => {
   }  
 }
 
-module.exports = { sendSMS, sendEmail, checkLocalTime };
+const calculateDistance = async (origin, destination) => {
+  const apikey = process.env.GOOGLEAPIKEY;
+  const apicall = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin}&destinations=${destination}&key=` + apikey;
+
+  try {
+    console.log('Distance API call');
+    let response = await request.get(apicall);
+    response = JSON.parse(response);
+    console.log('Response');
+    console.log(response);
+
+    if (response.status == 'OK'){
+      console.log(response.status);      
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.log('Distance API error');
+    console.log(error);
+  } 
+}
+
+module.exports = { sendSMS, sendEmail, checkLocalTime, calculateDistance };

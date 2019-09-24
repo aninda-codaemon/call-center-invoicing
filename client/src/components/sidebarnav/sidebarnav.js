@@ -1,8 +1,29 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import "./sidebarnav.scss";
 import { NavLink } from "react-router-dom";
 
+import AuthContext from '../../context/auth/authContext';
+
 function SidebarNav() {
+  const authContext = useContext(AuthContext);
+  const { user } = authContext;
+
+  const loadUserMenu = () => {
+    if (user && user.role_id === 1) {
+      return (
+        <li>
+          <NavLink activeClassName="active" to="/users">
+            <i className="fa fa-phone" aria-hidden="true" /> Users
+            </NavLink>
+        </li>
+      );
+    }
+  }
+  
+  useEffect(() => {
+    loadUserMenu();
+  }, [user]);
+
   return (
     <ul className="sidebarnav">
       <li>
@@ -22,11 +43,7 @@ function SidebarNav() {
           <i className="fa fa-scissors" aria-hidden="true" /> Refund Request
         </NavLink>
       </li>
-      <li>
-      <NavLink activeClassName="active" to="/users">
-        <i className="fa fa-phone" aria-hidden="true" /> Users
-        </NavLink>
-      </li>
+      { loadUserMenu() }      
     </ul>
   );
 }

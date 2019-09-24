@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from 'axios';
 import Iframe from 'react-iframe';
 import "./new-purchase-order.scss";
 import Header from "../../components/header/header";
@@ -8,6 +9,9 @@ import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
 import AutoCompletePlaces from "./autocompleteplaces";
+
+import Locationsearch from './places';
+
 import { geocodeByAddress, getLatLng } from "react-google-places-autocomplete";
 import {
   vehicle_make,
@@ -28,10 +32,11 @@ import {
 
 import { compose, withProps, lifecycle } from "recompose";
 import Axios from "../../custom-hooks/use-axios";
+import { valiedEmail, isAlpha, isPhone, isEmpty } from '../../validation-rules/form-validation';
 
 function NewPurchaseOrder() {
   const initialData = {
-    invoicenumber: 647003561,
+    invoicenumber: '1011290101',
     fname: "",
     lname: "",
     phone: "",
@@ -69,15 +74,74 @@ function NewPurchaseOrder() {
   // form state
   const [newData, setNewData] = useState(initialData);
 
+  // error state
+  const initialError = {
+    fname: false,
+    lname: false,
+    phone: false,
+    year: false,
+    make: false,
+    model: false,
+    color: false,
+    servicetype: false,
+    paymentemail: false,
+    paymentamount: false
+  }
+  const [errors, setErrors] = useState(initialError);
+
+  const validateForm = () => {
+    const errorData = errors;
+    errorData.fname = isEmpty(newData.fname);
+    errorData.lname = isEmpty(newData.lname);
+    errorData.phone = isEmpty(newData.phone);
+    errorData.year = isEmpty(newData.year);
+    errorData.make = isEmpty(newData.make);
+    errorData.model = isEmpty(newData.model);
+    errorData.color = isEmpty(newData.color);
+    errorData.servicetype = isEmpty(newData.servicetype);
+    errorData.paymentemail = isEmpty(newData.paymentemail);
+    errorData.paymentamount = isEmpty(newData.paymentamount);
+    setErrors(errorData);
+
+    if (
+      !errorData.fname && !errorData.lname && !errorData.phone && !errorData.year && !errorData.make && 
+      !errorData.modal && !errorData.color && !errorData.servicetype && !errorData.paymentemail && 
+      !errorData.paymentamount) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    console.log(newData);
+    // setNewData({ ...initialData });
+
+    if (validateForm()) {
+      alert('Form validated');
+    } else {
+      handleShow(
+        "This form has errors. Please enter values for all the required fields!",
+        "noOne"
+      );
+    }
+    return false;
+  };
+
   //cost calculation
   const [isCalculated, setIscalculated] = useState(false);
 
   //Places Auto complete Handler
   const latZipFinder = async (description, place) => {
+    console.log('latZipFinder');
+    console.log(place);
     let currentData = newData;
     try {
       const allData = await geocodeByAddress(description);
       const latLng = await getLatLng(allData[0]);
+      console.log(allData);
+      console.log(latLng);
       
       if (place === "origin") {
         currentData.originaddress = description;
@@ -96,6 +160,7 @@ function NewPurchaseOrder() {
           setNewData(currentData);
         }
       });
+      toggleCalculationHandle();
     } catch (error) {
       console.log(error);
     }
@@ -105,6 +170,13 @@ function NewPurchaseOrder() {
   const onSelectPlaceOrigin = ({ description }) => {
     latZipFinder(description, "origin");
   };
+
+  // On change origin
+  const onChangePlaceOrigin = ({ description }) => {
+    alert('Origin change');
+    console.log(description);
+  }
+
   //onselect destination
   const onSelectPlaceDestination = ({ description }) => {
     latZipFinder(description, "destination");
@@ -203,46 +275,89 @@ function NewPurchaseOrder() {
 
     return (
       <Iframe
-        width="900"
+        width="100%"
         height="600"
         id="route_map"
         className="map-container"
         display="initial"
+        frameBorder="0"
         url={render_url}
         />
     );
   }
 
+  // Toggle calculate cost button
+  const [toggleCostCalculation, setToggleCostCalculation] = useState(false);
+  const toggleCalculationHandle = () => {
+    const currentData = newData;
+    if (currentData.servicetype === 'Towing') {
+      if (currentData.originaddress !== '' && currentData.destinationaddress !== '' && currentData.anyonewithvehicle.toLowerCase() === 'yes') {
+        setToggleCostCalculation(true);
+      } else {
+        setToggleCostCalculation(false);
+      }
+    } else if (currentData.servicetype === 'Fuel / Fluids') {
+      // Get the fuel info
+      if (currentData.originaddress !== '' && serviceInfo.fuelfluids === true && currentData.anyonewithvehicle.toLowerCase() === 'yes') {
+        setToggleCostCalculation(true);
+      } else {
+        setToggleCostCalculation(false);
+      }
+    } else {
+      if (currentData.originaddress !== '' && currentData.anyonewithvehicle.toLowerCase() === 'yes') {
+        setToggleCostCalculation(true);
+      } else {
+        setToggleCostCalculation(false);
+      }      
+    }    
+    console.log('Toggle cost calculation: ', toggleCostCalculation);
+  }
+
   // form handler
   const handleChange = e => {
+    const currentData = newData;
     switch (e.target.name) {
-      case "anyonewithvehicle":
-        e.target.value === "No"
-          ? handleShow(
-              "Service will not be performed on unattended vehicles",
-              "noOne"
-            )
-          : handleClose();
+      case "anyonewithvehicle":        
+        if (e.target.value === "No") {
+          currentData.anyonewithvehicle = 'No';
+          handleShow(
+            "Service will not be performed on unattended vehicles",
+            "noOne"
+          );          
+        } else {
+          currentData.anyonewithvehicle = 'Yes';
+          handleClose();
+        }
+        toggleCalculationHandle();
         break;
-
       case "servicetype":
         if (e.target.value === "Fuel / Fluids") {
-          fuelfluidsToggle(true);
+          fuelfluidsToggle(false);
         } else if (e.target.value === "Towing") {
           towingToggle(true);
         } else {
           setServiceInfo(initialServiceData);
         }
+        currentData.servicetype = e.target.value;
+        setNewData(currentData);
+        console.log(newData.servicetype);
         setIscalculated(false);
+        toggleCalculationHandle();        
         break;
 
       case "fueltype":
-        e.target.value === "Diesel Gas"
-          ? handleShow(
-              "Service will not be performed, we cannot service diesel engines",
-              "fuel"
-            )
-          : handleClose();
+        if (e.target.value === "Diesel Gas") {
+          handleShow(
+            "Service will not be performed, we cannot service diesel engines",
+            "fuel"
+          );
+          fuelfluidsToggle(false);
+        } else {
+          fuelfluidsToggle(true);
+          handleClose();
+        }
+        console.log(serviceInfo);
+        toggleCalculationHandle();
         break;
 
       case "fourwheelsturn":
@@ -289,13 +404,7 @@ function NewPurchaseOrder() {
       [e.target.name]: e.target.value
     });
   };
-
-  const handleSubmit = e => {
-    e.preventDefault();
-    console.log(newData);
-    setNewData({ ...initialData });
-  };
-
+  
   // modal state
   const initModalData = {
     isShown: false,
@@ -337,10 +446,9 @@ function NewPurchaseOrder() {
   const [serviceInfo, setServiceInfo] = useState(initialServiceData);
 
   const fuelfluidsToggle = value => {
-    setServiceInfo({
-      ...initialServiceData,
-      fuelfluids: value
-    });
+    const fuelData = serviceInfo;
+    fuelData.fuelfluids = value;
+    setServiceInfo(fuelData);
   };
 
   const towingToggle = value => {
@@ -401,7 +509,9 @@ function NewPurchaseOrder() {
     addlcharges,
     timestamp,
     lat,
-    lng
+    lng,
+    oaddress,
+    daddress=''
   ) => {
     return {
       ozip,
@@ -411,89 +521,220 @@ function NewPurchaseOrder() {
       addlcharges,
       timestamp,
       lat,
-      lng
+      lng,
+      oaddress,
+      daddress
     };
   };
 
+  // Refresh the additional cost
+  const refreshAdditionalCost = () => {
+    const data_set = newData;
+    let total_cost = 0.00;
+    console.log('Refresh additional cost: ' + data_set.servicetype);
+
+    if (data_set.pickuplocation === 'Highway') { 
+      setCost({ ...cost, highway: 18 });
+      total_cost += 18; 
+    } else { 
+      setCost({ ...cost, highway: 0 }); 
+    }
+
+    if (data_set.keysforvehicle === 'No') { 
+      setCost({ ...cost, nokeys: 23 });
+      total_cost += 23;
+    } else { 
+      setCost({ ...cost, nokeys: 0 });
+    }
+
+    // Check service type
+    if (data_set.servicetype === 'Towing') {
+      if (data_set.neutral === 'No') { 
+        setCost({ ...cost, noneutral: 17 });
+        total_cost += 17;
+      } else { 
+        setCost({ ...cost, noneutral: 0 }); 
+      }
+      
+      if (data_set.fourwheelsturn === 'No') {
+        if (data_set.frontwheelsturn === 'No' && data_set.backwheelsturn === 'No') {
+          total_cost += 39;
+        }else {
+          if (data_set.frontwheelsturn === 'No') {
+            setCost({ ...cost, nofrontwheelsturn: 26 });
+            total_cost += 26;
+          } else { 
+            setCost({ ...cost, nofrontwheelsturn: 0 }); 
+          }
+  
+          if (data_set.backwheelsturn === 'No') { 
+            setCost({ ...cost, nobackwheelsturn: 29 });
+            total_cost += 29;
+          } else { 
+            setCost({ ...cost, nobackwheelsturn: 0 }); 
+          }
+        }
+      }      
+    } else {      
+      setCost({ ...cost, noneutral: 0 });
+      setCost({ ...cost, nofrontwheelsturn: 0 });
+      setCost({ ...cost, nobackwheelsturn: 0 });
+    }
+
+    bothWheelsNotTurn();
+    console.log('Total additional cost: ' + total_cost);
+    data_set.additionalprice = total_cost;
+    setNewData(data_set);
+    return total_cost;
+  }
+
   //fetch data common method
   const commonFetchData = () => {
+    const additional_cost = refreshAdditionalCost();
+    console.log('Common fetch additional data: ', additional_cost); 
     let postData = createPostData(
       newData.ozip,
       newData.dzip,
       newData.tmiles,
       newData.servicetype,
-      newData.additionalprice,
+      additional_cost,
       "",
       newData.origin.lat,
-      newData.origin.lng
+      newData.origin.lng,
+      newData.originaddress,
+      newData.destinationaddress
     );
 
     const fetchData = async () => {
-      let response = await Axios("api/order/pricing", postData, "post");
-      let { data } = response.data;
-      let currentData = { ...newData };
-      if (data) {
-        currentData.baseprice = data.base_price;
-        currentData.calculatedcost = data.net_price;
-        currentData.paymenttotalamount = data.total_price;
-        currentData.paymentamount = data.net_price;
-        setNewData({ ...currentData });
-        setIscalculated(true);
-      }
+      try {
+        let response = await Axios("api/order/pricing", postData, "post");
+        console.log(response);
+        let { data } = response.data;
+        let currentData = { ...newData };
+        if (data) {
+          currentData.baseprice = data.base_price;
+          currentData.calculatedcost = data.net_price;
+          currentData.paymenttotalamount = data.total_price;
+          currentData.paymentamount = data.net_price;
+          setNewData({ ...currentData });
+          setIscalculated(true);
+          
+          const mileage_charges = (parseFloat(newData.tmiles) > 10) ? (parseFloat(newData.tmiles) - 10).toFixed(2) : 0.00;
+
+          const alert_html = `
+            Base price: ${data.base_price} \n
+            Total distance: ${newData.tmiles} \n
+            Mileage: ${mileage_charges} \n
+            Mileage Charges(per mile): ${data.mileage_charges} \n
+            Extra Mileage(Mileage * Mileage Charges): ${(mileage_charges * data.mileage_charges).toFixed(2)} \n
+            Additional Charges: ${newData.additionalprice} \n
+            Total Cost(Base + Additional + Extra Mileage): ${data.net_price} 
+          `;
+          alert(alert_html);
+        }
+      } catch (error) {
+        console.log('cost error');
+        console.log(error);
+        handleShow(
+          "This location is not servicable by our system",
+          "noOne"
+        );
+        return false;
+      }      
     };
 
     return fetchData();
-  }
+  };
 
   //Calculate Cost
-  const calculateCost = () => {
-    //calculate Distance if service type is towing
-    if (
-      newData.servicetype === "Towing" &&
-      !isEmpty(newData.origin) &&
-      !isEmpty(newData.destination)
-    ) {
-      const DistanceService = new google.maps.DistanceMatrixService();
-      DistanceService.getDistanceMatrix(
-        {
-          origins: [newData.origin],
-          destinations: [newData.destination],
-          travelMode: "DRIVING",
-          unitSystem: google.maps.UnitSystem.METRIC,
-          avoidHighways: false,
-          avoidTolls: false
-        },
-        (response, status) => {
-          if (status === "OK") {
-            if (response.rows[0].elements[0].status === "OK") {
-              let distanceMeter = response.rows[0].elements[0].distance.value;
-              let miles = (distanceMeter / 1600).toFixed(2);
-              setNewData({ ...newData, tmiles: miles });
-            }
-          } else {
-            alert("Error was: " + status);
-          }
-        }
-      );
-    }
-
+  const calculateCost = async () => {
+    console.log('Calculate Cost');    
+    console.log(newData);    
     //calculate cost if only origin is present
-    if (
-      !isEmpty(newData.origin) &&
-      isEmpty(newData.destination) &&
-      newData.servicetype !== "Towing" &&
-      newData.servicetype !== ""
-    ) {
-      commonFetchData();
-    }
+    // if (
+    //   !isEmpty(newData.origin) &&
+    //   isEmpty(newData.destination) &&
+    //   newData.servicetype !== "Towing" &&
+    //   newData.servicetype !== ""
+    // )
+
+    console.log('Calculate Cost');    
+    console.log(cost);
+
+    if (newData.servicetype === 'Towing') {
+      if (newData.originaddress === '' && newData.destinationaddress === '') {
+        handleShow(
+          "Please select both origin & destination address",
+          "noOne"
+        );
+        return false;
+      } else if (newData.originaddress === '') {
+        handleShow(
+          "Please select origin address",
+          "noOne"
+        );
+        return false;
+      } else if (newData.destinationaddress === '') {
+        handleShow(
+          "Please select destination address",
+          "noOne"
+        );
+        return false;
+      } else {
+        //calculate Distance if service type is towing
+        if (newData.servicetype === "Towing" && newData.originaddress !== '' && newData.destinationaddress !== '') {
+          console.log('Calculate distance');
+          const DistanceService = new google.maps.DistanceMatrixService();      
+          DistanceService.getDistanceMatrix(
+            {
+              origins: [newData.origin],
+              destinations: [newData.destination],
+              travelMode: "DRIVING",
+              unitSystem: google.maps.UnitSystem.METRIC,
+              avoidHighways: false,
+              avoidTolls: false
+            },
+            (response, status) => {
+              if (status === "OK") {
+                if (response.rows[0].elements[0].status === "OK") {
+                  let distanceMeter = response.rows[0].elements[0].distance.value;
+                  let miles = (distanceMeter / 1600).toFixed(2);                  
+                  const currentData = newData;
+                  currentData.tmiles = miles;
+                  setNewData(currentData);
+                  console.log(newData);
+                  console.log('Additional cost breakup:');
+                  console.log(cost);                  
+                  commonFetchData();
+                }
+              } else {
+                alert("Error was: " + status);
+              }
+            }
+          );          
+        }        
+      }          
+    } else if (newData.servicetype !== 'Towing') {
+      if (newData.originaddress === '') {
+        handleShow(
+          "Please select all the required parameters",
+          "noOne"
+        );
+        return false;
+      } else {
+        console.log('Additional cost breakup:');
+        console.log(cost);        
+        commonFetchData();
+      }       
+    }    
   };
 
   //cost calculation API call if service type is towing
-  useEffect(() => {
-    if (newData.tmiles) {
-      commonFetchData();
-    }
-  }, [newData.tmiles]);
+  // useEffect(() => {
+  //   if (newData.tmiles) {
+  //     commonFetchData();
+  //   }
+  // }, [newData.tmiles]);
 
   useEffect(() => {
     bothWheelsNotTurn();
@@ -529,9 +770,10 @@ function NewPurchaseOrder() {
                         name="fname"
                         value={newData.fname}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="First Name *"
                       />
+                      {errors.fname && <p className="error-text">Please enter a valid first name</p>}
                     </Col>
                     <Col sm={6} lg={4}>
                       <Input
@@ -539,9 +781,10 @@ function NewPurchaseOrder() {
                         name="lname"
                         value={newData.lname}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="Last Name *"
                       />
+                      {errors.lname && <p className="error-text">Please enter a valid last name</p>}
                     </Col>
                     <Col sm={6} lg={4}>
                       <Input
@@ -549,9 +792,10 @@ function NewPurchaseOrder() {
                         name="phone"
                         value={newData.phone}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="Phone Number *"
                       />
+                      {errors.phone && <p className="error-text">Please enter a valid phone number</p>}
                     </Col>
                   </Row>
                 </div>
@@ -564,9 +808,10 @@ function NewPurchaseOrder() {
                         name="year"
                         value={newData.year}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="Year *"
                       />
+                      {errors.year && <p className="error-text">Please enter the vehicle year</p>}
                     </Col>
                     <Col sm={6}>
                       <SelectOption
@@ -576,6 +821,7 @@ function NewPurchaseOrder() {
                         onChange={handleChange}
                         options={vehicle_make}
                       />
+                      {errors.make && <p className="error-text">Please select the vehicle make</p>}
                     </Col>
                   </Row>
                   <Row>
@@ -585,9 +831,10 @@ function NewPurchaseOrder() {
                         name="model"
                         value={newData.model}
                         onChange={handleChange}
-                        required={true}
+                        // required={true}
                         label="Model *"
                       />
+                      {errors.model && <p className="error-text">Please enter the vehicle model</p>}
                     </Col>
                     <Col sm={6}>
                       <SelectOption
@@ -597,6 +844,7 @@ function NewPurchaseOrder() {
                         onChange={handleChange}
                         options={vehicle_color}
                       />
+                      {errors.color && <p className="error-text">Please select the vehicle color</p>}
                     </Col>
                   </Row>
                 </div>
@@ -614,9 +862,10 @@ function NewPurchaseOrder() {
                         onChange={handleChange}
                         options={service_type}
                       />
+                      {errors.servicetype && <p className="error-text">Please select the service type</p>}
                     </Col>
 
-                    {serviceInfo.towing && (
+                    {newData.servicetype === 'Towing' && (
                       <Col xl={6}>
                         <SelectOption
                           label="Problem Type *"
@@ -648,7 +897,7 @@ function NewPurchaseOrder() {
                       />
                     </Col>
 
-                    {serviceInfo.towing && (
+                    {newData.servicetype === 'Towing' && (
                       <Col xl={6}>
                         <SelectOption
                           label="Will the vehicle go in neutral? *"
@@ -660,7 +909,7 @@ function NewPurchaseOrder() {
                       </Col>
                     )}
 
-                    {serviceInfo.towing && (
+                    {newData.servicetype === 'Towing' && (
                       <Col xl={6}>
                         <SelectOption
                           label="Do all four wheels on the vehicle turn? *"
@@ -696,7 +945,7 @@ function NewPurchaseOrder() {
                       </Col>
                     )}
 
-                    {serviceInfo.fuelfluids && (
+                    {newData.servicetype === 'Fuel / Fluids' && (
                       <Col xl={6}>
                         <SelectOption
                           label="Do you need regular gas or diesel? *"
@@ -733,51 +982,80 @@ function NewPurchaseOrder() {
                   </Row>
                   <Row>
                     <Col sm={6}>
-                      <AutoCompletePlaces
+                      {/* <AutoCompletePlaces
                         label="Origin"
                         onSelect={onSelectPlaceOrigin}
-                      />
+                      /> */}
+                      <Locationsearch label="Origin" onSelect={onSelectPlaceOrigin} />
                     </Col>
                     <Col sm={6}>
                       {newData.servicetype === "Towing" && (
-                        <AutoCompletePlaces
-                          label="Destination"
-                          onSelect={onSelectPlaceDestination}
-                        />
+                        // <AutoCompletePlaces
+                        //   label="Destination"
+                        //   onSelect={onSelectPlaceDestination}
+                        // />
+                        <Locationsearch label="Destination" onSelect={onSelectPlaceDestination} />
                       )}
                     </Col>
                   </Row>
 
                   <div className="calculate-cost">
-                    <Button
-                      variant="info"
-                      type="button"
-                      onClick={calculateCost}
-                    >
-                      Calculate Cost
-                    </Button>
+                    { toggleCostCalculation === false ? (
+                      <Button
+                        variant="info"
+                        type="button"
+                        onClick={calculateCost}
+                        disabled
+                      >
+                        Calculate Cost
+                      </Button>) : (
+                        <Button
+                        variant="info"
+                        type="button"
+                        onClick={calculateCost}                      
+                      >
+                        Calculate Cost
+                      </Button>
+                      )
+                    }
                   </div>
                   {isCalculated && (
-                    <div className="cost-details">
-                      <h3>
-                        Distance: <strong>{newData.tmiles} miles</strong>
-                      </h3>
-                      <h3>
-                        Cost: <strong>$ {newData.calculatedcost}</strong>
-                      </h3>
-                      <p>
-                        Base Price: <strong>$ {newData.baseprice}</strong>
-                      </p>
-                      <p>
-                        Additional Price:
-                        <strong>$ {newData.additionalprice}</strong>
-                      </p>
-                    </div>
+                    <React.Fragment>
+                      <div className="cost-details">
+                        {newData.tmiles > 0 && (
+                          <h3>
+                            Distance: <strong>{newData.tmiles} miles</strong>
+                          </h3>
+                        )}
+
+                        <h3>
+                          Cost: <strong>$ {newData.calculatedcost}</strong>
+                        </h3>
+                        <p>
+                          Base Price: <strong>$ {newData.baseprice}</strong>
+                        </p>
+                        <p>
+                          Additional Price:
+                          <strong>$ {newData.additionalprice}</strong>
+                        </p>
+                      </div>
+                      {/* <div>
+                        <h5>Price Breakup:</h5>
+                        <p>Base Price: <span id="base_price"></span></p>
+                        <p>Total Distance: <span id="total_distance"></span></p>
+                        <p>Mileage: <span id="mileage"></span></p>
+                        <p>Mileage charges(per mile): <span id="mileage_charges"></span></p>
+                        <p>Extra Mileage(Mileage * Mileage Charges): <span id="extra_mieage"></span></p>
+                        <p>Additional Charges: <span id="additional_charges"></span></p>
+                        <p><hr/></p>
+                        <p>Total Cost(Base Price + Additional Charges + Extra Mileage): <span id="net_price"></span></p>
+                      </div> */}
+                    </React.Fragment>          
                   )}
                   {isCalculated && (
                     <div className="map-container">
-                      <MapWithADirectionsRenderer />
-                      {/* { generateMapUrl() } */}
+                      {/* <MapWithADirectionsRenderer /> */}
+                      { generateMapUrl() }
                     </div>
                   )}
                 </div>
@@ -791,21 +1069,23 @@ function NewPurchaseOrder() {
                     onChange={handleChange}
                     label="Email *"
                   />
+                  {errors.paymentemail && <p className="error-text">Please enter a valid email</p>}
                   <Row>
                     <Col sm={6}>
                       <Input
                         type="text"
                         name="paymentamount"
-                        value={`$ ${newData.paymentamount}`}
+                        value={newData.paymentamount}
                         onChange={handleChange}
                         label="Amount *"
                       />
+                      {errors.paymentamount && <p className="error-text">Please enter the amount</p>}
                     </Col>
                     <Col sm={6}>
                       <Input
                         type="text"
                         name="paymenttotalamount"
-                        value={`$ ${newData.paymenttotalamount}`}
+                        value={newData.paymenttotalamount}
                         label="Total Amount *"
                         readOnly="readOnly"
                       />

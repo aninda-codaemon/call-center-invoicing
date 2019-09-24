@@ -9,7 +9,7 @@ const headers = {
   }
 };
 
-const baserUrl = "http://18.217.104.6/";
+const baserUrl = "http://localhost:5000/"; //"http://localhost:5000/"; //"http://18.217.104.6/";
 
 const Axios = (url, formdata, reqType) => {
   if (reqType === "post") {

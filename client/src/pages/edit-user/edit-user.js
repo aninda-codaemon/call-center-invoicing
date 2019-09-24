@@ -1,30 +1,32 @@
-import React, { useState } from "react";
+import React, {useState, useContext, useEffect} from "react";
+import "../create-new-user/create-new-user.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { Row, Col, Button, Container } from "react-bootstrap";
 import Input from "../../components/input/input";
+// import validate from "../../validation-rules/create-new-user-validation-rules";
+// import useForm from "../../custom-hooks/form-validation";
+import useForm from "../form-logic/user-form-logic";
+import EditUserForm from './edit-form';
 
-function EditUser() {
-  const initialValues = {
-    fname: "John",
-    lname: "Smith",
-    email: "johnsmith@gmail.com",
-    phone: "9865325686"
-  };
+import UserContext from '../../context/user/userContext';
 
-  const [values, setValues] = useState(initialValues);
+function EditUser(props) {
+  const user_id = props.match.params.id;
+  const userContext = useContext(UserContext);
 
-  const handleChange = e => {
-    setValues({
-      ...values,
-      [e.target.name]: e.target.value
-    });
-  };
+  const { error, success, user } = userContext;
+  
+  const showForm = () => {
+    return (
+      <EditUserForm userId={user_id} />
+    );
+  }
 
-  const handleSubmit = e => {
-    e.preventDefault();
-  };
-
+  useEffect(() => {    
+    userContext.info_user(user_id);
+  }, []);
+  
   return (
     <React.Fragment>
       <Header />
@@ -34,53 +36,7 @@ function EditUser() {
             <Sidebar />
           </Col>
           <Col md={9} className="right-part">
-            <section className="invoice-wrap">
-              <form onSubmit={handleSubmit} noValidate>
-                <Row>
-                  <Col md={6}>
-                    <Input
-                      type="text"
-                      name="fname"
-                      value={values.fname}
-                      onChange={handleChange}
-                      label="First Name *"
-                    />
-                  </Col>
-                  <Col md={6}>
-                    <Input
-                      type="text"
-                      name="lname"
-                      value={values.lname}
-                      onChange={handleChange}
-                      label="Last Name *"
-                    />
-                  </Col>
-                  <Col md={6}>
-                    <Input
-                      type="email"
-                      name="email"
-                      value={values.email}
-                      onChange={handleChange}
-                      label="Email *"
-                    />
-                  </Col>
-                  <Col md={6}>
-                    <Input
-                      type="tel"
-                      name="phone"
-                      value={values.phone}
-                      onChange={handleChange}
-                      label="Phone"
-                    />
-                  </Col>
-                </Row>
-                <div className="submit-button-area">
-                  <Button variant="danger" type="submit">
-                    SUBMIT
-                  </Button>
-                </div>
-              </form>
-            </section>
+            { user.first_name !== '' ? showForm() : 'Loading...' }
           </Col>
         </Row>
       </Container>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./login.scss";
 import logo from "../../assets/img/logo.png";
@@ -6,20 +6,33 @@ import { Button } from "react-bootstrap";
 import Input from "../../components/input/input";
 import useForm from "../form-logic/form-logic";
 
-const Login = () => {
+import AuthContext from '../../context/auth/authContext';
+
+const Login = (props) => {
+  const authContext = useContext(AuthContext);
+  const { error, isAuthenticated, login, loadUser } = authContext;
+  const token = localStorage.getItem('xtoken');
+
   const initialValues = {
-    email: "",
-    password: ""
+    email: '',
+    password: ''
   };
 
   const submitedSuccessfully = () => {
-    console.log("No error found, submitted successfully.")
+    console.log("No error found, submitted successfully.");
+    login(values);
   };
 
   const { handleChange, values, touched, handleBlur, validator, handleSubmit } = useForm(
     initialValues,
     submitedSuccessfully
   );
+  
+  useEffect(() => {
+    if (isAuthenticated) {
+      props.history.push('/all-purchase-orders');
+    }
+  }, [isAuthenticated, error, props.history]);
 
   return (
     <div className="login-wrap">
@@ -29,6 +42,7 @@ const Login = () => {
           <figcaption>Roadside Assistance</figcaption>
         </figure>
         <div className="login-form-area">
+          {(!isAuthenticated && error) && <p className="error-text">{error[0].msg}</p>}
           <form onSubmit={handleSubmit} noValidate>
             <fieldset>
               <Input
@@ -56,14 +70,14 @@ const Login = () => {
                 <p className="error-text">{validator.errorMessages.password}</p>
               )}
             </fieldset>
-            <Link to="/all-purchase-orders">
+            {/* <Link to="/all-purchase-orders">
               <Button variant="danger" type="submit">
                 SIGN IN
               </Button>
-            </Link>
-            {/* <Button variant="danger" type="submit">
+            </Link> */}
+            <Button variant="danger" type="submit">
               SIGN IN
-            </Button> */}
+            </Button>
           </form>
           <p className="forgot-password">
             <Link to="/forgot-password">Forgot Password?</Link>

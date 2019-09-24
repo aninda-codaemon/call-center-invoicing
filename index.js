@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const helmet = require('helmet');
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.set('view engine', 'ejs');
 app.use(express.static("public"));
 
 app.use(cors());
+app.use(helmet());
 dotenv.config();
 
 // Init body parsor

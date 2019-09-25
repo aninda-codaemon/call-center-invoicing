@@ -107,7 +107,7 @@
         <div class="row">
           <div class="col-xs-8">
             <address>
-              Hello <strong>John Smith,</strong><br>
+              Hello <strong><%= response[0].first_name %> <%= response[0].last_name %>,</strong><br>
               <br>
               <h4>Please complete the payment below, A receipt will be send to you mail id.</h4>
             </address>
@@ -130,12 +130,12 @@
 
                   <tr>
                     <td class="text-right">Sub Total: </td>
-                    <td class="text-right">$<%= response[0].amount %></td>
+                    <td class="text-right">$<%= sub_total %></td>
                   </tr>
 
                   <tr>
                     <td class="text-right"><strong>Convenience Fee</strong></td>
-                    <td class="text-right">$0.00</td>
+                    <td class="text-right">$<%= sub_total_deduct %></td>
                   </tr>
                   <tr>
                     <td class="text-right"><strong>Total Amount</strong></td>
@@ -147,19 +147,18 @@
           </div>
         </div>
         <div class="panel-body">
-          <div class="col-sm-1">
+          <div class="col-sm-1 col-md-1 col-xs-1">
             <!-- <input id="remember" type="checkbox" class="checkbox checkbox-success"> -->
             <label class="container">
               <input type="checkbox" id="confirmation">
               <span class="checkmark"></span>
             </label>
           </div>
-          <div class="col-sm-11"> By clicking this box, I understand I am
-            agreeing to pay
-            the above amount, and that a service call will be dispatched at my request. If I need to cancel I must
-            do within 5 minutes of submitting payment or I will be charged in full. I understand I will be charged
-            for the full amount if I am not with the vehicle at the service location when the service truck
-            arrives.
+          <div class="col-sm-11 col-md-11 col-xs-11">
+            <span class="">clicking this box, I understand I am agreeing to paythe above amount, and that a service call will be dispatched at my request. If I need to cancel I must
+              do within 5 minutes of submitting payment or I will be charged in full. I understand I will be charged
+              for the full amount if I am not with the vehicle at the service location when the service truck
+              arrives.</span>
           </div>
         </div>
         <div class="panel-body">
@@ -169,12 +168,13 @@
               <input type="hidden" id="TERMINALID" name="TERMINALID" value="2994001" required>
               <input type="hidden" name="CURRENCY" value="USD" required>
               <input type="hidden" id="ORDERID" name="ORDERID" value="<%= response[0].invoice_id %>" required>
-              <input type="hidden" id="AMOUNT" name="AMOUNT" required="" value="<%= response[0].amount %>">
-              <input type="hidden" id="DATETIME" name="DATETIME" value="20-09-2019:19:12:44:344" required>
+              <input type="hidden" id="AMOUNT" name="AMOUNT" value="<%= AMOUNT %>" required>
+              <input type="hidden" id="DATETIME" name="DATETIME" value="<%= DATETIME %>"
+                required>
               <input type="hidden" name="AUTOREADY" value="Y" required>
               <input type="hidden" id="RECEIPTPAGEURL" name="RECEIPTPAGEURL"
-                value="http://18.217.104.6/payment/payment_confirmation" required>
-              <input type="hidden" id="HASH" name="HASH" value="ac16191373883dd980c8c541312123df" required>
+                value="<%= RECEIPTPAGEURL %>" required>
+              <input type="hidden" id="HASH" name="HASH" value="<%= HASH %>" required>
               <button type="submit" id="btn-payment" disabled class="btn btn-secondary">Pay Now!</button>
             </form>
           </div>

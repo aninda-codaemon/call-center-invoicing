@@ -614,7 +614,7 @@ router.post('/saveinvoice', [authMiddleware, [
 	const mode = req.body.mode;
 	const invoice_number = req.body.invoicenumber;
 	const errors = validationResult(req);
-    const timeNow = new Date(); // Future scopre param
+    const timeNow = new Date();
 
 	if (!errors.isEmpty()) {
 		return res.status(400).json({ errors: errors.array() });
@@ -634,7 +634,7 @@ router.post('/saveinvoice', [authMiddleware, [
 			invoicenumber, fname, lname, phone, year, make, model, color, servicetype, problemtype,
 			anyonewithvehicle, keysforvehicle, fourwheelsturn, frontwheelsturn, backwheelsturn,
 			neutral, fueltype, pickuplocation, pickupnotes, originzipcode, destinationzipcode, totaldistance,
-			calculatedcost, baseprice, additionalprice, paymentamount, paymenttotalamount, paymentemail, sendpaymentto, userid
+			calculatedcost, baseprice, additionalprice, paymentamount, paymenttotalamount, paymentemail, sendpaymentto, timeNow, userid,
 		};
 
 		// Create payment short url
@@ -780,14 +780,14 @@ router.get('/export', authMiddleware, async (req, res) => {
 		'Back Wheels Turn', 'Front Wheels Turn', 'Is InNeutral', 'Fuel Type', 'Pick Notes', 'Date Open Fulled', 'Date Opened Timestamp',
 		'Date Edit Timestamp', 'User Id', 'MSA System', 'Dispatcher System', 'Payment Link Sent To'];
 
-	const user_id = req.params.userid;
+	const user_id = req.query.userid;
 	// Pagination
-	const sortBy = req.params.sort_by || 'invoice_id';
-	const sortOrder = req.params.sort_order || 'ASC';
-	const searchTerm = req.params.search_term || '';
-	const fetchPage = req.params.fetch_page || 1;
-	const perPage = req.params.per_page || 10;
-	const is_export = req.params.isexport || 0;
+	const sortBy = req.query.sort_by || 'invoice_id';
+	const sortOrder = req.query.sort_order || 'ASC';
+	const searchTerm = req.query.search_term || '';
+	const fetchPage = req.query.fetch_page || 1;
+	const perPage = req.query.per_page || 10;
+	const is_export = req.query.isexport || 0;
 	let searchQuery = '';
 
 	const invoices = await InvoiceModel.getAllInvoice(user_id);

@@ -734,12 +734,22 @@ router.post('/', authMiddleware, async (req, res) => {
 
 	const sql_query = `SELECT * FROM user_invoice WHERE 1 ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
 	console.log(sql_query);
-	dataArray = await InvoiceModel.getSortedInvoices(sql_query); // perPage, start_page
+	const dataArray = await InvoiceModel.getSortedInvoices(sql_query); // perPage, start_page
 	
 	if (dataArray.error) {
 		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
 	} else {
 
+		const csvFields = [
+			'Invoice Number', 'First Name', 'Last Name', 'Payment Email', 'Phone Number', 'Service Type', 'Problem Type',
+			'Total Amount', 'Total Distance', 'Payment Status', 'Start Address', 'End Address', 'Origin Zip', 'Destination Zip', 'Sms Sent', 'Email Sent',
+			'Pickup Location', 'Car Model', 'Car Color', 'Car Make', 'Car Year', 'Anyone With Vehicle', 'Keys Available', 'Four Wheels Turn',
+			'Back Wheels Turn', 'Front Wheels Turn', 'Is InNeutral', 'Fuel Type', 'Pick Notes', 'Date Open Fulled', 'Date Opened Timestamp',
+			'Date Edit Timestamp', 'User Id', 'MSA System', 'Dispatcher System', 'Payment Link Sent To'];
+		
+		const csv = json2csv(dataArray.result, { csvFields });
+		console.log('CSV');
+		console.log(csv);
 		total_invoices = dataArray.result.length;
 		total_pages = parseInt(Math.ceil(total_invoices / perPage));
 		start_page = (perPage * (fetchPage - 1));
@@ -748,21 +758,26 @@ router.post('/', authMiddleware, async (req, res) => {
 		
 		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
 		console.log(sql_limit_query);
-		dataArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page
+		const resultArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page
 
-		return res.status(200).json({
-			errors: [], data: {
-				msg: 'Invoice List',
-				invoices: dataArray.result,
-				total_invoices,
-				fetchPage,
-				perPage,
-				start_page,
-				next_start,
-				next_page,
-				total_pages
-			}
-		});
+		if (resultArray.error) {
+			return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+		} else {
+			return res.status(200).json({
+				errors: [], data: {
+					msg: 'Invoice List',
+					invoices: resultArray.result,
+					total_invoices,
+					fetchPage,
+					perPage,
+					start_page,
+					next_start,
+					next_page,
+					total_pages,
+					csv
+				}
+			});
+		}
 	}
 });
 

@@ -19,6 +19,7 @@ function Input(props) {
         value={props.value}
         defaultValue={props.defaultValue}
         onChange={props.onChange}
+        onKeyPress={props.onKeyPress}
         onBlur={props.onBlur}
         readOnly={props.readOnly}
         required={props.required}

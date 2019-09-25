@@ -22,6 +22,7 @@ import InvoiceReducer from './invoiceReducer';
 const InvoiceState = (props) => {
   const initialState = {
     invoices: [],
+    csv_data: null,
     sort_by: 'invoice_id',
     sort_order: 'ASC',
     search_term: '',
@@ -101,6 +102,7 @@ const InvoiceState = (props) => {
   return <InvoiceContext.Provider
     value={{
       invoices: state.invoices,
+      csv_data: state.csv_data,
       sort_by: state.sort_by,
       sort_by: state.sort_by,
       sort_order: state.sort_order,

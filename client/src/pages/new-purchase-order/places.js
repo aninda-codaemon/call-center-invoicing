@@ -23,7 +23,8 @@ const Locationsearch = (props) => {
       props.onSelect({ description: address });
   	} catch (error) {
   		console.log('Geocoding error');
-  		console.log(error);
+      console.log(error);
+      props.onSelect({ description: address });
   	}
 
   };

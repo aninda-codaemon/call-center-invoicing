@@ -19,6 +19,7 @@ export default (state, action) => {
       return {
         ...state,
         invoices: action.payload.data.invoices,
+        csv_data: action.payload.data.csv,
         total_page: action.payload.data.total_pages
       };
     case INVOICE_PERPAGE:

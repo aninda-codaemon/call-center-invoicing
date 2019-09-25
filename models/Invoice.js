@@ -83,11 +83,11 @@ Invoice.saveInvoice = async (invoice) => {
       await pool.query(`UPDATE user_invoice SET first_name=?,last_name=?,phone_number=?,year=?,make=?,model=?,
       color=?,service_type=?,problem_type=?,anyone_with_vehicle=?,keys_for_vehicle=?,	four_wheels_turn=?,
       front_wheels_turn=?,back_wheels_turn=?,is_neutral=?,fuel_type=?,pickup_location=?,pickup_notes=?,origin_zipcode=?,
-      destination_zipcode=?,distance=?,amount=?,payment_email=?,send_payment_to=?,user_id=? WHERE invoice_id=?`,
+      destination_zipcode=?,distance=?,amount=?,payment_email=?,send_payment_to=?,date_edit_timestamp=?,user_id=? WHERE invoice_id=?`,
         [invoice.fname, invoice.lname, invoice.phone, invoice.year, invoice.make, invoice.model, invoice.color,
         invoice.servicetype, invoice.problemtype, invoice.anyonewithvehicle, invoice.keysforvehicle, invoice.fourwheelsturn, invoice.frontwheelsturn,
         invoice.backwheelsturn, invoice.neutral, invoice.fueltype, invoice.pickuplocation, invoice.pickupnotes, invoice.originzipcode,
-        invoice.destinationzipcode, invoice.totaldistance, invoice.paymenttotalamount, invoice.paymentemail, invoice.sendpaymentto, invoice.userid, invoice.invoicenumber]);
+          invoice.destinationzipcode, invoice.totaldistance, invoice.paymenttotalamount, invoice.paymentemail, invoice.sendpaymentto, invoice.timeNow, invoice.userid,  invoice.invoicenumber]);
     console.log(result);
     response.result = invoice;
     return response;

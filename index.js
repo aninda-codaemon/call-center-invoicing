@@ -6,6 +6,10 @@ const helmet = require('helmet');
 
 const app = express();
 
+// set the view engine to ejs
+app.set('view engine', 'ejs');
+app.use(express.static("public"));
+
 app.use(cors());
 app.use(helmet());
 dotenv.config();
@@ -17,6 +21,8 @@ app.use(express.json({ extended: true }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/order', require('./routes/invoice'));
+app.use('/payment', require('./routes/payment'));
+//app.use('/payment_status', require('./routes/payment/payment_status'));
 
 if (process.env.PLATENV === 'production') {
   app.use(express.static('client/build'));

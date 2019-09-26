@@ -172,18 +172,23 @@ function AllPurchaseOrders(props) {
                     </form>
                   </Col>
                   <Col className="text-right export">
-                    {/* Export <i className="fa fa-share" aria-hidden="true" /> */}
-                    <CSVLink
-                      data={csv_data !== null ? csv_data : []}
-                      filename={"my-file.csv"}
-                      className=""
-                      style={{
-                        color: '#dd2d3e'
-                      }}
-                      target="_blank"
-                    >
-                      Export <i className="fa fa-share" aria-hidden="true" />                      
-                    </CSVLink>                    
+                    {
+                      csv_data ? (
+                        <CSVLink
+                          data={csv_data}
+                          filename={"towCustomersLastThreeDays.csv"}
+                          className=""
+                          style={{
+                            color: '#dd2d3e'
+                          }}
+                          target="_blank"
+                        >
+                          Export <i className="fa fa-share" aria-hidden="true" />                      
+                        </CSVLink>
+                      ) : (
+                        <React.Fragment>Export <i className="fa fa-share" aria-hidden="true" /></React.Fragment>
+                      )
+                    }                   
                   </Col>
                 </Row>
               </header>

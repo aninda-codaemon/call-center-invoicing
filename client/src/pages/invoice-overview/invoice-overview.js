@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import "./invoice-overview.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
-import { Row, Col, Button, Container } from "react-bootstrap";
+import { Row, Col, Button, Container, Alert } from "react-bootstrap";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
 import {
@@ -50,13 +50,17 @@ function InvoiceOverview(props) {
 
   return (
     <React.Fragment>
-      <Header />
+      <Header />      
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">
             <Sidebar />
           </Col>
           <Col md={9} className="right-part">
+            {/* <Alert variant="success" style={{ marginTop: '20px'}}>
+              This is a alert—check it out!
+            </Alert> */}
+
             { showOverview() }
           </Col>
         </Row>

@@ -52,6 +52,7 @@ const Invoiceform = (props) => {
 
   // For checking if invoice data is updated or not
   useEffect(() => {
+    console.log('Check for changes in invoice in context...');
     setInvoiceData({ ...invoice });
   }, [invoice]);
 

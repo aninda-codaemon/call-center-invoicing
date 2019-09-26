@@ -21,7 +21,8 @@ function InvoiceOverview(props) {
   const invoice_id = props.match.params.invoice_id;
 
   const { invoice } = invoiceContext;
-  
+  let interval;
+
   const showOverview = () => {
     if (invoice !== null) {
       return <Invoiceform />;
@@ -32,11 +33,18 @@ function InvoiceOverview(props) {
   
   useEffect(() => {
     invoiceContext.get_invoice_info(invoice_id);
+
+    // Checks for status updates every 3 minutes
+    interval = window.setInterval(() => {
+      console.log('Fetch update from invoice details..');
+      invoiceContext.get_invoice_info(invoice_id);
+    }, 180000);
   }, []);
 
   // For unmount
   useEffect( () => () => {
     invoiceContext.clear_invoice();
+    window.clearInterval(interval);
     console.log("unmount invoice overview");
   }, [] );
 

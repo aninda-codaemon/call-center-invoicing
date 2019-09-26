@@ -87,7 +87,7 @@ Invoice.saveInvoice = async (invoice) => {
         [invoice.fname, invoice.lname, invoice.phone, invoice.year, invoice.make, invoice.model, invoice.color,
         invoice.servicetype, invoice.problemtype, invoice.anyonewithvehicle, invoice.keysforvehicle, invoice.fourwheelsturn, invoice.frontwheelsturn,
         invoice.backwheelsturn, invoice.neutral, invoice.fueltype, invoice.pickuplocation, invoice.pickupnotes, invoice.originzipcode,
-          invoice.destinationzipcode, invoice.totaldistance, invoice.paymenttotalamount, invoice.paymentemail, invoice.sendpaymentto, invoice.timeNow, invoice.userid,  invoice.invoicenumber]);
+        invoice.destinationzipcode, invoice.totaldistance, invoice.paymenttotalamount, invoice.paymentemail, invoice.sendpaymentto, invoice.timeNow, invoice.userid, invoice.invoicenumber]);
     console.log(result);
     response.result = invoice;
     return response;
@@ -119,20 +119,20 @@ Invoice.updateInvoice = async (invoice) => {
           send_payment_to=? 
         WHERE invoice_id=?`,
         [invoice.first_name,
-          invoice.last_name,
-          invoice.phone_number,
-          invoice.year,
-          invoice.make,
-          invoice.model,
-          invoice.color,
-          invoice.status,
-          invoice.pickup_location,
-          invoice.pickup_notes,
-          invoice.notes,
-          invoice.amount,
-          invoice.payment_email,
-          invoice.send_payment_to,
-          invoice.invoice_id
+        invoice.last_name,
+        invoice.phone_number,
+        invoice.year,
+        invoice.make,
+        invoice.model,
+        invoice.color,
+        invoice.status,
+        invoice.pickup_location,
+        invoice.pickup_notes,
+        invoice.notes,
+        invoice.amount,
+        invoice.payment_email,
+        invoice.send_payment_to,
+        invoice.invoice_id
         ]);
     console.log(result);
     response.result = invoice;
@@ -152,8 +152,8 @@ Invoice.updateLinkDate = async (invoice) => {
           send_payment_to=?,
           date_edit_timestamp=NOW() 
         WHERE invoice_id=?`,
-        [invoice.send_payment_to,          
-          invoice.invoice_id
+        [invoice.send_payment_to,
+        invoice.invoice_id
         ]);
     console.log(result);
     response.result = invoice;
@@ -206,5 +206,21 @@ Invoice.getAllInvoice = async (user_id) => {
     return response;
   }
 };
+
+
+Invoice.updateInvoicePaymentStatus = async (updateInvoice) => {
+  let response = {};
+  try {
+    const [result, fields] = await pool.query('UPDATE user_invoice SET status = ?,date_payment = NOW() WHERE invoice_id =?', [updateInvoice.status, updateInvoice.invoice_id]);
+    console.log(result);
+    response.result = result;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
 
 module.exports = Invoice;

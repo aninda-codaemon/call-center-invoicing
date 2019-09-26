@@ -44,13 +44,19 @@ router.get('/payment-status', async (req, res) => {
     };
 
     const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id, unique_ref);
-    //console.log(paymentResponseStored.result);
+
     if (paymentResponseStored.result.length == 0) {
         const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
-        var phraseResponseText = response_text;
+        var phraseResponseText = approval_code;
         var responsePhrase = phraseResponseText.indexOf('OK') !== -1 ? true : false;
 
         if (responsePhrase && (response_code == 'A' || response_code == 'E')) {
+
+            // Update Invoice table after successfull payment
+            const status = 'Paid';
+            let updateInvoice = { invoice_id, status };
+            const invoicePaymentSatus = await InvoiceModel.updateInvoicePaymentStatus(updateInvoice);
+
             contextFlag = 1;
             responseText = "Payment Successfully Complete";
         } else {

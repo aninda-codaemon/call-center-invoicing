@@ -28,10 +28,10 @@ Payment.savePaymentResponse = async (newPaymentResponse) => {
   }
 };
 
-Payment.getPaymentResponseExists = async (invoice_id, unique_ref) => {
+Payment.getPaymentResponseExists = async (invoice_id) => {
   let response = {};
   try {
-    const [result, fields] = await pool.query(`SELECT * FROM user_payment WHERE invoice_id=? AND unique_ref=?`, [invoice_id, unique_ref]);
+    const [result, fields] = await pool.query(`SELECT * FROM user_payment WHERE invoice_id=? AND unique_ref=?`, [invoice_id]);
     console.log(result);
     response.result = result;
     return response;

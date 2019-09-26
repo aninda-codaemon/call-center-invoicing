@@ -288,6 +288,8 @@ router.post('/saveinvoice', [authMiddleware, [
 		} else {
 			return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoice.result } });
 		}
+	} else {
+		return res.status(500).json({ errors: [{ msg: 'Invoice Number does not exists!' }] });
 	}
 });
 

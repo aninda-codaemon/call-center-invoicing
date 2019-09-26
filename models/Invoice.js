@@ -98,6 +98,73 @@ Invoice.saveInvoice = async (invoice) => {
   }
 };
 
+Invoice.updateInvoice = async (invoice) => {
+  let response = {};
+  try {
+    const [result, fields] =
+      await pool.query(`UPDATE user_invoice SET 
+          first_name=?, 
+          last_name=?,
+          phone_number=?,
+          year=?,
+          make=?,
+          model=?,
+          color=?,
+          status=?,
+          pickup_location=?,
+          pickup_notes=?,
+          notes=?,
+          amount=?,
+          payment_email=?,
+          send_payment_to=? 
+        WHERE invoice_id=?`,
+        [invoice.first_name,
+          invoice.last_name,
+          invoice.phone_number,
+          invoice.year,
+          invoice.make,
+          invoice.model,
+          invoice.color,
+          invoice.status,
+          invoice.pickup_location,
+          invoice.pickup_notes,
+          invoice.notes,
+          invoice.amount,
+          invoice.payment_email,
+          invoice.send_payment_to,
+          invoice.invoice_id
+        ]);
+    console.log(result);
+    response.result = invoice;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
+Invoice.updateLinkDate = async (invoice) => {
+  let response = {};
+  try {
+    const [result, fields] =
+      await pool.query(`UPDATE user_invoice SET           
+          send_payment_to=?,
+          date_edit_timestamp=NOW() 
+        WHERE invoice_id=?`,
+        [invoice.send_payment_to,          
+          invoice.invoice_id
+        ]);
+    console.log(result);
+    response.result = invoice;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
 Invoice.getInvoiceByInvoiceId = async (invoice_number) => {
   let response = {};
   try {

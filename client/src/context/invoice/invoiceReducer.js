@@ -8,9 +8,12 @@ import {
   USER_SAVE,
   CLEAR_SUCCESS,
   CLEAR_ERROR,
-  USER_INFO,
-  USER_UPDATE,
-  USER_PASSWORD
+  INVOICE_INFO,
+  INVOICE_CLEAR,
+  INVOICE_UPDATE,
+  INVOICE_LOADING,
+  INVOICE_SENDLINK,
+  INVOICE_LINKLOADING
 } from '../Types';
 
 export default (state, action) => {
@@ -65,20 +68,39 @@ export default (state, action) => {
         ...state,
         error: null
       };
-    case USER_INFO:
+    case INVOICE_INFO:
       return {
         ...state,
-        user: action.payload.data.user
+        invoice: action.payload.data.invoice
       };
-    case USER_UPDATE:
+    case INVOICE_CLEAR:
+      return {
+        ...state,
+        invoice: null
+      };
+    case INVOICE_UPDATE:
         return {
           ...state,
+          invoice: action.payload.data.invoice,
+          loading: false,
           success: [{ msg: action.payload.data.msg }],
           error: null
         };
-    case USER_PASSWORD:
+    case INVOICE_LOADING:
       return {
         ...state,
+        loading: action.payload
+      };
+    case INVOICE_LINKLOADING:
+      return {
+        ...state,
+        linkloading: action.payload
+      };
+    case INVOICE_SENDLINK:
+      return {
+        ...state,
+        linkloading: false,
+        invoice: action.payload.data.invoice,
         success: [{ msg: action.payload.data.msg }],
         error: null
       };

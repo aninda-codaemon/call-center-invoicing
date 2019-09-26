@@ -48,7 +48,7 @@ function AllPurchaseOrders(props) {
               </Button>
             </div>
             <div className="edit">
-              <Link to="/invoice-overview"><i className="fa fa-pencil" aria-hidden="true" /></Link>
+              <Link to={`/invoice-overview/${invoice.invoice_id}`}><i className="fa fa-pencil" aria-hidden="true" /></Link>
             </div>
           </div>
         </React.Fragment>
@@ -97,13 +97,6 @@ function AllPurchaseOrders(props) {
       return null;
     }
   }
-
-  const csvData = [
-    ["firstname", "lastname", "email"],
-    ["Ahmed", "Tomi", "ah@smthing.co.com"],
-    ["Raed", "Labes", "rl@smthing.co.com"],
-    ["Yezzi", "Min l3b", "ymin@cocococo.com"]
-  ];
 
   useEffect(() => {
     // Call the invoices list from context

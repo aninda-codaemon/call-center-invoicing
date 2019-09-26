@@ -1,4 +1,5 @@
 const express = require('express');
+const moment = require('moment');
 const {check, validationResult} = require('express-validator');
 
 const { sendSMS, sendEmail, checkLocalTime, calculateDistance } = require('../helpers/helpers');
@@ -659,6 +660,191 @@ router.post('/saveinvoice', [authMiddleware, [
 	}
 });
 
+// @route     POST /api/order/updateinvoice
+// @desc      Update invoice details
+// @access    Private
+router.post('/updateinvoice', [authMiddleware, [
+	check('invoice_id', 'Invalid invoice id').not().isEmpty(),
+	check('first_name', 'Invalid first name').not().isEmpty(),
+	check('last_name', 'Invalid last name').not().isEmpty(),
+	check('phone_number', 'Invalid phone number').not().isEmpty(),
+	check('year', 'Invalid car year').not().isEmpty(),
+	check('make', 'Invalid car make').not().isEmpty(),
+	check('model', 'Invalid car make').not().isEmpty(),
+	check('color', 'Invalid car color').not().isEmpty(),
+	check('status', 'Invalid status').not().isEmpty(),
+	check('pickup_location', 'Invalid pickup location').not().isEmpty(),
+	// check('pickup_notes', 'Invalid pickup notes').not().isEmpty(),
+	// check('notes', 'Invalid notes').not().isEmpty(),
+	check('amount', 'Invalid total amount').not().isEmpty(),
+	check('payment_email', 'Invalid payment email').isEmail(),
+	check('send_payment_to', 'Invalid send payment link send type').not().isEmpty()
+]], async (req, res) => {
+
+	const errors = validationResult(req);
+
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { 
+		invoice_id,
+		first_name,
+		last_name,
+		phone_number,
+		year,
+		make,
+		model,
+		color,
+		status,
+		pickup_location,
+		pickup_notes,
+		notes,
+		amount,
+		payment_email,
+		send_payment_to
+	} = req.body;
+
+	const response = await InvoiceModel.getInvoiceById(invoice_id);
+
+	if (response.error) {
+		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+	} else if (response.result && response.result.length > 0) {
+		const formData = { 
+			invoice_id,
+			first_name,
+			last_name,
+			phone_number,
+			year,
+			make,
+			model,
+			color,
+			status,
+			pickup_location,
+			pickup_notes,
+			notes,
+			amount,
+			payment_email,
+			send_payment_to
+		};
+
+		const invoice = await InvoiceModel.updateInvoice(formData);
+
+		if (invoice.error) {
+			return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+		} else {
+			return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully updated', invoice: invoice.result } });
+		}
+	}
+});
+
+// @route     POST /api/order/resendlink
+// @desc      Re-send payment details
+// @access    Private
+router.post('/resendlink', [authMiddleware, [
+	check('invoice_id', 'Invalid invoice id').not().isEmpty(),
+	check('phone_number', 'Invalid phone number').not().isEmpty(),
+	check('payment_email', 'Invalid payment email').isEmail(),
+	check('send_payment_to', 'Invalid send payment link send type').not().isEmpty()
+]], async (req, res) => {
+
+	const errors = validationResult(req);
+
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+	
+	const { invoice_id, phone_number, payment_email, send_payment_to } = req.body;
+
+	const response = await InvoiceModel.getInvoiceById(invoice_id);
+
+	if (response.error) {
+		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+	} else if (response.result && response.result.length > 0) {		
+		console.log('Invoice Info');
+		console.log(response.result[0]);
+		const update = await InvoiceModel.updateLinkDate({ invoice_id, send_payment_to });
+
+		const invoiceinfo = await InvoiceModel.getInvoiceByInvoiceId(invoice_id);
+		
+		if (invoiceinfo.error) {
+			return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+		} else {
+			const invoice = invoiceinfo.result[0];
+			const date_opened = moment(invoice.date_opened_timestamp).format('ddd MMM D YYYY kk:mm:ss') + ' GMT ' + moment().format('Z');
+			const date_first_link_send = moment(invoice.date_opened_timestamp).format('ddd MMM D YYYY kk:mm:ss') + ' GMT ' + moment().format('Z');
+			const data_last_link_send = (invoice.date_edit_timestamp) ? moment(invoice.date_edit_timestamp).format('ddd MMM D YYYY kk:mm:ss') + ' GMT ' + moment().format('Z') : '';
+			const data_payment_done = (invoice.date_payment) ? moment(invoice.date_payment).format('ddd MMM D YYYY kk:mm:ss') + ' GMT ' + moment().format('Z') : '';
+
+			invoice.date_opened = date_opened;
+			invoice.date_first_link_send = date_first_link_send;
+			invoice.data_last_link_send = data_last_link_send;
+			invoice.data_payment_done = data_payment_done;
+
+			if (send_payment_to === 'Email') {
+				const emailTemplate = `
+                      <html>
+                      <head>
+                        <title>Forget Password</title>
+                      </head>
+                      <body>
+                          <table>
+                              <tr>
+                                  <td>
+                                    <table>
+                                      <tr>                                
+                                        <td>Hello ${invoice['first_name']},</td>                                  
+                                      </tr>
+                                      <tr>                                  
+																				<td>
+																					<p>
+																						<b>Invoice Number:</b> ${invoice_id}
+																					</p>
+                                          <p>
+																						<b>You can pay for your Tow @ this link: https://paymenttest.towpanda.com/pay?invoice=${invoice_id}</b>
+																					</p>
+																					<p>
+																						<b>Service Type:</b> ${invoice.service_type}
+																					</p>
+																					<p>
+																						<b>Amount:</b> ${invoice.amount}
+																					</p>
+                                        </td>
+                                      </tr>                                  
+                                      <tr>
+                                        <td><hr /></td>
+                                      </tr>
+                                      <tr>
+                                        <td>Thank you</td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                              </tr>
+                          </table>
+                      </body>
+                    </html>
+				`;
+				const isSend = await sendEmail('aninda.kar@codaemonsoftwares.com', 'Reg. resend details for your Tow', emailTemplate, 'Reg. resend details for your Tow');
+				if (isSend) {
+					return res.status(200).json({ errors: [], data: { msg: 'Payment link send again', invoice } });
+				} else {
+					return res.status(500).json({ errors: [], data: { msg: 'Payment link could not be send again', invoice } });
+				}
+			} else {
+				// Send SMS
+				const sms_content = `You can pay for your Tow @ this link: https://paymenttest.towpanda.com/pay?invoice=${invoice_id}`;
+				const isSend = await sendSMS(sms_content);
+				if (isSend) {
+					return res.status(200).json({ errors: [], data: { msg: 'Payment link send again', invoice } });
+				} else {
+					return res.status(500).json({ errors: [], data: { msg: 'Payment link could not be send again', invoice } });
+				}
+			}
+						
+		}
+	}
+});
+
 function getShortUrl(urlParam) {
 	shortUrl.short('https://www.paypal.com/in/home/'.urlParam, function (err, url) {
 		return url;
@@ -667,7 +853,7 @@ function getShortUrl(urlParam) {
 
 
 // @route     GET /api/order/:invoice id
-// @desc      Get new invoice number
+// @desc      Get invoice information
 // @access    Private
 router.get('/:invoicenumber', authMiddleware, async (req, res) => {
 	const invoice_number = req.params.invoicenumber;
@@ -680,7 +866,18 @@ router.get('/:invoicenumber', authMiddleware, async (req, res) => {
 		if (response.error) {
 			return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
 		} else {
-			return res.status(200).json({ errors: [], data: { msg: 'Invoice details', response: response.result } });
+			const invoice = response.result[0];
+
+			const date_opened = moment(invoice.date_opened_timestamp).format('ddd MMM D YYYY kk:mm:ss') + ' GMT ' + moment().format('Z');
+			const date_first_link_send = moment(invoice.date_opened_timestamp).format('ddd MMM D YYYY kk:mm:ss') + ' GMT ' + moment().format('Z');
+			const data_last_link_send = (invoice.date_edit_timestamp) ? moment(invoice.date_edit_timestamp).format('ddd MMM D YYYY kk:mm:ss') + ' GMT ' + moment().format('Z') : '';
+			const data_payment_done = (invoice.date_payment) ? moment(invoice.date_payment).format('ddd MMM D YYYY kk:mm:ss') + ' GMT ' + moment().format('Z') : '';
+
+			invoice.date_opened = date_opened;
+			invoice.date_first_link_send = date_first_link_send;
+			invoice.data_last_link_send = data_last_link_send;
+			invoice.data_payment_done = data_payment_done;
+			return res.status(200).json({ errors: [], data: { msg: 'Invoice details', invoice } });
 		}
 	}
 });

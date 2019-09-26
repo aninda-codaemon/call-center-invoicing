@@ -12,9 +12,12 @@ import {
   USER_SAVE,
   CLEAR_SUCCESS,
   CLEAR_ERROR,
-  USER_INFO,
-  USER_UPDATE,
-  USER_PASSWORD
+  INVOICE_INFO,
+  INVOICE_CLEAR,
+  INVOICE_UPDATE,
+  INVOICE_LOADING,
+  INVOICE_SENDLINK,
+  INVOICE_LINKLOADING
 } from '../Types';
 import InvoiceContext from './invoiceContext';
 import InvoiceReducer from './invoiceReducer';
@@ -22,6 +25,7 @@ import InvoiceReducer from './invoiceReducer';
 const InvoiceState = (props) => {
   const initialState = {
     invoices: [],
+    invoice: null,
     csv_data: null,
     sort_by: 'invoice_id',
     sort_order: 'ASC',
@@ -30,7 +34,9 @@ const InvoiceState = (props) => {
     per_page: 10,
     total_page: 0,
     error: null,
-    success: null
+    success: null,
+    loading: false,
+    linkloading: false
   };
 
   const [state, dispatch] = useReducer(InvoiceReducer, initialState);
@@ -70,8 +76,96 @@ const InvoiceState = (props) => {
     }
   }
 
+  const get_invoice_info = async (invoice_id) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const formData = {};
+    
+    try {
+      const response = await axios.get(`${SERVER_URL}/api/order/${invoice_id}`, formData, config);
+      console.log('Invoice info response');
+      console.log(response);
+      dispatch({
+        type: INVOICE_INFO,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('Invoice info error');
+      console.log(error);
+      dispatch({
+        type: INVOICE_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
+  const update_invoice = async (formData) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    console.log('Form data');
+    console.log(formData);
+
+    try {
+      const response = await axios.post(`${SERVER_URL}/api/order/updateinvoice`, formData, config);
+      console.log('Invoice update response');
+      console.log(response);
+      dispatch({
+        type: INVOICE_UPDATE,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('Invoice update error');
+      console.log(error);
+      dispatch({
+        type: INVOICE_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
+  const resend_invoice = async (formData) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    console.log('Form data');
+    console.log(formData);
+
+    try {
+      const response = await axios.post(`${SERVER_URL}/api/order/resendlink`, formData, config);
+      console.log('Invoice resend response');
+      console.log(response);
+      dispatch({
+        type: INVOICE_SENDLINK,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('Invoice resend error');
+      console.log(error);
+      dispatch({
+        type: INVOICE_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
+  const clear_invoice = async () => {
+    dispatch({
+      type: INVOICE_CLEAR      
+    });
+  }
+
   const update_search_terms = async (value) => {
-    console.log('Search terms');
     dispatch({
       type: INVOICE_SEARCHTERM,
       payload: value
@@ -85,16 +179,30 @@ const InvoiceState = (props) => {
     });
   }
 
-  const update_per_page = (value) => {
+  const update_per_page = async (value) => {
     dispatch({
       type: INVOICE_PERPAGE,
       payload: value
     });
   }
 
-  const update_sort_order = (value) => {
+  const update_sort_order = async (value) => {
     dispatch({
       type: INVOICE_SORTORDER,
+      payload: value
+    });
+  }
+
+  const toggle_loader = async (value) => {
+    dispatch({
+      type: INVOICE_LOADING,
+      payload: value
+    });
+  }
+
+  const toggle_link_loader = async (value) => {
+    dispatch({
+      type: INVOICE_LINKLOADING,
       payload: value
     });
   }
@@ -102,6 +210,7 @@ const InvoiceState = (props) => {
   return <InvoiceContext.Provider
     value={{
       invoices: state.invoices,
+      invoice: state.invoice,
       csv_data: state.csv_data,
       sort_by: state.sort_by,
       sort_by: state.sort_by,
@@ -112,11 +221,19 @@ const InvoiceState = (props) => {
       total_page: state.total_page,
       error: state.error,
       success: state.success,
+      loading: state.loading,
+      linkloading: state.linkloading,
       get_invoices,
       update_search_terms,
       update_fetch_page,
       update_per_page,
-      update_sort_order
+      update_sort_order,
+      get_invoice_info,
+      clear_invoice,
+      update_invoice,
+      toggle_loader,
+      resend_invoice,
+      toggle_link_loader
     }}
   >
     { props.children }

@@ -69,7 +69,7 @@ function NewPurchaseOrder() {
     paymentemail: "",
     paymentamount: '',
     paymenttotalamount: '',
-    sendpaymentto: "phone"
+    sendpaymentto: "Phone"
   };
 
   // form state
@@ -1197,7 +1197,7 @@ function NewPurchaseOrder() {
                             id="paymenttophone"
                             name="sendpaymentto"
                             onChange={handleChange}
-                            value="phone"
+                            value="Phone"
                             checked={newData.sendpaymentto === "phone"}
                           />
                           <label
@@ -1216,7 +1216,7 @@ function NewPurchaseOrder() {
                             id="paymenttoemail"
                             name="sendpaymentto"
                             onChange={handleChange}
-                            value="email"
+                            value="Email"
                             checked={newData.sendpaymentto === "email"}
                           />
                           <label

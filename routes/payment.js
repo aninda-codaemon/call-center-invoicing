@@ -64,5 +64,9 @@ router.get('/payment_status',  (req, res) => {
     res.render('payment/payment_status'); 
 });
 
+router.get('/pay_dummy', (req, res) => {
+  res.send('Pay dummy page');
+});
+
 module.exports = router;
 

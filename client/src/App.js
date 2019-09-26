@@ -42,7 +42,7 @@ function App() {
               <PrivateRoute path="/edit-user/:id" component={EditUser} />
               <PrivateRoute path="/edit-account" component={EditAccount} />
               <PrivateRoute path="/create-new-user" component={CreateNewUser} />
-              <PrivateRoute path="/invoice-overview" component={InvoiceOverview} />
+              <PrivateRoute path="/invoice-overview/:invoice_id" component={InvoiceOverview} />
               <PrivateRoute path="/logout" component={Logout} />
             </Switch>
           </Router>

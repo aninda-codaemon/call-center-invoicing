@@ -43,9 +43,10 @@ router.get('/payment-status', async (req, res) => {
         unique_ref, email, card_number, hash, total_response, date_time
     };
 
-    const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id);
+    const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id, unique_ref);
     //console.log(paymentResponseStored.result);
     if (paymentResponseStored.result.length == 0) {
+        const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
         var phraseResponseText = response_text;
         var responsePhrase = phraseResponseText.indexOf('OK') !== -1 ? true : false;
 
@@ -89,10 +90,9 @@ router.get('/:invoicenumber', async (req, res) => {
         // Anywherecommerce payment parameters
         const CURRENCY = 'USD';
         const ORDERID = invoice_number;
-        const AMOUNT = '01';//amount;
-        const AUTOREADY = 'Y';
+        const AMOUNT = amount;
         const DATETIME = date.format(response.result[0].date_edit_timestamp, 'DD-MM-YYYY:HH:MM:SS:SSS');
-        const RECEIPTPAGEURL = 'http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/payment-status';
+        const RECEIPTPAGEURL = 'http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/payment-status/';
         const HASH = md5(TERMINALID + ORDERID + AMOUNT + DATETIME + RECEIPTPAGEURL + secret);
 
         if (response.error) {

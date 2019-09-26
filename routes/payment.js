@@ -90,15 +90,15 @@ router.get('/:invoicenumber', async (req, res) => {
         const AMOUNT = '01';//amount;
         const AUTOREADY = 'Y';
         const DATETIME = date.format(response.result[0].date_edit_timestamp, 'DD-MM-YYYY:HH:MM:SS:SSS');
-        const RECEIPTPAGEURL = 'http://18.217.104.6/payment/payment-status';
+        const RECEIPTPAGEURL = 'http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/payment-status';
         const HASH = md5(TERMINALID + ORDERID + AMOUNT + DATETIME + RECEIPTPAGEURL + secret);
 
         if (response.error) {
             return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
         }
-         else if (time_differ > 10) {
-             res.render('payment/expired', { time_differ, invoice_number });
-         } 
+        //  else if (time_differ > 10) {
+        //      res.render('payment/expired', { time_differ, invoice_number });
+        //  } 
         else {
             res.render('payment/index',
                 {

@@ -1,5 +1,5 @@
 import React, {useEffect, useContext, useState} from "react";
-import { CSVLink } from "react-csv";
+import { CSVLink, CSVDownload } from "react-csv";
 import moment from 'moment';
 import { Row, Col, Button, Container } from "react-bootstrap";
 import { Link } from 'react-router-dom';
@@ -17,7 +17,7 @@ function AllPurchaseOrders(props) {
   const authContext = useContext(AuthContext);
   const{ user } = authContext;
   const invoiceContext = useContext(InvoiceContext);
-  const { invoices, fetch_page, per_page, sort_by, sort_order, search_term, total_page } = invoiceContext;
+  const { invoices, csv_data, fetch_page, per_page, sort_by, sort_order, search_term, total_page } = invoiceContext;
 
   const showInvoicesList = () => {
     return invoices.map( (invoice, index) => {
@@ -48,7 +48,7 @@ function AllPurchaseOrders(props) {
               </Button>
             </div>
             <div className="edit">
-              <Link to="/invoice-overview"><i className="fa fa-pencil" aria-hidden="true" /></Link>
+              <Link to={`/invoice-overview/${invoice.invoice_id}`}><i className="fa fa-pencil" aria-hidden="true" /></Link>
             </div>
           </div>
         </React.Fragment>
@@ -141,7 +141,7 @@ function AllPurchaseOrders(props) {
                   <Col className="text-right export">
                     {/* Export <i className="fa fa-share" aria-hidden="true" /> */}
                     <CSVLink
-                      data={[]}
+                      data={csv_data !== null ? csv_data : []}
                       filename={"my-file.csv"}
                       className=""
                       style={{
@@ -150,7 +150,7 @@ function AllPurchaseOrders(props) {
                       target="_blank"
                     >
                       Export <i className="fa fa-share" aria-hidden="true" />                      
-                    </CSVLink>
+                    </CSVLink>                    
                   </Col>
                 </Row>
               </header>

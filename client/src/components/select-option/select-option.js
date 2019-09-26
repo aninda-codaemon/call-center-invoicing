@@ -24,6 +24,7 @@ function SelectOption(props) {
         id={props.name}
         value={props.value}
         onChange={props.onChange}
+        disabled={props.disabled}
       >
         <option value={toProperCase(props.label)} hidden>{props.label}</option>
         {props.options.map((option, index) => {

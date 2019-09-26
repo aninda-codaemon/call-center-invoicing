@@ -7,6 +7,10 @@ var md5 = require('md5');
 const router = express.Router();
 const date = require('date-and-time');
 
+// Payment Gareway Anywhere Commerce Params
+const TERMINALID = process.env.TERMINALID;
+const secret = process.env.secret;
+
 router.get('/payment-status', async (req, res) => {
     // Get parameters from payment status redirect url
     const dl_number = req.query.DL_NUMBER;
@@ -81,24 +85,20 @@ router.get('/:invoicenumber', async (req, res) => {
         const sub_total = Number(amount - sub_total_deduct);
 
         // Anywherecommerce payment parameters
-        const TERMINALID = '2994001';
         const CURRENCY = 'USD';
         const ORDERID = invoice_number;
         const AMOUNT = '01';//amount;
         const AUTOREADY = 'Y';
         const DATETIME = date.format(response.result[0].date_edit_timestamp, 'DD-MM-YYYY:HH:MM:SS:SSS');
         const RECEIPTPAGEURL = 'http://18.217.104.6/payment/payment-status';
-        const secret = 'password';
         const HASH = md5(TERMINALID + ORDERID + AMOUNT + DATETIME + RECEIPTPAGEURL + secret);
-        //console.log(HASH);
-        //console.log(DATETIME);
 
         if (response.error) {
             return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
         }
-        // else if (time_differ > 10) {
-        //     res.render('payment/expired', { time_differ, invoice_number });
-        // } 
+         else if (time_differ > 10) {
+             res.render('payment/expired', { time_differ, invoice_number });
+         } 
         else {
             res.render('payment/index',
                 {

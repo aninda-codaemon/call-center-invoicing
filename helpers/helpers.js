@@ -21,10 +21,12 @@ const sendSMS = async (message, receiver='+919874259153') => {
         from: msg_sender,
         to: msg_receiver      
       });
-    console.log('SMS Sent');    
+    console.log('SMS Sent');
+    return sms_response ? true : false;    
   } catch (error) {
     console.log('SMS send error');
     console.log(error);
+    return false;
   }  
 }
 
@@ -41,9 +43,11 @@ const sendEmail = async (receiver ='rajib.naskar@codaemonsoftwares.com', mail_su
   try {
     const mail = await sgMail.send(msg);
     console.log('Mail Send');
+    return mail ? true : false;
   } catch (error) {
     console.log('Email send error');
     console.log(error);
+    return false;
   }  
 }
 

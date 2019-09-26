@@ -9,6 +9,7 @@ import InnerBanner from "../../components/inner-banner/inner-banner";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
 import AutoCompletePlaces from "./autocompleteplaces";
+import useForm from "../form-logic/user-form-logic";
 
 import Locationsearch from './places';
 
@@ -66,9 +67,9 @@ function NewPurchaseOrder() {
     baseprice: 0,
     additionalprice: 0,
     paymentemail: "",
-    paymentamount: 0,
-    paymenttotalamount: 0,
-    sendpaymentto: "phone"
+    paymentamount: '',
+    paymenttotalamount: '',
+    sendpaymentto: "Phone"
   };
 
   // form state
@@ -85,7 +86,8 @@ function NewPurchaseOrder() {
     color: false,
     servicetype: false,
     paymentemail: false,
-    paymentamount: false
+    paymentamount: false,
+    paymenttotalamount: false
   }
   const [errors, setErrors] = useState(initialError);
 
@@ -100,13 +102,13 @@ function NewPurchaseOrder() {
     errorData.color = isEmpty(newData.color);
     errorData.servicetype = isEmpty(newData.servicetype);
     errorData.paymentemail = isEmpty(newData.paymentemail);
-    errorData.paymentamount = isEmpty(newData.paymentamount);
+    errorData.paymentamount = (newData.paymentamount === '' ? true : false);
+    errorData.paymenttotalamount = (newData.paymenttotalamount === '' ? true : false);
     setErrors(errorData);
-
     if (
       !errorData.fname && !errorData.lname && !errorData.phone && !errorData.year && !errorData.make && 
       !errorData.modal && !errorData.color && !errorData.servicetype && !errorData.paymentemail && 
-      !errorData.paymentamount) {
+      !errorData.paymentamount && !errorData.paymenttotalamount) {
       return true;
     } else {
       return false;
@@ -119,7 +121,16 @@ function NewPurchaseOrder() {
     // setNewData({ ...initialData });
 
     if (validateForm()) {
-      alert('Form validated');
+      if (toggleCostCalculation) {
+        alert('Form validated');
+        console.log('Form Submitted');
+        console.log(newData);
+      } else {
+        handleShow(
+          "You need to calculate the cost for the service to proceed further!",
+          "noOne"
+        );  
+      }
     } else {
       handleShow(
         "This form has errors. Please enter values for all the required fields!",
@@ -138,31 +149,46 @@ function NewPurchaseOrder() {
     console.log(place);
     let currentData = newData;
     try {
-      const allData = await geocodeByAddress(description);
-      const latLng = await getLatLng(allData[0]);
-      console.log(allData);
-      console.log(latLng);
-      
-      if (place === "origin") {
-        currentData.originaddress = description;
-        currentData.origin = latLng;
-      } else {
-        currentData.destinationaddress = description;
-        currentData.destination = latLng;
-      }
-      
-      //postcode
-      allData[0].address_components.forEach(element => {
-        if (element.types[0] === "postal_code") {
-          place === "origin"
-            ? (currentData.ozip = element.long_name)
-            : (currentData.dzip = element.long_name);
-          setNewData(currentData);
+
+      if (description !== '') {
+        const allData = await geocodeByAddress(description);
+        const latLng = await getLatLng(allData[0]);
+        console.log(allData);
+        console.log(latLng);
+        
+        if (place === "origin") {
+          currentData.originaddress = description;
+          currentData.origin = latLng;
+        } else {
+          currentData.destinationaddress = description;
+          currentData.destination = latLng;
         }
-      });
-      toggleCalculationHandle();
+        
+        //postcode
+        allData[0].address_components.forEach(element => {
+          if (element.types[0] === "postal_code") {
+            place === "origin"
+              ? (currentData.ozip = element.long_name)
+              : (currentData.dzip = element.long_name);
+            setNewData(currentData);
+          }
+        });
+      } else {
+        if (place === "origin") {
+          currentData.originaddress = '';
+          currentData.origin = {};
+          currentData.ozip = '';
+        } else {
+          currentData.destinationaddress = '';
+          currentData.destination = {};
+          currentData.dzip = '';
+        }
+        setNewData(currentData);
+      }
+      toggleCalculationHandle();    
     } catch (error) {
       console.log(error);
+      toggleCalculationHandle();
     }
   };
   
@@ -304,14 +330,18 @@ function NewPurchaseOrder() {
         setToggleCostCalculation(false);
       }
     } else {
-      if (currentData.originaddress !== '' && currentData.anyonewithvehicle.toLowerCase() === 'yes') {
+      console.log('Pickup location');
+      console.log(currentData.pickuplocation);
+      if (currentData.originaddress !== '' && currentData.anyonewithvehicle.toLowerCase() === 'yes' && currentData.pickuplocation !== '') {
         setToggleCostCalculation(true);
       } else {
-        setToggleCostCalculation(false);
+        setToggleCostCalculation(false);        
       }      
     }    
     console.log('Toggle cost calculation: ', toggleCostCalculation);
   }
+
+  const [servicenotes, setServiceNotes] = useState([]);
 
   // form handler
   const handleChange = e => {
@@ -328,9 +358,12 @@ function NewPurchaseOrder() {
           currentData.anyonewithvehicle = 'Yes';
           handleClose();
         }
+        currentData.paymentamount = '';
+        currentData.paymenttotalamount = '';
+        setNewData(currentData);
         toggleCalculationHandle();
         break;
-      case "servicetype":
+      case "servicetype":        
         if (e.target.value === "Fuel / Fluids") {
           fuelfluidsToggle(false);
         } else if (e.target.value === "Towing") {
@@ -338,6 +371,8 @@ function NewPurchaseOrder() {
         } else {
           setServiceInfo(initialServiceData);
         }
+        currentData.paymentamount = '';
+        currentData.paymenttotalamount = '';
         currentData.servicetype = e.target.value;
         setNewData(currentData);
         console.log(newData.servicetype);
@@ -356,44 +391,82 @@ function NewPurchaseOrder() {
           fuelfluidsToggle(true);
           handleClose();
         }
+        currentData.paymentamount = '';
+        currentData.paymenttotalamount = '';
+        setNewData(currentData);
         console.log(serviceInfo);
         toggleCalculationHandle();
         break;
 
       case "fourwheelsturn":
+        currentData.paymentamount = '';
+        currentData.paymenttotalamount = '';
+        setNewData(currentData);
         e.target.value === "No"
           ? fourwheelsToggle(true)
           : fourwheelsToggle(false);
         break;
 
       case "pickuplocation":
+        currentData.paymentamount = '';
+        currentData.paymenttotalamount = '';
+        setNewData(currentData);
         e.target.value === "Highway"
           ? setCost({ ...cost, highway: 18 })
           : setCost({ ...cost, highway: 0 });
         break;
 
       case "keysforvehicle":
+        currentData.paymentamount = '';
+        currentData.paymenttotalamount = '';
+        setNewData(currentData);
         e.target.value === "No"
           ? setCost({ ...cost, nokeys: 23 })
           : setCost({ ...cost, nokeys: 0 });
         break;
 
       case "neutral":
+        currentData.paymentamount = '';
+        currentData.paymenttotalamount = '';
+        setNewData(currentData);
         e.target.value === "No"
           ? setCost({ ...cost, noneutral: 17 })
           : setCost({ ...cost, noneutral: 0 });
         break;
 
       case "frontwheelsturn":
+        currentData.paymentamount = '';
+        currentData.paymenttotalamount = '';
+        setNewData(currentData);
         e.target.value === "No"
           ? setCost({ ...cost, nofrontwheelsturn: 26 })
           : setCost({ ...cost, nofrontwheelsturn: 0 });
         break;
 
       case "backwheelsturn":
+        currentData.paymentamount = '';
+        currentData.paymenttotalamount = '';
+        setNewData(currentData);
         e.target.value === "No"
           ? setCost({ ...cost, nobackwheelsturn: 29 })
           : setCost({ ...cost, nobackwheelsturn: 0 });
+        break;
+
+      case "paymentamount":
+        // const valid = /^(\d+|\d{1,3},\d{3}|\d{1,3},\d{3},\d{3}|\d{1,3}(,\d{3})*|\d{1,3}(,\d{3})*\.\d+)$/;
+        // const charCode = (e.which) ? e.which : e.keyCode
+        // console.log(charCode);
+        const service_fee = 0.035;
+        const amount = parseFloat(e.target.value);
+        if (amount) {
+          console.log(amount);
+          const total_payment = (amount + (amount * service_fee)).toFixed(2);
+          currentData.paymenttotalamount = total_payment;          
+        } else {
+          // e.target.value = '';
+          currentData.paymenttotalamount = '';
+          setNewData(currentData);
+        }
         break;
 
       default:
@@ -530,12 +603,13 @@ function NewPurchaseOrder() {
   // Refresh the additional cost
   const refreshAdditionalCost = () => {
     const data_set = newData;
-    let total_cost = 0.00;
+    let total_cost = 0.00;    
+    const service_notes = [];
     console.log('Refresh additional cost: ' + data_set.servicetype);
 
     if (data_set.pickuplocation === 'Highway') { 
       setCost({ ...cost, highway: 18 });
-      total_cost += 18; 
+      total_cost += 18;
     } else { 
       setCost({ ...cost, highway: 0 }); 
     }
@@ -543,6 +617,7 @@ function NewPurchaseOrder() {
     if (data_set.keysforvehicle === 'No') { 
       setCost({ ...cost, nokeys: 23 });
       total_cost += 23;
+      service_notes.push('The customer does not have keys for the vehicle.');
     } else { 
       setCost({ ...cost, nokeys: 0 });
     }
@@ -552,6 +627,7 @@ function NewPurchaseOrder() {
       if (data_set.neutral === 'No') { 
         setCost({ ...cost, noneutral: 17 });
         total_cost += 17;
+        service_notes.push('The vehicle does not go in neutral.');
       } else { 
         setCost({ ...cost, noneutral: 0 }); 
       }
@@ -559,10 +635,13 @@ function NewPurchaseOrder() {
       if (data_set.fourwheelsturn === 'No') {
         if (data_set.frontwheelsturn === 'No' && data_set.backwheelsturn === 'No') {
           total_cost += 39;
+          service_notes.push('The front wheels of the vehicle does not turn.');
+          service_notes.push('The back wheels of the vehicle does not turn.');
         }else {
           if (data_set.frontwheelsturn === 'No') {
             setCost({ ...cost, nofrontwheelsturn: 26 });
             total_cost += 26;
+            service_notes.push('The front wheels of the vehicle does not turn.');
           } else { 
             setCost({ ...cost, nofrontwheelsturn: 0 }); 
           }
@@ -570,6 +649,7 @@ function NewPurchaseOrder() {
           if (data_set.backwheelsturn === 'No') { 
             setCost({ ...cost, nobackwheelsturn: 29 });
             total_cost += 29;
+            service_notes.push('The back wheels of the vehicle does not turn.');
           } else { 
             setCost({ ...cost, nobackwheelsturn: 0 }); 
           }
@@ -584,10 +664,13 @@ function NewPurchaseOrder() {
     bothWheelsNotTurn();
     console.log('Total additional cost: ' + total_cost);
     data_set.additionalprice = total_cost;
+    console.log(service_notes);
+    setServiceNotes(service_notes);
+    data_set.paymentnotes = service_notes.join('\n');
     setNewData(data_set);
     return total_cost;
   }
-
+  
   //fetch data common method
   const commonFetchData = () => {
     const additional_cost = refreshAdditionalCost();
@@ -618,19 +701,20 @@ function NewPurchaseOrder() {
           currentData.paymentamount = data.net_price;
           setNewData({ ...currentData });
           setIscalculated(true);
-          
+          console.log('Service notes');
+          console.log(servicenotes);
           const mileage_charges = (parseFloat(newData.tmiles) > 10) ? (parseFloat(newData.tmiles) - 10).toFixed(2) : 0.00;
 
-          const alert_html = `
-            Base price: ${data.base_price} \n
-            Total distance: ${newData.tmiles} \n
-            Mileage: ${mileage_charges} \n
-            Mileage Charges(per mile): ${data.mileage_charges} \n
-            Extra Mileage(Mileage * Mileage Charges): ${(mileage_charges * data.mileage_charges).toFixed(2)} \n
-            Additional Charges: ${newData.additionalprice} \n
-            Total Cost(Base + Additional + Extra Mileage): ${data.net_price} 
-          `;
-          alert(alert_html);
+          // const alert_html = `
+          //   Base price: ${data.base_price} \n
+          //   Total distance: ${newData.tmiles} \n
+          //   Mileage: ${mileage_charges} \n
+          //   Mileage Charges(per mile): ${data.mileage_charges} \n
+          //   Extra Mileage(Mileage * Mileage Charges): ${(mileage_charges * data.mileage_charges).toFixed(2)} \n
+          //   Additional Charges: ${newData.additionalprice} \n
+          //   Total Cost(Base + Additional + Extra Mileage): ${data.net_price} 
+          // `;
+          // alert(alert_html);
         }
       } catch (error) {
         console.log('cost error');
@@ -1076,7 +1160,7 @@ function NewPurchaseOrder() {
                         type="text"
                         name="paymentamount"
                         value={newData.paymentamount}
-                        onChange={handleChange}
+                        onChange={handleChange}                        
                         label="Amount *"
                       />
                       {errors.paymentamount && <p className="error-text">Please enter the amount</p>}
@@ -1089,6 +1173,7 @@ function NewPurchaseOrder() {
                         label="Total Amount *"
                         readOnly="readOnly"
                       />
+                      {errors.paymenttotalamount && <p className="error-text">Please enter the total amount</p>}
                     </Col>
                   </Row>
                   <div className="form-group">
@@ -1112,7 +1197,7 @@ function NewPurchaseOrder() {
                             id="paymenttophone"
                             name="sendpaymentto"
                             onChange={handleChange}
-                            value="phone"
+                            value="Phone"
                             checked={newData.sendpaymentto === "phone"}
                           />
                           <label
@@ -1131,7 +1216,7 @@ function NewPurchaseOrder() {
                             id="paymenttoemail"
                             name="sendpaymentto"
                             onChange={handleChange}
-                            value="email"
+                            value="Email"
                             checked={newData.sendpaymentto === "email"}
                           />
                           <label

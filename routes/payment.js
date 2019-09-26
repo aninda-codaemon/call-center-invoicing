@@ -47,7 +47,7 @@ router.get('/payment-status', async (req, res) => {
     //console.log(paymentResponseStored.result);
     if (paymentResponseStored.result.length == 0) {
         const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
-        var phraseResponseText = response_text;
+        var phraseResponseText = approval_code;
         var responsePhrase = phraseResponseText.indexOf('OK') !== -1 ? true : false;
 
         if (responsePhrase && (response_code == 'A' || response_code == 'E')) {

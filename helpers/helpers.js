@@ -30,7 +30,7 @@ const sendSMS = async (message, receiver='+919874259153') => {
   }  
 }
 
-const sendEmail = async (receiver ='rajib.naskar@codaemonsoftwares.com', mail_subject, mail_message, mail_text='Send mail test dummy') => {
+const sendEmail = async (receiver ='aninda.kar@codaemonsoftwares.com', mail_subject, mail_message, mail_text='Send mail test dummy') => {
   console.log('Send Email Sendgrid');
   const msg = {
     to: receiver,

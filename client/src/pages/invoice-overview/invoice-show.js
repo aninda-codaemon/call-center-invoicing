@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import ContentLoader, { Code, Facebook } from 'react-content-loader';
 
 import "./invoice-overview.scss";
 import { Row, Col, Button, Spinner } from "react-bootstrap";
@@ -494,7 +495,7 @@ const Invoiceform = (props) => {
         </section>
       );
     } else {
-      return (<div>Loading...</div>);
+      return (<div style={{ marginTop: '20px' }}><Code /></div>);
     }
   }
 

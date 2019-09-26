@@ -1,17 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
+
 import "./invoice-overview.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { Row, Col, Button, Container } from "react-bootstrap";
-import Input from "../../components/input/input";
-import SelectOption from "../../components/select-option/select-option";
-import {
-  vehicle_make,
-  vehicle_color,
-  service_type,
-  problem_type,
-  pickup_location
-} from "../../assets/data/staticdata";
 
 import InvoiceContext from '../../context/invoice/invoiceContext';
 import Invoiceform from './invoice-show';
@@ -27,7 +19,7 @@ function InvoiceOverview(props) {
     if (invoice !== null) {
       return <Invoiceform />;
     } else {
-      return <div>Loading.....</div>
+      return <div></div>
     }
   }
   

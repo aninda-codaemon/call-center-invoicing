@@ -35,6 +35,7 @@ export default (state, action) => {
         sort_by: 'invoice_id',
         sort_order: 'ASC',
         search_term: '',
+        fetch_page: 1,
         total_page: 0,
         loading: false,
         error: null,

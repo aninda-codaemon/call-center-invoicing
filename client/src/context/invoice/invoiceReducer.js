@@ -1,5 +1,6 @@
 import {
   INVOICE_LIST,
+  INVOICES_CLEAR,
   INVOICE_ERROR,
   INVOICE_PERPAGE,
   INVOICE_FETCHPAGE,
@@ -20,10 +21,24 @@ export default (state, action) => {
   switch(action.type) {
     case INVOICE_LIST:
       return {
-        ...state,
+        ...state,        
         invoices: action.payload.data.invoices,
         csv_data: action.payload.data.csv,
-        total_page: action.payload.data.total_pages
+        total_page: action.payload.data.total_pages,
+        loading: false
+      };
+    case INVOICES_CLEAR:
+      return {
+        ...state,        
+        invoices: [],
+        csv_data: null,
+        sort_by: 'invoice_id',
+        sort_order: 'ASC',
+        search_term: '',
+        total_page: 0,
+        loading: false,
+        error: null,
+        success: null
       };
     case INVOICE_PERPAGE:
       return {

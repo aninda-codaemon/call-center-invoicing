@@ -1,7 +1,7 @@
 import React, {useEffect, useContext, useState} from "react";
 import { CSVLink, CSVDownload } from "react-csv";
 import moment from 'moment';
-import { Row, Col, Button, Container } from "react-bootstrap";
+import { Row, Col, Button, Container, Spinner } from "react-bootstrap";
 import { Link } from 'react-router-dom';
 
 import "./all-purchase-orders.scss";
@@ -17,7 +17,17 @@ function AllPurchaseOrders(props) {
   const authContext = useContext(AuthContext);
   const{ user } = authContext;
   const invoiceContext = useContext(InvoiceContext);
-  const { invoices, csv_data, fetch_page, per_page, sort_by, sort_order, search_term, total_page } = invoiceContext;
+  const { 
+    invoices, 
+    csv_data, 
+    fetch_page, 
+    per_page, 
+    sort_by, 
+    sort_order, 
+    search_term,
+    loading,
+    total_page 
+  } = invoiceContext;
 
   const showInvoicesList = () => {
     return invoices.map( (invoice, index) => {
@@ -67,6 +77,7 @@ function AllPurchaseOrders(props) {
   const handleSearchTermsSubmit = (e) => {
     e.preventDefault();
     const page_no = 1;
+    invoiceContext.toggle_loader(true);
     invoiceContext.update_search_terms(searchTerms);
     invoiceContext.update_fetch_page(page_no);
     invoiceContext.get_invoices(page_no, per_page, sort_by, sort_order, searchTerms);
@@ -100,13 +111,19 @@ function AllPurchaseOrders(props) {
 
   useEffect(() => {
     // Call the invoices list from context
-    console.log('User');
-    console.log(user);
-    if (user !== null) {
-      invoiceContext.get_invoices(fetch_page, per_page, sort_by, sort_order, search_term);
-    }
+    // console.log('User');
+    // console.log(user);
+    // if (user !== null) {
+    //   invoiceContext.get_invoices(fetch_page, per_page, sort_by, sort_order, search_term);
+    // }
+    invoiceContext.get_invoices(fetch_page, per_page, sort_by, sort_order, search_term);
+  }, []);
 
-  }, [user]);
+  // For unmount
+  useEffect( () => () => {
+    invoiceContext.clear_invoice_list();  
+    console.log("unmount invoice list");
+  }, [] );
 
   return (
     <React.Fragment>
@@ -127,15 +144,31 @@ function AllPurchaseOrders(props) {
                         type="search"
                         placeholder="Search"
                         aria-label="Search"
-                        name={searchTerms}
+                        name="searchTerms"
+                        value={searchTerms}
                         onChange={handleSearchTermsChange}
                       />
-                      <button
-                        className="btn btn-danger my-2 my-sm-0"
-                        type="submit"
-                      >
-                        <i className="fa fa-search" aria-hidden="true" />
-                      </button>
+                      {
+                        !loading ? (
+                          <button
+                            className="btn btn-danger my-2 my-sm-0"
+                            type="submit"
+                          >
+                            <i className="fa fa-search" aria-hidden="true" />
+                          </button>
+                        ) : (
+                          <button className="btn btn-danger my-2 my-sm-0" type="button" disabled>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                            <span className="sr-only">Loading...</span>
+                          </button>
+                        )
+                      }                                            
                     </form>
                   </Col>
                   <Col className="text-right export">

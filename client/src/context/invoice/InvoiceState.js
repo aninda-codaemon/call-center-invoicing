@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import {
   INVOICE_LIST,
+  INVOICES_CLEAR,
   INVOICE_ERROR,
   SERVER_URL,
   INVOICE_PERPAGE,
@@ -159,6 +160,12 @@ const InvoiceState = (props) => {
     }
   }
 
+  const clear_invoice_list = async () => {
+    dispatch({
+      type: INVOICES_CLEAR      
+    });
+  }
+
   const clear_invoice = async () => {
     dispatch({
       type: INVOICE_CLEAR      
@@ -224,6 +231,7 @@ const InvoiceState = (props) => {
       loading: state.loading,
       linkloading: state.linkloading,
       get_invoices,
+      clear_invoice_list,
       update_search_terms,
       update_fetch_page,
       update_per_page,

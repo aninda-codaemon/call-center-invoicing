@@ -43,18 +43,20 @@ router.get('/payment-status', async (req, res) => {
         unique_ref, email, card_number, hash, total_response, date_time
     };
 
-    const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id, unique_ref);
+    const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id);
     //console.log(paymentResponseStored.result);
     if (paymentResponseStored.result.length == 0) {
-        const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
-        console.log(payment.result);
-        if (response_text.length == 6 && response_code == 'A' ) {
+        var phraseResponseText = response_text;
+        var responsePhrase = phraseResponseText.indexOf('OK') !== -1 ? true : false;
+
+        if (responsePhrase && (response_code == 'A' || response_code == 'E')) {
             contextFlag = 1;
-             responseText = "Payment Successfully Complete";
+            responseText = "Payment Successfully Complete";
         } else {
             contextFlag = 2;
             responseText = "Payment Failed";
         }
+
         res.render('payment/payment-response', { responseText, contextFlag });
 
     } else {
@@ -96,9 +98,9 @@ router.get('/:invoicenumber', async (req, res) => {
         if (response.error) {
             return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
         }
-        //  else if (time_differ > 10) {
-        //      res.render('payment/expired', { time_differ, invoice_number });
-        //  } 
+        else if (time_differ > 10) {
+            res.render('payment/expired', { time_differ, invoice_number });
+        }
         else {
             res.render('payment/index',
                 {
@@ -110,6 +112,8 @@ router.get('/:invoicenumber', async (req, res) => {
                     RECEIPTPAGEURL
                 });
         }
+    } else {
+        return res.status(500).json({ errors: [{ msg: 'Invoice Number does not exists!' }] });
     }
 });
 

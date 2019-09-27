@@ -6,6 +6,37 @@ const fetch = require('node-fetch');
 var md5 = require('md5');
 const router = express.Router();
 const date = require('date-and-time');
+const fs = require("fs");
+const PDFDocument = require("pdfkit");
+const { sendSMS, sendEmail } = require('../helpers/helpers');
+
+const invoice = {
+    shipping: {
+        name: "John Doe",
+        address: "1234 Main Street",
+        city: "San Francisco",
+        state: "CA",
+        country: "US",
+        postal_code: 94111
+    },
+    items: [
+        {
+            item: "TC 100",
+            description: "Toner Cartridge",
+            quantity: 2,
+            amount: 6000
+        },
+        {
+            item: "USB_EXT",
+            description: "USB Cable Extender",
+            quantity: 1,
+            amount: 2000
+        }
+    ],
+    subtotal: 8000,
+    paid: 0,
+    invoice_nr: 1234
+};
 
 // Payment Gareway Anywhere Commerce Params
 const TERMINALID = process.env.TERMINALID;
@@ -46,7 +77,7 @@ router.get('/payment-status', async (req, res) => {
     const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id, unique_ref);
 
     if (paymentResponseStored.result.length == 0) {
-        const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
+        //const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
         var phraseResponseText = approval_code;
         var responsePhrase = phraseResponseText.indexOf('OK') !== -1 ? true : false;
 
@@ -56,7 +87,11 @@ router.get('/payment-status', async (req, res) => {
             const status = 'Paid';
             let updateInvoice = { invoice_id, status };
             const invoicePaymentSatus = await InvoiceModel.updateInvoicePaymentStatus(updateInvoice);
-
+            const invoiceDataReceipt = await InvoiceModel.getInvoiceByInvoiceId(invoice_id);
+            //console.log(JSON.stringify(invoiceDataReceipt.result));
+            const pdfPath = './receiptpdf/receipt_' + invoice_id + '.pdf';
+            createInvoice(invoiceDataReceipt.result, pdfPath);
+            
             contextFlag = 1;
             responseText = "Payment Successfully Complete";
         } else {
@@ -127,6 +162,171 @@ function diff_minutes(dt2, dt1) {
     var diff = (dt2.getTime() - dt1.getTime()) / 1000;
     diff /= 60;
     return Math.abs(Math.round(diff));
+}
+
+function createInvoice(invoice, pdfPath) {
+    let doc = new PDFDocument({ size: "A4", margin: 50 });
+    generateHeader(doc);
+    generateCustomerInformation(doc, invoice);
+    generateInvoiceTable(doc, invoice);
+    generateFooter(doc);
+
+    doc.end();
+    doc.pipe(fs.createWriteStream(pdfPath));
+}
+
+function generateHeader(doc) {
+    doc
+        .image("./public/images/logo.png", 50, 45, { width: 50 })
+        .fillColor("#444444")
+        .fontSize(20)
+        .text("Roadside Assistance", 110, 57)
+        .fontSize(10)
+        .text("Roadside Assistance", 200, 50, { align: "right" })
+        .text("123 Main Street", 200, 65, { align: "right" })
+        .text("New York, NY, 10025", 200, 80, { align: "right" })
+        .moveDown();
+}
+
+function generateCustomerInformation(doc, invoice) {
+    doc
+        .fillColor("#444444")
+        .fontSize(20)
+        .text("Invoice Receipt", 50, 160);
+
+    generateHr(doc, 185);
+
+    const customerInformationTop = 200;
+
+    doc
+        .fontSize(10)
+        .text("Receipt Number:", 50, customerInformationTop)
+        .font("Helvetica-Bold")
+        .text(invoice[0].invoice_id, 150, customerInformationTop)
+        .font("Helvetica")
+        .text("Receipt Date:", 50, customerInformationTop + 15)
+        .text(formatDate(new Date()), 150, customerInformationTop + 15)
+        .text("Total Amount Paid:", 50, customerInformationTop + 30)
+        .text(
+            formatCurrency(invoice[0].amount),
+            150,
+            customerInformationTop + 30
+        )
+
+        .font("Helvetica-Bold")
+        .text(invoice[0].first_name + " " + invoice[0].last_name, 300, customerInformationTop)
+        .font("Helvetica")
+        .text("Phone: " + invoice[0].phone_number, 300, customerInformationTop + 15)
+        .text("Email: " + invoice[0].payment_email)
+        .moveDown();
+
+    generateHr(doc, 252);
+}
+
+
+
+function generateFooter(doc) {
+    doc
+        .fontSize(10)
+        .text(
+            "Payment is due within 15 days. Thank you for your business.",
+            50,
+            780,
+            { align: "center", width: 500 }
+        );
+}
+
+function generateInvoiceTable(doc, invoice) {
+    let i;
+    const invoiceTableTop = 330;
+    const serviceCharge = (invoice[0].amount * 3.5) / 100;
+    const subTotal = (invoice[0].amount - serviceCharge);
+    const netTotal = invoice[0].amount;
+    doc.font("Helvetica-Bold");
+    generateTableRow(
+        doc,
+        invoiceTableTop,
+        "Service",
+        "Description",
+        "Total"
+    );
+    generateHr(doc, invoiceTableTop + 20);
+    doc.font("Helvetica");
+
+
+    const position = invoiceTableTop + 1 * 30;
+    generateTableRow(
+        doc,
+        position,
+        invoice[0].service_type,
+        invoice[0].problem_type,
+        formatCurrency(subTotal)
+    );
+
+    generateHr(doc, position + 20);
+
+
+    const subtotalPosition = invoiceTableTop + 2 * 30;
+    generateTableRow(
+        doc,
+        subtotalPosition,
+        "Service Charge :",
+        "",
+        formatCurrency(serviceCharge)
+    );
+
+    const paidToDatePosition = subtotalPosition + 20;
+    generateTableRow(
+        doc,
+        paidToDatePosition,
+        "Total :",
+        "",
+        formatCurrency(netTotal)
+    );
+
+
+    doc.font("Helvetica");
+}
+
+function generateFooter(doc) {
+    doc
+        .fontSize(10)
+        .text(
+            "Thank you for your payment.",
+            50,
+            780,
+            { align: "center", width: 500 }
+        );
+}
+
+function generateTableRow(doc, y, item, description, lineTotal) {
+    console.log(y);
+    doc
+        .fontSize(10)
+        .text(item, 50, y)
+        .text(description, 150, y)
+        .text(lineTotal, 0, y, { align: "right" });
+}
+
+function generateHr(doc, y) {
+    doc
+        .strokeColor("#aaaaaa")
+        .lineWidth(1)
+        .moveTo(50, y)
+        .lineTo(550, y)
+        .stroke();
+}
+
+function formatCurrency(cents) {
+    return "$" + cents;
+}
+
+function formatDate(date) {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    return year + "/" + month + "/" + day;
 }
 
 module.exports = router;

@@ -37,6 +37,7 @@
     "mysql2": "^1.6.5",
     "node-fetch": "^2.6.0",
     "node-url-shortener": "^1.0.1",
+    "pdfkit": "^0.10.0",
     "react-content-loader": "^4.3.0",
     "react-iframe": "^1.8.0",
     "react-places-autocomplete": "^7.2.1",

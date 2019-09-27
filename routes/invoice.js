@@ -580,7 +580,7 @@ router.post('/', authMiddleware, async (req, res) => {
 		start_page = (perPage * (fetchPage - 1));
 		next_start = (perPage * fetchPage);
 		next_page = 0; // Count for next page records
-		
+
 		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
 		console.log(sql_limit_query);
 		const resultArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page

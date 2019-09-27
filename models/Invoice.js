@@ -149,12 +149,12 @@ Invoice.updateLinkDate = async (invoice) => {
   try {
     const [result, fields] =
       await pool.query(`UPDATE user_invoice SET           
-          send_payment_to=?,
-          date_edit_timestamp=NOW() 
-        WHERE invoice_id=?`,
-        [invoice.send_payment_to,
-        invoice.invoice_id
-        ]);
+            send_payment_to=?,
+            date_edit_timestamp=NOW() 
+          WHERE invoice_id=?`, [
+            invoice.send_payment_to,
+            invoice.invoice_id
+          ]);
     console.log(result);
     response.result = invoice;
     return response;

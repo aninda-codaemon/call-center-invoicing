@@ -1,15 +1,15 @@
 const express = require('express');
 const moment = require('moment');
 const { check, validationResult } = require('express-validator');
+const shortUrl = require('node-url-shortener');
+const json2csv = require('json2csv').parse;
+const fs = require('fs');
 
 const { sendSMS, sendEmail, checkLocalTime, calculateDistance } = require('../helpers/helpers');
 
 const authMiddleware = require('../middleware/auth');
 const UserModel = require('../models/User');
 const InvoiceModel = require('../models/Invoice');
-var shortUrl = require('node-url-shortener');
-const json2csv = require('json2csv').parse;
-var fs = require('fs');
 
 const router = express.Router();
 
@@ -414,51 +414,49 @@ router.post('/resendlink', [authMiddleware, [
 			invoice.data_last_link_send = data_last_link_send;
 			invoice.data_payment_done = data_payment_done;
 
-			if (send_payment_to === 'Email') {
-				shortUrl.short('http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/' + invoice_id, function (err, paymentUrl) {
+			if (send_payment_to === 'Email') {				
 				const emailTemplate = `
-                      <html>
-                      <head>
-                        <title>Forget Password</title>
-                      </head>
-                      <body>
-                          <table>
-                              <tr>
-                                  <td>
-                                    <table>
-                                      <tr>                                
-                                        <td>Hello ${invoice['first_name']},</td>                                  
-                                      </tr>
-                                      <tr>                                  
-											<td>
-												<p>
-													<b>Invoice Number:</b> ${invoice_id}
-												</p>
-		                                         <p>
-													<b>You can pay for your Tow @ this link: https://paymenttest.towpanda.com/pay?invoice=${invoice_id}</b>
-												</p>
-												<p>
-													<b>Service Type:</b> ${invoice.service_type}
-												</p>
-												<p>
-													<b>Amount:</b> ${invoice.amount}
-												</p>
-                                        </td>
-                                      </tr>                                  
-                                      <tr>
-                                        <td><hr /></td>
-                                      </tr>
-                                      <tr>
-                                        <td>Thank you</td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                              </tr>
-                          </table>
-                      </body>
-                    </html>
+							<html>
+							<head>
+								<title>Forget Password</title>
+							</head>
+							<body>
+									<table>
+											<tr>
+													<td>
+														<table>
+															<tr>                                
+																<td>Hello ${invoice['first_name']},</td>                                  
+															</tr>
+															<tr>                                  
+																<td>
+																	<p>
+																		<b>Invoice Number:</b> ${invoice_id}
+																	</p>
+																	<p>
+																		<b>You can pay for your Tow @ this link: http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/${invoice_id}</b>
+																	</p>
+																	<p>
+																		<b>Service Type:</b> ${invoice.service_type}
+																	</p>
+																	<p>
+																		<b>Amount:</b> ${invoice.amount}
+																	</p>
+																</td>
+															</tr>                                  
+															<tr>
+																<td><hr /></td>
+															</tr>
+															<tr>
+																<td>Thank you</td>
+															</tr>
+														</table>
+													</td>
+											</tr>
+									</table>
+							</body>
+						</html>
 				`;
-				});
 				const isSend = await sendEmail('aninda.kar@codaemonsoftwares.com', 'Reg. resend details for your Tow', emailTemplate, 'Reg. resend details for your Tow');
 				if (isSend) {
 					return res.status(200).json({ errors: [], data: { msg: 'Payment link send again', invoice } });
@@ -467,7 +465,7 @@ router.post('/resendlink', [authMiddleware, [
 				}
 			} else {
 				// Send SMS
-				const sms_content = `You can pay for your Tow @ this link: https://paymenttest.towpanda.com/pay?invoice=${invoice_id}`;
+				const sms_content = `You can pay for your Tow @ this link: http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/${invoice_id}`;
 				const isSend = await sendSMS(sms_content);
 				if (isSend) {
 					return res.status(200).json({ errors: [], data: { msg: 'Payment link send again', invoice } });

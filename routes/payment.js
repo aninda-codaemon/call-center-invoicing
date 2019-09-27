@@ -17,7 +17,7 @@ router.get('/payment-status', async (req, res) => {
     const dl_state = req.query.DL_STATEken;
     const post_code = req.query.POSTCODE;
     const state = req.query.STATE;
-    const invoice_id = req.query.ORDERID;  // Invoice Id send with Payment
+    const invoice_id = req.query.ORDERID; // Invoice Id send with Payment
     const amount = req.query.AMOUNT;
     const region = req.query.REGION;
     const terminal_id = req.query.TERMINALID;
@@ -38,9 +38,26 @@ router.get('/payment-status', async (req, res) => {
     var responseText = ''
 
     let newPaymentResponse = {
-        invoice_id, dl_number, dl_state, post_code, state, region, amount, terminal_id, city,
-        response_text, response_code, approval_code, avs_response, cvv_response,
-        unique_ref, email, card_number, hash, total_response, date_time
+        invoice_id,
+        dl_number,
+        dl_state,
+        post_code,
+        state,
+        region,
+        amount,
+        terminal_id,
+        city,
+        response_text,
+        response_code,
+        approval_code,
+        avs_response,
+        cvv_response,
+        unique_ref,
+        email,
+        card_number,
+        hash,
+        total_response,
+        date_time
     };
 
     const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id, unique_ref);
@@ -54,7 +71,10 @@ router.get('/payment-status', async (req, res) => {
 
             // Update Invoice table after successfull payment
             const status = 'Paid';
-            let updateInvoice = { invoice_id, status };
+            let updateInvoice = {
+                invoice_id,
+                status
+            };
             const invoicePaymentSatus = await InvoiceModel.updateInvoicePaymentStatus(updateInvoice);
 
             contextFlag = 1;
@@ -64,12 +84,18 @@ router.get('/payment-status', async (req, res) => {
             responseText = "Payment Failed";
         }
 
-        res.render('payment/payment-response', { responseText, contextFlag });
+        res.render('payment/payment-response', {
+            responseText,
+            contextFlag
+        });
 
     } else {
         contextFlag = 3;
         responseText = "Payment already processed";
-        res.render('payment/payment-response', { responseText, contextFlag });
+        res.render('payment/payment-response', {
+            responseText,
+            contextFlag
+        });
     }
 });
 
@@ -77,12 +103,18 @@ router.get('/:invoicenumber', async (req, res) => {
     const invoice_number = req.params.invoicenumber;
     if (invoice_number != 0 && invoice_number != '' && invoice_number < 1011290101) {
         const invalidInvoice = "Invalid Invoice Number";
-        res.render('payment/invoice-not-found', { invalidInvoice });
+        res.render('payment/invoice-not-found', {
+            invalidInvoice
+        });
     }
     const isResponse = await InvoiceModel.getInvoiceById(invoice_number);
     const timeNow = new Date();
     if (isResponse.error) {
-        return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+        return res.status(500).json({
+            errors: [{
+                msg: 'Internal server error!'
+            }]
+        });
     } else if (isResponse.result && isResponse.result.length > 0) {
 
         const response = await InvoiceModel.getInvoiceByInvoiceId(invoice_number);
@@ -102,24 +134,33 @@ router.get('/:invoicenumber', async (req, res) => {
         const HASH = md5(TERMINALID + ORDERID + AMOUNT + DATETIME + RECEIPTPAGEURL + secret);
 
         if (response.error) {
-            return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
-        }
-        else if (time_differ > 10) {
-            res.render('payment/expired', { time_differ, invoice_number });
-        }
-        else {
-            res.render('payment/index',
-                {
-                    response: response.result,
-                    sub_total_deduct,
-                    sub_total, HASH,
-                    DATETIME,
-                    AMOUNT,
-                    RECEIPTPAGEURL
-                });
+            return res.status(500).json({
+                errors: [{
+                    msg: 'Internal server error!'
+                }]
+            });
+        } else if (time_differ > 10) {
+            res.render('payment/expired', {
+                time_differ,
+                invoice_number
+            });
+        } else {
+            res.render('payment/index', {
+                response: response.result,
+                sub_total_deduct,
+                sub_total,
+                HASH,
+                DATETIME,
+                AMOUNT,
+                RECEIPTPAGEURL
+            });
         }
     } else {
-        return res.status(500).json({ errors: [{ msg: 'Invoice Number does not exists!' }] });
+        return res.status(500).json({
+            errors: [{
+                msg: 'Invoice Number does not exists!'
+            }]
+        });
     }
 });
 

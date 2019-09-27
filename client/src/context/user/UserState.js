@@ -3,6 +3,8 @@ import axios from 'axios';
 
 import {
   USER_LIST,
+  USERS_CLEAR,
+  USER_CLEAR,
   USER_ERROR,
   SERVER_URL,
   USER_PERPAGE,
@@ -14,7 +16,8 @@ import {
   CLEAR_ERROR,
   USER_INFO,
   USER_UPDATE,
-  USER_PASSWORD
+  USER_PASSWORD,
+  USER_LOADING
 } from '../Types';
 import UserContext from './userContext';
 import UserReducer from './userReducer';
@@ -37,7 +40,8 @@ const UserState = (props) => {
     per_page: 10,
     total_page: 0,
     error: null,
-    success: null
+    success: null,
+    loading: false
   };
 
   const [state, dispatch] = useReducer(UserReducer, initialState);
@@ -225,6 +229,18 @@ const UserState = (props) => {
     }
   }
 
+  const clear_user_list = () => {
+    dispatch({
+      type: USERS_CLEAR
+    });
+  }
+
+  const clear_user = () => {
+    dispatch({
+      type: USER_CLEAR
+    });
+  }
+
   const update_per_page = (value) => {
     dispatch({
       type: USER_PERPAGE,
@@ -257,6 +273,13 @@ const UserState = (props) => {
 
   const clear_error = () => dispatch({ type: CLEAR_ERROR });
 
+  const toggle_loader = async (value) => {
+    dispatch({
+      type: USER_LOADING,
+      payload: value
+    });
+  }
+
   return <UserContext.Provider
     value={{
       users: state.users,
@@ -269,7 +292,10 @@ const UserState = (props) => {
       total_page: state.total_page,
       error: state.error,
       success: state.success,
+      loading: state.loading,
       get_users,
+      clear_user_list,
+      clear_user,
       update_per_page,
       update_fetch_page,
       update_search_terms,
@@ -280,7 +306,8 @@ const UserState = (props) => {
       info_user,
       update_user,
       update_status,
-      update_password
+      update_password,
+      toggle_loader
     }}
   >
     { props.children }

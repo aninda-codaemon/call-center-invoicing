@@ -7,6 +7,8 @@ export const LOGOUT = 'LOGOUT';
 export const CLEAR_ERRORS = 'CLEAR_ERRORS';
 
 export const USER_LIST = 'USER_LIST';
+export const USERS_CLEAR = 'USERS_CLEAR';
+export const USER_CLEAR = 'USER_CLEAR';
 export const USER_PERPAGE = 'USER_PERPAGE';
 export const USER_FETCHPAGE = 'USER_FETCHPAGE';
 export const USER_SEARCHTERM = 'USER_SEARCHTERM';
@@ -18,6 +20,7 @@ export const CLEAR_ERROR = 'CLEAR_ERROR';
 export const USER_INFO = 'USER_INFO';
 export const USER_UPDATE = 'USER_UPDATE';
 export const USER_PASSWORD = 'USER_PASSWORD';
+export const USER_LOADING = 'USER_LOADING';
 
 export const INVOICE_LIST = 'INVOICE_LIST';
 export const INVOICES_CLEAR = 'INVOICES_CLEAR';

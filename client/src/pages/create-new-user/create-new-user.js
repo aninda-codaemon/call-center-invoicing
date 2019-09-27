@@ -2,7 +2,7 @@ import React, {useState, useContext, useEffect} from "react";
 import "./create-new-user.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
-import { Row, Col, Button, Container } from "react-bootstrap";
+import { Row, Col, Button, Container, Spinner } from "react-bootstrap";
 import Input from "../../components/input/input";
 // import validate from "../../validation-rules/create-new-user-validation-rules";
 // import useForm from "../../custom-hooks/form-validation";
@@ -13,7 +13,7 @@ import UserContext from '../../context/user/userContext';
 function CreateNewUser(props) {
   const userContext = useContext(UserContext);
 
-  const { error, success } = userContext;
+  const { error, success, loading } = userContext;
 
   const initialValues = {
     fname: '',
@@ -36,7 +36,8 @@ function CreateNewUser(props) {
   const createNewUser = () => {
     console.log("No errors, submit callback called!");
     console.log(values);
-    setData(values);    
+    setData(values);
+    userContext.toggle_loader(true);
     userContext.save_user(values);
   }
 
@@ -48,7 +49,7 @@ function CreateNewUser(props) {
 
   const showSuccess = () => {
     if (success) {
-      window.setTimeout(() => (props.history.push('/users')), 2000);
+      window.setTimeout(() => (props.history.push('/users')), 3000);
       return success.map((err, index) => <p className="error-text" key={index}>{err.msg}</p>)
     }
   }
@@ -61,7 +62,7 @@ function CreateNewUser(props) {
   
   return (
     <React.Fragment>
-      <Header />
+      <Header loading={loading} />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">
@@ -154,9 +155,24 @@ function CreateNewUser(props) {
                   </Col>
                 </Row>
                 <div className="submit-button-area">
-                  <Button variant="danger" type="submit">
-                    SUBMIT
-                  </Button>
+                {
+                  !loading ? (
+                    <Button variant="danger" type="submit">
+                      SUBMIT
+                    </Button>
+                  ) : (
+                    <Button variant="danger" disabled>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      <span className="sr-only">Loading...</span>
+                    </Button>
+                  )
+                }
                 </div>
               </form>
             </section>

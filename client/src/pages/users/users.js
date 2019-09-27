@@ -3,14 +3,14 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import Pagination from "./user-pagination";
 import SortingIcon from "../../components/sortingicon/sortingicon";
-import { Row, Col, Button, Container } from "react-bootstrap";
+import { Row, Col, Button, Container, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import UserContext from '../../context/user/userContext';
 
 function Users(props) {
   const userContext = useContext(UserContext);
-  const { users, fetch_page, per_page, sort_by, sort_order, search_term, total_page } = userContext;
+  const { users, fetch_page, per_page, sort_by, sort_order, search_term, total_page, loading } = userContext;
 
   const list_users = () => {    
     return users.map( (user, index) => (
@@ -29,18 +29,10 @@ function Users(props) {
           <div className="lname">{user.last_name}</div>
           <div className="email">{user.email_id}</div>
           <div className="phone">{user.contact_no}</div>
-          <div className="dispatching-system">
-            {
-              user.status === 1 ? (
-                <Button onClick={handleToggleUserStatus} variant="success" size="sm" key={user.id} primary={user.id} status={user.status}>
-                  Block
-                </Button>
-              ) : (
-                <Button onClick={handleToggleUserStatus} variant="danger" size="sm" key={user.id} primary={user.id} status={user.status}>
-                  Unblock
-                </Button>
-              )
-            }            
+          <div className="dispatching-system">            
+            <Button onClick={handleToggleUserStatus} variant={ user.status === 1 ? 'success' : 'danger' } size="sm" key={user.id} primary={user.id} status={user.status}>
+              {user.status === 1 ? 'Block' : 'Unblock' }
+            </Button>
           </div>
           <div className="edit">
             <Link to={`/edit-user/${user.id}`}><i className="fa fa-pencil" aria-hidden="true" /></Link>
@@ -81,6 +73,7 @@ function Users(props) {
   const handleSearchTermsSubmit = (e) => {
     e.preventDefault();
     const page_no = 1;
+    userContext.toggle_loader(true);
     userContext.update_search_terms(searchTerms);
     userContext.update_fetch_page(page_no);
     userContext.get_users(page_no, per_page, sort_by, sort_order, searchTerms);
@@ -120,9 +113,15 @@ function Users(props) {
     //eslint-disable-next-line
   }, []);
 
+  // For unmount
+  useEffect( () => () => {
+    console.log("unmount user list");
+    userContext.clear_user_list();    
+  }, [] );
+
   return (
     <React.Fragment>
-      <Header />
+      <Header loading={loading} />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">
@@ -142,12 +141,26 @@ function Users(props) {
                         name={searchTerms}
                         onChange={handleSearchTermsChange}
                       />
-                      <button
-                        className="btn btn-danger my-2 my-sm-0"
-                        type="submit"
-                      >
-                        <i className="fa fa-search" aria-hidden="true" />
-                      </button>
+                      {
+                        !loading ? (
+                          <button
+                            className="btn btn-danger my-2 my-sm-0"
+                            type="submit"
+                            >
+                            <i className="fa fa-search" aria-hidden="true" />
+                          </button>) : (
+                          <button className="btn btn-danger my-2 my-sm-0" type="button" disabled>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                            <span className="sr-only">Loading...</span>
+                          </button>
+                        )
+                      }
                     </form>
                   </Col>
                   <Col className="text-right">

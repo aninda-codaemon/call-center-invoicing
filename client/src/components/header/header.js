@@ -5,7 +5,7 @@ import logo from "../../assets/img/logo.png";
 import HeaderNav from "../headernav/headernav";
 import SidebarNav from "../sidebarnav/sidebarnav";
 
-function Header() {
+function Header(props) {
 
   const initialState = {
     barClicked: false
@@ -38,7 +38,7 @@ function Header() {
               </div>
             </div>
             <nav className="top-right">
-              <HeaderNav />
+              <HeaderNav loading={props.loading} />
             </nav>
           </Col>
         </Row>

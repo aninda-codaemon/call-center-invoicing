@@ -1,5 +1,7 @@
 import {
   USER_LIST,
+  USERS_CLEAR,
+  USER_CLEAR,
   USER_ERROR,
   USER_PERPAGE,
   USER_FETCHPAGE,
@@ -10,7 +12,8 @@ import {
   CLEAR_ERROR,
   USER_INFO,
   USER_UPDATE,
-  USER_PASSWORD
+  USER_PASSWORD,
+  USER_LOADING
 } from '../Types';
 
 export default (state, action) => {
@@ -19,7 +22,33 @@ export default (state, action) => {
       return {
         ...state,
         users: action.payload.data.users,
-        total_page: action.payload.data.total_pages
+        total_page: action.payload.data.total_pages,
+        loading: false
+      };
+    case USERS_CLEAR:
+      return {
+        ...state,
+        users: [],
+        sort_by: 'first_name',
+        sort_order: 'ASC',
+        search_term: '',
+        fetch_page: 1,
+        total_page: 0,
+        error: null,
+        success: null,
+        loading: false
+      };
+    case USER_CLEAR:
+      return {
+        ...state,
+        user: {
+          first_name: '',
+          last_name: '',
+          email_id: '',
+          contact_no: '',
+          password: '',
+          confirmpassword: ''
+        }
       };
     case USER_PERPAGE:
       return {
@@ -46,7 +75,8 @@ export default (state, action) => {
       return {
         ...state,
         success: [{ msg: action.payload.data.msg }],
-        error: null
+        error: null,
+        loading: false
       };
     case USER_ERROR:
       return {
@@ -73,13 +103,19 @@ export default (state, action) => {
         return {
           ...state,
           success: [{ msg: action.payload.data.msg }],
-          error: null
+          error: null,
+          loading: false
         };
     case USER_PASSWORD:
       return {
         ...state,
         success: [{ msg: action.payload.data.msg }],
         error: null
+      };
+    case USER_LOADING:
+      return {
+        ...state,
+        loading: action.payload
       };
   }
 };

@@ -2,7 +2,7 @@ import React, {useState, useContext, useEffect} from "react";
 import "../create-new-user/create-new-user.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
-import { Row, Col, Button, Container } from "react-bootstrap";
+import { Row, Col, Button, Container, Spinner } from "react-bootstrap";
 import Input from "../../components/input/input";
 // import validate from "../../validation-rules/create-new-user-validation-rules";
 // import useForm from "../../custom-hooks/form-validation";
@@ -13,7 +13,7 @@ import UserContext from '../../context/user/userContext';
 function EditUserForm(props) {
   const userContext = useContext(UserContext);
 
-  const { error, success, user } = userContext;
+  const { error, success, user, loading } = userContext;
 
   let initialValues = {
       fname: user.first_name,
@@ -39,6 +39,7 @@ function EditUserForm(props) {
     console.log("No errors, submit callback called!");
     console.log(values);
     setData(values);
+    userContext.toggle_loader(true);
     userContext.update_user(values);
   }
 
@@ -142,9 +143,24 @@ function EditUserForm(props) {
               </Col>
             </Row>
             <div className="submit-button-area">
-              <Button variant="danger" type="submit">
-                SUBMIT
-              </Button>
+              {
+                !loading ? (
+                  <Button variant="danger" type="submit">
+                    SUBMIT
+                  </Button>
+                ) : (
+                  <Button variant="danger" disabled>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only">Loading...</span>
+                  </Button>
+                )
+              }              
             </div>
           </form>
         </section>
@@ -155,6 +171,12 @@ function EditUserForm(props) {
     console.log('Edit form use effect');
   }, []);  
   
+  // For unmount
+  useEffect( () => () => {
+    setData(initialValues);
+    console.log("unmount user edit form");
+  }, []);
+
   return (
     <React.Fragment>
       { showForm() }          

@@ -32,6 +32,22 @@ function AllPurchaseOrders(props) {
   const showInvoicesList = () => {
     return invoices.map( (invoice, index) => {
       const time_full = `${moment(invoice.date_opened_timestamp).format('ddd MMM D YYYY kk:mm:ss')} GMT ${moment(invoice.date_opened_timestamp).format('Z')}`;
+      let status_classname = 'paid';
+      switch(invoice.status) {
+        case 'Yet_to_pay':
+          status_classname = 'yet-to-pay';
+          break;
+        case 'Visited':
+          status_classname = 'visited';
+          break;
+        case 'Paid':
+          status_classname = 'paid';
+          break;
+        case 'Dispatched':
+          status_classname = 'dispatched';
+          break;
+      } 
+
       return (
         <React.Fragment key={invoice.id}>
           <div className="table-body">
@@ -47,7 +63,7 @@ function AllPurchaseOrders(props) {
             <div className="phone">{ invoice.phone_number }</div>
             <div className="service-type">{ invoice.service_type }</div>
             {/* <div className="status paid dispatched yet-to-pay visited ">{} { invoice.status }</div> */}
-            <div className="status paid">{} { invoice.status }</div>
+            <div className={`status ${status_classname}`}>{ invoice.status }</div>
             <div className="amount">{ invoice.amount }</div>
             <div className="data-opened">
               { time_full }

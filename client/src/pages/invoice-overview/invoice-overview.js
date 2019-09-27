@@ -12,7 +12,7 @@ function InvoiceOverview(props) {
   const invoiceContext = useContext(InvoiceContext);
   const invoice_id = props.match.params.invoice_id;
 
-  const { invoice } = invoiceContext;
+  const { invoice, loading } = invoiceContext;
   let interval;
 
   const showOverview = () => {
@@ -42,7 +42,7 @@ function InvoiceOverview(props) {
 
   return (
     <React.Fragment>
-      <Header />      
+      <Header loading={loading} />      
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">

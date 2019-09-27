@@ -15,7 +15,7 @@ function EditUser(props) {
   const user_id = props.match.params.id;
   const userContext = useContext(UserContext);
 
-  const { error, success, user } = userContext;
+  const { error, success, user, loading } = userContext;
   
   const showForm = () => {
     return (
@@ -27,9 +27,15 @@ function EditUser(props) {
     userContext.info_user(user_id);
   }, []);
   
+  // For unmount
+  useEffect( () => () => {
+    console.log("unmount user edit");
+    userContext.clear_user();   
+  }, []);
+
   return (
     <React.Fragment>
-      <Header />
+      <Header loading={loading} />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">

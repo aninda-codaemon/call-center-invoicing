@@ -9,6 +9,7 @@ import InvoiceState from './context/invoice/InvoiceState';
 import Login from "./pages/login/login";
 import AllPurchaseOrders from "./pages/all-purchase-orders/all-purchase-orders";
 import NewPurchaseOrder from "./pages/new-purchase-order/new-purchase-order";
+import PurchaseOrder from './pages/new-purchase-order/purchase-order';
 import RefundRequest from "./pages/refund-request/refund-request";
 import Users from "./pages/users/users";
 import CreateNewUser from "./pages/create-new-user/create-new-user";
@@ -36,7 +37,7 @@ function App() {
               <Route path="/" exact component={Login} />          
               <Route path="/forgot-password" component={ForgotPassword} />
               <PrivateRoute path="/all-purchase-orders" component={AllPurchaseOrders} />
-              <PrivateRoute path="/new-purchase-order" component={NewPurchaseOrder} />
+              <PrivateRoute path="/new-purchase-order" component={PurchaseOrder} />
               <PrivateRoute path="/refund-request" component={RefundRequest} />
               <PrivateRoute path="/users" component={Users} />
               <PrivateRoute path="/edit-user/:id" component={EditUser} />

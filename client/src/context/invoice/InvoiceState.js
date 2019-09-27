@@ -160,6 +160,38 @@ const InvoiceState = (props) => {
     }
   }
 
+  const get_invoice_price = async (data) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const formData = {
+      ozip: data.ozip,
+      dzip: data.dzip,
+      oaddress: data.originaddress,
+      daddress: data.destinationaddress,
+      servicetype: data.servicetype,
+      lat: data.origin.lat,
+      lng: data.origin.lng
+    };
+    
+    try {
+      const response = await axios.post(`${SERVER_URL}/api/order/pricing`, formData, config);
+      console.log('Invoice price response');
+      console.log(response);
+      return response;
+    } catch (error) {
+      console.log('Invoice price error');
+      console.log(error);
+      dispatch({
+        type: INVOICE_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
   const clear_invoice_list = async () => {
     dispatch({
       type: INVOICES_CLEAR      
@@ -241,7 +273,8 @@ const InvoiceState = (props) => {
       update_invoice,
       toggle_loader,
       resend_invoice,
-      toggle_link_loader
+      toggle_link_loader,
+      get_invoice_price
     }}
   >
     { props.children }

@@ -29,6 +29,7 @@
     "express": "^4.6.1",
     "express-validator": "^6.1.1",
     "generate-password": "^1.4.2",
+    "google-distance-matrix": "^1.1.1",
     "helmet": "^3.21.0",
     "json2csv": "^4.5.3",
     "jsonwebtoken": "^8.5.1",

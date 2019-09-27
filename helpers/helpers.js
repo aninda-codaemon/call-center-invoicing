@@ -89,7 +89,7 @@ const calculateDistance = async (origin, destination) => {
 
   try {
     console.log('Distance API call');
-    let response = await request.get(apicall);
+    let response = await request(apicall);
     response = JSON.parse(response);
     console.log('Response');
     console.log(response);

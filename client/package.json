@@ -7,6 +7,7 @@
     "bootstrap": "^4.3.1",
     "font-awesome": "^4.7.0",
     "moment": "^2.24.0",
+    "node-distance-matrix": "^1.2.0",
     "node-sass": "^4.12.0",
     "react": "^16.9.0",
     "react-bootstrap": "^1.0.0-beta.11",

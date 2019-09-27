@@ -4,6 +4,7 @@ const { check, validationResult } = require('express-validator');
 const shortUrl = require('node-url-shortener');
 const json2csv = require('json2csv').parse;
 const fs = require('fs');
+const distance = require('google-distance-matrix');
 
 const { sendSMS, sendEmail, checkLocalTime, calculateDistance } = require('../helpers/helpers');
 
@@ -31,6 +32,36 @@ router.get('/send-mail', async (req, res) => {
 	console.log('mail body' + mail_message);
 	sendEmail(receiver, mail_subject, mail_message, mail_subject);
 	res.send('Mail Sendgrid');
+});
+
+router.post('/get-distance', authMiddleware, async (req, res) => {
+	const origin = req.body.origin.toString() || '';
+	const destination = req.body.destination.toString() || '';
+
+	distance.key(process.env.GOOGLEAPIKEY);
+  distance.units('imperial');
+  var origins = [origin];
+  var destinations = [destination];
+  
+  distance.matrix(origins, destinations, function (err, distances) {
+      if (!err) {
+				console.log(distances);
+				if (distances.rows[0]['elements'][0].status === 'OK') {
+					let tmiles = distances.rows[0]['elements'][0].distance.text.split(' ')[0];
+					return res.status(200).json({
+						errors: [], data: {
+							msg: 'Distance calculation',
+							data: parseFloat(tmiles)
+						}
+					});
+				} else {
+					return res.status(400).json({ errors: [{ msg: 'Distance calculation error' }] });
+				}				
+      } else {
+        return res.status(400).json({ errors: [{ msg: 'Distance calculation error' }] });
+      }
+  });
+
 });
 
 // @route     POST /api/order/pricing
@@ -99,39 +130,76 @@ router.post('/pricing', [authMiddleware, [
 					night_charges = 0.00;
 				}
 
-				if (service_type === 'towing') {
-					// Base rate calculation on location timestamp pending. 
+				if (service_type === 'Towing') {
+					// Base rate calculation on location timestamp 
 					base_price = parseFloat((parseFloat(pricing['retail_tow_rate'].replace('$', '')) + night_charges).toFixed(2));
 
-					// Price calculation
-					if (total_distance > 10) {
-						const chargable_miles = Math.ceil(total_distance - 10);
-						net_price = base_price + (chargable_miles * over_miles_price);
-					} else {
-						net_price = base_price;
-					}
+					// Calculate the distance
+					distance.key(process.env.GOOGLEAPIKEY);
+					distance.units('imperial');
+					var origins = [origin];
+					var destinations = [destination];
+					
+					distance.matrix(origins, destinations, function (err, distances) {
+							if (!err) {
+								console.log(distances);
+								if (distances.rows[0]['elements'][0].status === 'OK') {
+									let total_miles = parseFloat(distances.rows[0]['elements'][0].distance.text.split(' ')[0]);
+									console.log('Total Miles', total_miles);
+									// Price calculation
+									if (total_miles > 10) {
+										const chargable_miles = Math.ceil(total_miles - 10);
+										net_price = base_price + (chargable_miles * over_miles_price);
+									} else {
+										net_price = base_price;
+									}
+
+									net_price = parseFloat((net_price + additional_charges).toFixed(2));
+									total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
+
+									return res.status(200).json({
+										errors: [], data: {
+											msg: 'Total price',
+											total_miles,
+											base_price,
+											total_price,
+											net_price,
+											service_charges,
+											system: pricing['system'],
+											night_charges,
+											mileage: Math.ceil(total_miles - 10),
+											mileage_charges: over_miles_price
+										}
+									});
+								} else {
+									return res.status(400).json({ errors: [{ msg: 'Distance calculation error' }] });
+								}				
+							} else {
+								return res.status(400).json({ errors: [{ msg: 'Distance calculation error' }] });
+							}
+					});					
 				} else {
-					// Base rate calculation on location timestamp pending.
+					// Base rate calculation on location timestamp
 					base_price = parseFloat(pricing['retail_light_service_rate'].replace('$', '')) + night_charges;
 					net_price = base_price;
-				}
 
-				net_price = parseFloat((net_price + additional_charges).toFixed(2));
-				total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
+					net_price = parseFloat((net_price + additional_charges).toFixed(2));
+					total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
 
-				return res.status(200).json({
-					errors: [], data: {
-						msg: 'Total price',
-						base_price,
-						total_price,
-						net_price,
-						service_charges,
-						system: pricing['system'],
-						night_charges,
-						mileage: parseFloat((total_distance - 10).toFixed(2)),
-						mileage_charges: over_miles_price
-					}
-				});
+					return res.status(200).json({
+						errors: [], data: {
+							msg: 'Total price',
+							base_price,
+							total_price,
+							net_price,
+							service_charges,
+							system: pricing['system'],
+							night_charges,
+							mileage: parseFloat((total_distance - 10).toFixed(2)),
+							mileage_charges: over_miles_price
+						}
+					});
+				}				
 			}
 		} else {
 			return res.status(400).json({ errors: [{ msg: 'No service for this location' }] });

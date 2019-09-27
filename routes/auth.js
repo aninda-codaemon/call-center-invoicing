@@ -150,4 +150,22 @@ router.post('/forget-password', [
   }    
 });
 
+var distance = require('google-distance-matrix');
+
+router.get('/distance', (req, res) => {  
+  distance.key(process.env.GOOGLEAPIKEY);
+  distance.units('imperial');
+  var origins = ['Starbucks Miami Gardens, 19401 NW 27th Ave #101, Miami Gardens, FL 33056'];
+  var destinations = ['Miami International Airport'];
+  
+  distance.matrix(origins, destinations, function (err, distances) {
+      if (!err){
+        console.log(distances);
+        res.json(distances.rows[0]['elements'][0]);
+      }else{
+        res.json(err);
+      }
+  });
+});
+
 module.exports = router;

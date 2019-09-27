@@ -9,40 +9,42 @@ import PlacesAutocomplete, {
 const Locationsearch = (props) => {
 	const [address, setAddress] = useState('');
 
-	const handleChange = async (address) => {
-		console.log('Handle change');
-		console.log(address);
+	const handleChange = async (address) => {		
     setAddress(address);
 
     try {
-  		const geocode = await geocodeByAddress(address);  		
-  		console.log(geocode[0]);
-  		const latLang = await getLatLng(geocode[0]);
-  		console.log('Lat lang');
-      console.log(latLang);
-      props.onSelect({ description: address });
+  		const geocode = await geocodeByAddress(address);  		  		
+  		const latLang = await getLatLng(geocode[0]);  		      
+      geocode[0].address_components.forEach(element => {
+        if (element.types[0] === "postal_code") {          
+          props.onSelect({ description: address, latlng: latLang, zip_code: element.long_name, place: props.place });
+        }
+      });
+      // props.onSelect({ description: address, latlng: latLang });
   	} catch (error) {
   		console.log('Geocoding error');
       console.log(error);
-      props.onSelect({ description: address });
+      props.onSelect({ description: '', latlng: {}, zip_code: '', place: props.place });
+      setAddress('');
   	}
 
   };
 
-  const handleSelect = async (address) => {
-  	console.log('Handle select');
-  	console.log(address);
+  const handleSelect = async (address) => { 	
   	setAddress(address);
   	try {
-  		const geocode = await geocodeByAddress(address);
-  		console.log(geocode[0]);
-  		const latLang = await getLatLng(geocode[0]);
-  		console.log('Lat lang');
-      console.log(latLang);
-      props.onSelect({ description: address });
+  		const geocode = await geocodeByAddress(address);  		
+  		const latLang = await getLatLng(geocode[0]);  		
+      geocode[0].address_components.forEach(element => {
+        if (element.types[0] === "postal_code") {          
+          props.onSelect({ description: address, latlng: latLang, zip_code: element.long_name, place: props.place });
+        }
+      });
   	} catch (error) {
   		console.log('Geocoding error');
-  		console.log(error);
+      console.log(error);
+      props.onSelect({ description: '', latlng: {}, zip_code: '', place: props.place });
+      setAddress('');
   	}
   };
 

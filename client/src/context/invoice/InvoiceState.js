@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import {
   INVOICE_LIST,
+  INVOICE_NUMBER,
   INVOICES_CLEAR,
   INVOICE_ERROR,
   SERVER_URL,
@@ -16,6 +17,7 @@ import {
   INVOICE_INFO,
   INVOICE_CLEAR,
   INVOICE_UPDATE,
+  INVOICE_SAVE,
   INVOICE_LOADING,
   INVOICE_SENDLINK,
   INVOICE_LINKLOADING
@@ -27,9 +29,10 @@ const InvoiceState = (props) => {
   const initialState = {
     invoices: [],
     invoice: null,
+    invoice_number: null,    
     csv_data: null,
     sort_by: 'invoice_id',
-    sort_order: 'ASC',
+    sort_order: 'DESC',
     search_term: '',
     fetch_page: 1,
     per_page: 10,
@@ -69,6 +72,69 @@ const InvoiceState = (props) => {
       });
     } catch (error) {
       console.log('Invoice list error');
+      console.log(error);
+      dispatch({
+        type: INVOICE_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
+  const get_invoice_number = async () => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    const formData = {};
+    console.log('Form data');
+    console.log(formData);
+
+    try {
+      const response = await axios.get(`${SERVER_URL}/api/order/getInvoiceNumber`, formData, config);
+      console.log('Invoice number response');
+      console.log(response);
+      dispatch({
+        type: INVOICE_NUMBER,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('Invoice number error');
+      console.log(error);
+      dispatch({
+        type: INVOICE_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
+  const save_invoice = async (formData) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    console.log('Form data');
+    console.log(formData);
+
+    try {
+      const response = await axios.post(`${SERVER_URL}/api/order/saveinvoice`, formData, config);
+      console.log('Invoice save response');
+      console.log(response);
+
+      if (formData.draft === 1){
+        // Re populate the invoice number for next invoice
+        get_invoice_number();
+      } else {
+        dispatch({
+          type: INVOICE_SAVE,
+          payload: response.data
+        });
+      }      
+    } catch (error) {
+      console.log('Invoice save error');
       console.log(error);
       dispatch({
         type: INVOICE_ERROR,
@@ -174,7 +240,8 @@ const InvoiceState = (props) => {
       daddress: data.destinationaddress,
       servicetype: data.servicetype,
       lat: data.origin.lat,
-      lng: data.origin.lng
+      lng: data.origin.lng,
+      addlcharges: data.additionalprice
     };
     
     try {
@@ -246,9 +313,14 @@ const InvoiceState = (props) => {
     });
   }
 
+  const clear_success = () => dispatch({ type: CLEAR_SUCCESS });
+
+  const clear_error = () => dispatch({ type: CLEAR_ERROR });
+
   return <InvoiceContext.Provider
     value={{
       invoices: state.invoices,
+      invoice_number: state.invoice_number,
       invoice: state.invoice,
       csv_data: state.csv_data,
       sort_by: state.sort_by,
@@ -274,7 +346,11 @@ const InvoiceState = (props) => {
       toggle_loader,
       resend_invoice,
       toggle_link_loader,
-      get_invoice_price
+      get_invoice_price,
+      get_invoice_number,
+      save_invoice,
+      clear_success,
+      clear_error
     }}
   >
     { props.children }

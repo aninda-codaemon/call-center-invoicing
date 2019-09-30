@@ -34,6 +34,9 @@ router.get('/send-mail', async (req, res) => {
 	res.send('Mail Sendgrid');
 });
 
+// @route     POST /api/order/get-distance
+// @desc      Get the distance between two locations[Not used]
+// @access    Private
 router.post('/get-distance', authMiddleware, async (req, res) => {
 	const origin = req.body.origin.toString() || '';
 	const destination = req.body.destination.toString() || '';
@@ -189,6 +192,7 @@ router.post('/pricing', [authMiddleware, [
 					return res.status(200).json({
 						errors: [], data: {
 							msg: 'Total price',
+							total_miles: 0,
 							base_price,
 							total_price,
 							net_price,
@@ -212,18 +216,19 @@ router.post('/pricing', [authMiddleware, [
 // @access    Private
 router.get('/getInvoiceNumber', authMiddleware, async (req, res) => {
 	const initialInvoiceId = 1011290101;
+	const userId = req.user.id;
 	const lastInvoice_Id = await InvoiceModel.getLastInvoiceNumber();
 	let lastInvoiceId, newInvoiceId;
 	if (lastInvoice_Id == null) {
-		newInvoiceId = await InvoiceModel.getNewInvoiceNumber(initialInvoiceId);
+		newInvoiceId = await InvoiceModel.getNewInvoiceNumber(initialInvoiceId, userId);
 	} else {
 		lastInvoiceId = parseInt(lastInvoice_Id.result[0].invoice_id);
-		newInvoiceId = await InvoiceModel.getNewInvoiceNumber(lastInvoiceId + 1);
+		newInvoiceId = await InvoiceModel.getNewInvoiceNumber(lastInvoiceId + 1, userId);
 	}
 	return res.status(200).json({
 		errors: [], data: {
 			msg: 'Invoice id',
-			newInvoiceId
+			invoice_id: newInvoiceId.result[0].invoice_id
 		}
 	});
 });
@@ -241,30 +246,31 @@ router.post('/saveinvoice', [authMiddleware, [
 	check('model', 'Invalid car make').not().isEmpty(),
 	check('color', 'Invalid car color').not().isEmpty(),
 	check('servicetype', 'Invalid service type').not().isEmpty(),
-	check('problemtype', 'Invalid problem type').not().isEmpty(),
+	// check('problemtype', 'Invalid problem type').not().isEmpty(),
 	check('anyonewithvehicle', 'Invalid anyone with the vehicle data').not().isEmpty(),
 	check('keysforvehicle', 'Invalid keys for vehicle data').not().isEmpty(),
-	check('fourwheelsturn', 'Invalid is four wheel turn data').not().isEmpty(),
-	check('frontwheelsturn', 'Invalid is front wheel turn data').not().isEmpty(),
-	check('backwheelsturn', 'Invalid is back wheel turn data').not().isEmpty(),
-	check('neutral', 'Invalid is in nutral data').not().isEmpty(),
-	check('fueltype', 'Invalid fuel type entry').not().isEmpty(),
+	// check('fourwheelsturn', 'Invalid is four wheel turn data').not().isEmpty(),
+	// check('frontwheelsturn', 'Invalid is front wheel turn data').not().isEmpty(),
+	// check('backwheelsturn', 'Invalid is back wheel turn data').not().isEmpty(),
+	// check('neutral', 'Invalid is in nutral data').not().isEmpty(),
+	// check('fueltype', 'Invalid fuel type entry').not().isEmpty(),
 	check('pickuplocation', 'Invalid pickup location').not().isEmpty(),
-	check('pickupnotes', 'Invalid pickup notes').not().isEmpty(),
-	check('originzipcode', 'Invalid origin zipcode').not().isEmpty(),
-	check('destinationzipcode', 'Invalid destination zipcode').not().isEmpty(),
-	check('totaldistance', 'Invalid total distance').not().isEmpty(),
-	check('calculatedcost', 'Invalid calculated cost').not().isEmpty(),
+	// check('pickupnotes', 'Invalid pickup notes').not().isEmpty(),
+	check('originaddress', 'Origin address is missing').not().isEmpty(),
+	// check('destinationzipcode', 'Invalid destination zipcode').not().isEmpty(),
+	// check('totaldistance', 'Invalid total distance').not().isEmpty(),
+	// check('calculatedcost', 'Invalid calculated cost').not().isEmpty(),
 	check('baseprice', 'Invalid base price').not().isEmpty(),
 	check('additionalprice', 'Invalid additional charges').not().isEmpty(),
 	check('paymentamount', 'Invalid payment amount').not().isEmpty(),
 	check('paymenttotalamount', 'Invalid payment total amount').not().isEmpty(),
 	check('paymentemail', 'Invalid payment email').isEmail(),
 	check('sendpaymentto', 'Invalid send payment link send type').not().isEmpty(),
-	check('userid', 'Invalid user/agent').not().isEmpty(),
-	//check('timestamp', 'Invalid time stamp').isEmpty()
+	check('msa_system', 'MSA system is required').not().isEmpty(),
+	// check('timestamp', 'Invalid time stamp').isEmpty()
 ]], async (req, res) => {
 
+	const user_id = req.user.id;
 	const mode = req.body.mode;
 	const invoice_number = req.body.invoicenumber;
 	const errors = validationResult(req);
@@ -274,90 +280,164 @@ router.post('/saveinvoice', [authMiddleware, [
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { invoicenumber, fname, lname, phone, year, make, model, color, servicetype, problemtype,
-		anyonewithvehicle, keysforvehicle, fourwheelsturn, frontwheelsturn, backwheelsturn,
-		neutral, fueltype, pickuplocation, pickupnotes, originzipcode, destinationzipcode, totaldistance,
-		calculatedcost, baseprice, additionalprice, paymentamount, paymenttotalamount, paymentemail, sendpaymentto, userid } = req.body;
+	const { 
+		invoicenumber,
+		fname,
+		lname,
+		phone,
+		year,
+		additionalprice,
+		anyonewithvehicle,
+		backwheelsturn,
+		baseprice,
+		calculatedcost,
+		color,
+		destination,
+		destinationaddress,
+		draft,
+		dzip,		
+		fourwheelsturn,
+		frontwheelsturn,
+		fueltype,
+		keysforvehicle,		
+		make,
+		model,
+		neutral,
+		origin,
+		originaddress,
+		ozip,
+		paymentamount,
+		paymentemail,
+		paymentnotes,
+		paymenttotalamount,
+		pickuplocation,
+		pickupnotes,
+		problemtype,
+		sendpaymentto,
+		servicetype,
+		tmiles,
+		msa_system
+	} = req.body;
 
-	const response = await InvoiceModel.getInvoiceById(invoice_number);
+	const response = await InvoiceModel.getInvoiceById(invoicenumber);
 
 	if (response.error) {
-		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+		return res.status(500).json({ errors: [{ msg: 'Invalid invoice number' }] });
 	} else if (response.result && response.result.length > 0) {
-		let newInvoice = {
-			invoicenumber, fname, lname, phone, year, make, model, color, servicetype, problemtype,
-			anyonewithvehicle, keysforvehicle, fourwheelsturn, frontwheelsturn, backwheelsturn,
-			neutral, fueltype, pickuplocation, pickupnotes, originzipcode, destinationzipcode, totaldistance,
-			calculatedcost, baseprice, additionalprice, paymentamount, paymenttotalamount, paymentemail, sendpaymentto, timeNow, userid,
+		const newInvoice = {
+			invoicenumber,
+			fname,
+			lname,
+			phone,
+			year,
+			additionalprice,
+			anyonewithvehicle,
+			backwheelsturn,
+			baseprice,
+			calculatedcost,
+			color,
+			destination,
+			destinationaddress,
+			draft,
+			dzip,			
+			fourwheelsturn,
+			frontwheelsturn,
+			fueltype,			
+			keysforvehicle,
+			make,
+			model,
+			neutral,
+			origin,
+			originaddress,
+			ozip,
+			paymentamount,
+			paymentemail,
+			paymentnotes,
+			paymenttotalamount,
+			pickuplocation,
+			pickupnotes,
+			problemtype,
+			sendpaymentto,
+			servicetype,
+			tmiles,
+			user_id,
+			msa_system
 		};
-
-		// Create payment short url
-		shortUrl.short('http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/' + invoice_number, function (err, paymentUrl) {
-			if (mode == 'add') {
-				if (sendpaymentto == "phone") {
-					// SMS send process here
-					sendSMS('You can pay for your ' + servicetype + ' @ this link: ' + paymentUrl);
-				} else {
-
-					const mail_subject = 'Reg. Link to pay for your Service Request';
-
-					const mail_message = `
-                      <html>
-                      <head>
-                        <title>Forget Password</title>
-                      </head>
-                      <body>
-                          <table>
-                              <tr>
-                                  <td>
-                                    <table>
-                                      <tr>                                
-                                        <td>Hello ${fname},</td>                                  
-                                      </tr>
-                                      <tr>                                  
-											<td>
-												<p>
-													<b>Invoice Number:</b> ${invoice_number}
-												</p>
-		                                         <p>
-													<b>You can pay for your Tow @ this link: ${paymentUrl}</b>
-												</p>
-												<p>
-													<b>Service Type:</b> ${servicetype}
-												</p>
-												<p>
-													<b>Amount:</b> ${paymentamount}
-												</p>
-                                        </td>
-                                      </tr>                                  
-                                      <tr>
-                                        <td><hr /></td>
-                                      </tr>
-                                      <tr>
-                                        <td>Thank you</td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                              </tr>
-                          </table>
-                      </body>
-                    </html>
-				`;
-					sendEmail(paymentemail, mail_subject, mail_message, mail_subject);
-				}
-			}
-		});
-
 
 		const invoice = await InvoiceModel.saveInvoice(newInvoice);
 
 		if (invoice.error) {
 			return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
 		} else {
-			return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoice.result } });
+			const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoicenumber}`;
+
+			if (draft === '1') {
+				return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoice_number } });
+			} else {
+				if (sendpaymentto === 'Phone') {
+					// SMS send process here
+					const isSend = await sendSMS('You can pay for your tow @ this link: ' + paymentUrl);
+					if (isSend) {
+						return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoice_number } });
+					} else {
+						return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved. But SMS could not be sent to phone.', invoice: invoice_number } });
+					}
+				} else {
+					const mail_subject = 'Reg. Link to pay for your Service Request';
+					const mail_message = `
+											<html>
+											<head>
+												<title>Forget Password</title>
+											</head>
+											<body>
+													<table>
+															<tr>
+																	<td>
+																		<table>
+																			<tr>                                
+																				<td>Hello ${fname},</td>                                  
+																			</tr>
+																			<tr>                                  
+																				<td>
+																					<p>
+																						<b>Invoice Number:</b> ${invoicenumber}
+																					</p>
+																					<p>
+																						<b>You can pay for your Tow @ this link: ${paymentUrl}</b>
+																					</p>
+																					<p>
+																						<b>Service Type:</b> ${servicetype}
+																					</p>
+																					<p>
+																						<b>Amount:</b> ${paymenttotalamount}
+																					</p>
+																				</td>
+																			</tr>                                  
+																			<tr>
+																				<td><hr /></td>
+																			</tr>
+																			<tr>
+																				<td>Thank you</td>
+																			</tr>
+																		</table>
+																	</td>
+															</tr>
+													</table>
+											</body>
+										</html>
+					`;
+					const isSend = await sendEmail(paymentemail, mail_subject, mail_message, mail_subject);
+					if (isSend) {
+						return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoicenumber } });
+					} else {
+						return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved. But email could not be sent.', invoice: invoicenumber } });
+					}
+				}
+			}
 		}
+		
 	} else {
-		return res.status(500).json({ errors: [{ msg: 'Invoice Number does not exists!' }] });
+		return res.status(500).json({ errors: [{ msg: 'Invoice Number does not exist!' }] });
 	}
 });
 
@@ -577,7 +657,7 @@ router.get('/:invoicenumber', authMiddleware, async (req, res) => {
 });
 
 
-// @route     GET /api/order
+// @route     POST /api/order
 // @desc      Get user list/by param order
 // @access    Private
 router.post('/', authMiddleware, async (req, res) => {
@@ -623,7 +703,7 @@ router.post('/', authMiddleware, async (req, res) => {
     OR distance LIKE "%${searchTerm.toLowerCase()}%")`;
 	}
 
-	const sql_query = `SELECT * FROM user_invoice WHERE 1 ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
+	const sql_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
 	console.log(sql_query);
 	const dataArray = await InvoiceModel.getSortedInvoices(sql_query); // perPage, start_page
 
@@ -647,7 +727,7 @@ router.post('/', authMiddleware, async (req, res) => {
 		next_start = (perPage * fetchPage);
 		next_page = 0; // Count for next page records
 		
-		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
 		console.log(sql_limit_query);
 		const resultArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page
 

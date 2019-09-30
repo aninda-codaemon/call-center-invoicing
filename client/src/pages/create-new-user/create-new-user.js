@@ -83,7 +83,7 @@ function CreateNewUser(props) {
                       required={true}
                       label="First Name *"
                     />
-                    {validator.message("fname", newData.fname, "required|alpha", {messages: {required: 'First name field is required'}})}
+                    {validator.message("fname", values.fname, "required|alpha", {messages: {required: 'First name field is required'}})}
                     {touched.fname && validator.errorMessages.fname && (
                       <p className="error-text">{validator.errorMessages.fname}</p>
                     )}

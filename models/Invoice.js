@@ -48,10 +48,10 @@ Invoice.getLastInvoiceNumber = async () => {
   }
 };
 
-Invoice.getNewInvoiceNumber = async (newInvoiceId) => {
+Invoice.getNewInvoiceNumber = async (newInvoiceId, user_id) => {
   let response = {};
   try {
-    const [resultInsert, fieldsInsert] = await pool.query('INSERT INTO `user_invoice` SET invoice_id=?', [newInvoiceId]);
+    const [resultInsert, fieldsInsert] = await pool.query('INSERT INTO `user_invoice` SET invoice_id=?, user_id=?', [newInvoiceId, user_id]);
     const [result, fields] = await pool.query('SELECT invoice_id FROM `user_invoice` ORDER BY id DESC LIMIT 1;');
     response.result = result;
     return response;
@@ -80,16 +80,79 @@ Invoice.saveInvoice = async (invoice) => {
   let response = {};
   try {
     const [result, fields] =
-      await pool.query(`UPDATE user_invoice SET first_name=?,last_name=?,phone_number=?,year=?,make=?,model=?,
-      color=?,service_type=?,problem_type=?,anyone_with_vehicle=?,keys_for_vehicle=?,	four_wheels_turn=?,
-      front_wheels_turn=?,back_wheels_turn=?,is_neutral=?,fuel_type=?,pickup_location=?,pickup_notes=?,origin_zipcode=?,
-      destination_zipcode=?,distance=?,amount=?,payment_email=?,send_payment_to=?,date_edit_timestamp=?,user_id=? WHERE invoice_id=?`,
-        [invoice.fname, invoice.lname, invoice.phone, invoice.year, invoice.make, invoice.model, invoice.color,
-        invoice.servicetype, invoice.problemtype, invoice.anyonewithvehicle, invoice.keysforvehicle, invoice.fourwheelsturn, invoice.frontwheelsturn,
-        invoice.backwheelsturn, invoice.neutral, invoice.fueltype, invoice.pickuplocation, invoice.pickupnotes, invoice.originzipcode,
-        invoice.destinationzipcode, invoice.totaldistance, invoice.paymenttotalamount, invoice.paymentemail, invoice.sendpaymentto, invoice.timeNow, invoice.userid, invoice.invoicenumber]);
+      await pool.query(`UPDATE user_invoice SET 
+        first_name=?, 
+        last_name=?,
+        payment_email=?,
+        notes=?, 
+        phone_number=?,
+        service_type=?,
+        problem_type=?,
+        amount=?,
+        distance=?,
+        status=?,
+        start_address=?,
+        end_address=?,
+        origin_zipcode=?,
+        destination_zipcode=?,
+        is_sms_sent=?,
+        is_email_sent=?,
+        pickup_location=?,
+        model=?,
+        color=?,
+        make=?,
+        year=?,
+        anyone_with_vehicle=?,
+        keys_for_vehicle=?,
+        four_wheels_turn=?,
+        back_wheels_turn=?,
+        front_wheels_turn=?,
+        is_neutral=?,
+        fuel_type=?,
+        pickup_notes=?,
+        is_draft=?,
+        date_edit_timestamp=NOW(),
+        msa_system=?,
+        send_payment_to=?,        
+        user_id=? 
+      WHERE invoice_id=?`,
+        [
+          invoice.fname,
+          invoice.lname,
+          invoice.paymentemail,
+          invoice.paymentnotes, 
+          invoice.phone, 
+          invoice.servicetype,
+          invoice.problemtype,
+          invoice.paymenttotalamount,
+          invoice.tmiles,
+          'Yet_to_pay',
+          invoice.originaddress,
+          invoice.destinationaddress,
+          invoice.ozip,
+          invoice.dzip,
+          (invoice.sendpaymentto === 'Phone') ? 'Yes' : 'No',
+          (invoice.sendpaymentto === 'Email') ? 'Yes' : 'No',
+          invoice.pickuplocation,
+          invoice.model,
+          invoice.color,
+          invoice.make,
+          invoice.year,                        
+          invoice.anyonewithvehicle, 
+          invoice.keysforvehicle, 
+          invoice.fourwheelsturn,
+          invoice.backwheelsturn,
+          invoice.frontwheelsturn,
+          invoice.neutral,          
+          invoice.fueltype,
+          invoice.paymentnotes,
+          'No',          
+          invoice.msa_system,
+          invoice.sendpaymentto,          
+          invoice.user_id, 
+          invoice.invoicenumber]);
     console.log(result);
-    response.result = invoice;
+    response.result = result;
     return response;
   } catch (error) {
     console.log(`Error: ${error.sqlMessage}`);

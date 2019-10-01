@@ -100,9 +100,9 @@ router.get('/payment-status', async (req, res) => {
 });
 
 router.get('/:invoicenumber', async (req, res) => {
+    const invalidInvoice = "Invalid Invoice Number";
     const invoice_number = req.params.invoicenumber;
     if (invoice_number != 0 && invoice_number != '' && invoice_number < 1011290101) {
-        const invalidInvoice = "Invalid Invoice Number";
         res.render('payment/invoice-not-found', {
             invalidInvoice
         });
@@ -110,10 +110,8 @@ router.get('/:invoicenumber', async (req, res) => {
     const isResponse = await InvoiceModel.getInvoiceById(invoice_number);
     const timeNow = new Date();
     if (isResponse.error) {
-        return res.status(500).json({
-            errors: [{
-                msg: 'Internal server error!'
-            }]
+        res.render('payment/invoice-not-found', {
+            invalidInvoice
         });
     } else if (isResponse.result && isResponse.result.length > 0) {
 
@@ -123,7 +121,7 @@ router.get('/:invoicenumber', async (req, res) => {
         const amount = Number(response.result[0].amount).toFixed(2);
         const conv_amount = 3.5;
         const sub_total_deduct = Number((response.result[0].amount * conv_amount) / 100).toFixed(2);
-        const sub_total = Number(amount - sub_total_deduct);
+        const sub_total = Number(amount - sub_total_deduct).toFixed(2);;
 
         // Anywherecommerce payment parameters
         const CURRENCY = 'USD';
@@ -156,10 +154,8 @@ router.get('/:invoicenumber', async (req, res) => {
             });
         }
     } else {
-        return res.status(500).json({
-            errors: [{
-                msg: 'Invoice Number does not exists!'
-            }]
+        res.render('payment/invoice-not-found', {
+            invalidInvoice
         });
     }
 });

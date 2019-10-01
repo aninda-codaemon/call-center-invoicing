@@ -7,8 +7,8 @@ import PlacesAutocomplete, {
 } from 'react-places-autocomplete';
 
 const Locationsearch = (props) => {
-  console.log('props places', props.value);
-	const [address, setAddress] = useState(props.value);
+  console.log('props places', props.value.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''));
+	const [address, setAddress] = useState(props.value.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''));
 
 	const handleChange = async (address) => {		
     setAddress(address);

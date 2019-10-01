@@ -77,14 +77,14 @@ const Purchaseorder = (props) => {
     if (place === 'origin') {
       setNewData({
         ...newData,
-        originaddress: description,
+        originaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
         origin: latlng,
         ozip: zip_code
       });
     } else {
       setNewData({
         ...newData,
-        destinationaddress: description,
+        destinationaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
         destination: latlng,
         dzip: zip_code
       });
@@ -297,10 +297,11 @@ const Purchaseorder = (props) => {
     let render_url = "";
 
     if (newData.servicetype === "Towing") {
-      render_url = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&origin=${encodeURI(origin_address)}&destination=${encodeURI(destination_address)}`;
+      render_url = `https://www.google.com/maps/embed/v1/directions?origin=${encodeURI(origin_address)}&destination=${encodeURI(destination_address)}&key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M`;
     } else {
       render_url = `https://www.google.com/maps/embed/v1/place?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&q=${encodeURI(origin_address)}`;
     }
+    console.log('Render url: ', render_url);
 
     return (
       <Iframe
@@ -807,7 +808,7 @@ const Purchaseorder = (props) => {
                             </p>
                           </div>
                           <div className="map-container">                      
-                            { generateMapUrl() }
+                            { showMap && generateMapUrl() }
                           </div>             
                         </React.Fragment>
                       )

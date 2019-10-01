@@ -376,7 +376,7 @@ router.post('/saveinvoice', [authMiddleware, [
 			} else {
 				if (sendpaymentto === 'Phone') {
 					// SMS send process here
-					const isSend = await sendSMS('You can pay for your tow @ this link: ' + paymentUrl);
+					const isSend = await sendSMS(('You can pay for your tow @ this link: ' + paymentUrl), phone);
 					if (isSend) {
 						return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoice_number } });
 					} else {
@@ -605,7 +605,7 @@ router.post('/resendlink', [authMiddleware, [
 							</body>
 						</html>
 				`;
-				const isSend = await sendEmail('aninda.kar@codaemonsoftwares.com', 'Reg. resend details for your Tow', emailTemplate, 'Reg. resend details for your Tow');
+				const isSend = await sendEmail(payment_email, 'Reg. resend details for your Tow', emailTemplate, 'Reg. resend details for your Tow');
 				if (isSend) {
 					return res.status(200).json({ errors: [], data: { msg: 'Payment link send again', invoice } });
 				} else {
@@ -614,7 +614,7 @@ router.post('/resendlink', [authMiddleware, [
 			} else {
 				// Send SMS
 				const sms_content = `You can pay for your Tow @ this link: http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/${invoice_id}`;
-				const isSend = await sendSMS(sms_content);
+				const isSend = await sendSMS(sms_content, phone_number);
 				if (isSend) {
 					return res.status(200).json({ errors: [], data: { msg: 'Payment link send again', invoice } });
 				} else {

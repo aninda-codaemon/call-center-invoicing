@@ -21,6 +21,7 @@ export const USER_INFO = 'USER_INFO';
 export const USER_UPDATE = 'USER_UPDATE';
 export const USER_PASSWORD = 'USER_PASSWORD';
 export const USER_LOADING = 'USER_LOADING';
+export const USER_STATUS = 'USER_STATUS';
 
 export const INVOICE_LIST = 'INVOICE_LIST';
 export const INVOICES_CLEAR = 'INVOICES_CLEAR';

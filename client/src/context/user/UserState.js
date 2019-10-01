@@ -16,6 +16,7 @@ import {
   CLEAR_ERROR,
   USER_INFO,
   USER_UPDATE,
+  USER_STATUS,
   USER_PASSWORD,
   USER_LOADING
 } from '../Types';
@@ -160,7 +161,7 @@ const UserState = (props) => {
       console.log('User status response');
       console.log(response);
       dispatch({
-        type: USER_UPDATE,
+        type: USER_STATUS,
         payload: response.data
       });
     } catch (error) {
@@ -273,7 +274,7 @@ const UserState = (props) => {
 
   const clear_error = () => dispatch({ type: CLEAR_ERROR });
 
-  const toggle_loader = async (value) => {
+  const toggle_loader = (value) => {
     dispatch({
       type: USER_LOADING,
       payload: value

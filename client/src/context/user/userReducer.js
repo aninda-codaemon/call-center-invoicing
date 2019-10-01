@@ -12,6 +12,7 @@ import {
   CLEAR_ERROR,
   USER_INFO,
   USER_UPDATE,
+  USER_STATUS,
   USER_PASSWORD,
   USER_LOADING
 } from '../Types';
@@ -100,12 +101,18 @@ export default (state, action) => {
         user: action.payload.data.user
       };
     case USER_UPDATE:
-        return {
-          ...state,
-          success: [{ msg: action.payload.data.msg }],
-          error: null,
-          loading: false
-        };
+      return {
+        ...state,
+        success: [{ msg: action.payload.data.msg }],
+        error: null,
+        loading: false
+      };
+    case USER_STATUS:
+      return {
+        ...state,
+        success: [{ msg: action.payload.data.msg }],
+        error: null
+      };
     case USER_PASSWORD:
       return {
         ...state,

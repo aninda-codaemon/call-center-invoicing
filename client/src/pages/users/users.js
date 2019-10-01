@@ -64,6 +64,7 @@ function Users(props) {
     const new_status = (user_status === '1') ? 0 : 1;
     console.log(user_id + ' ' + user_status + ' ' + new_status);
     const values = {id: user_id, status: new_status};
+    userContext.toggle_loader(true);
     userContext.update_status(values);
     setTimeout(() => {
       userContext.get_users(fetch_page, per_page, sort_by, sort_order, search_term);

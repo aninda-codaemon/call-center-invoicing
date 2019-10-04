@@ -6,7 +6,7 @@ const json2csv = require('json2csv').parse;
 const fs = require('fs');
 const distance = require('google-distance-matrix');
 
-const { sendSMS, sendEmail, checkLocalTime, calculateDistance } = require('../helpers/helpers');
+const { sendSMS, sendEmail, sendPaymentLinkSMS, checkLocalTime, calculateDistance, sendPaymentLinkEmail, resendPaymentLinkEmail } = require('../helpers/helpers');
 
 const authMiddleware = require('../middleware/auth');
 const UserModel = require('../models/User');
@@ -18,7 +18,7 @@ const router = express.Router();
 // @desc      Dummy send SMS
 // @access    Public
 router.get('/send-sms', async (req, res) => {
-	sendSMS('From TWILIO account test for SMS!');
+	sendSMS('From TWILIO \n account test for SMS!');
 	res.send('SMS Twilio');
 });
 
@@ -376,57 +376,14 @@ router.post('/saveinvoice', [authMiddleware, [
 			} else {
 				if (sendpaymentto === 'Phone') {
 					// SMS send process here
-					const isSend = await sendSMS(('You can pay for your tow @ this link: ' + paymentUrl), phone);
+					const isSend = await sendPaymentLinkSMS(invoicenumber);
 					if (isSend) {
 						return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoice_number } });
 					} else {
 						return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved. But SMS could not be sent to phone.', invoice: invoice_number } });
 					}
-				} else {
-					const mail_subject = 'Reg. Link to pay for your Service Request';
-					const mail_message = `
-											<html>
-											<head>
-												<title>Forget Password</title>
-											</head>
-											<body>
-													<table>
-															<tr>
-																	<td>
-																		<table>
-																			<tr>                                
-																				<td>Hello ${fname},</td>                                  
-																			</tr>
-																			<tr>                                  
-																				<td>
-																					<p>
-																						<b>Invoice Number:</b> ${invoicenumber}
-																					</p>
-																					<p>
-																						<b>You can pay for your Tow @ this link: ${paymentUrl}</b>
-																					</p>
-																					<p>
-																						<b>Service Type:</b> ${servicetype}
-																					</p>
-																					<p>
-																						<b>Amount:</b> ${paymenttotalamount}
-																					</p>
-																				</td>
-																			</tr>                                  
-																			<tr>
-																				<td><hr /></td>
-																			</tr>
-																			<tr>
-																				<td>Thank you</td>
-																			</tr>
-																		</table>
-																	</td>
-															</tr>
-													</table>
-											</body>
-										</html>
-					`;
-					const isSend = await sendEmail(paymentemail, mail_subject, mail_message, mail_subject);
+				} else {					
+					const isSend = await sendPaymentLinkEmail(invoicenumber);
 					if (isSend) {
 						return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoicenumber } });
 					} else {
@@ -563,62 +520,75 @@ router.post('/resendlink', [authMiddleware, [
 			invoice.data_payment_done = data_payment_done;
 
 			if (send_payment_to === 'Email') {				
-				const emailTemplate = `
-							<html>
-							<head>
-								<title>Forget Password</title>
-							</head>
-							<body>
-									<table>
-											<tr>
-													<td>
-														<table>
-															<tr>                                
-																<td>Hello ${invoice['first_name']},</td>                                  
-															</tr>
-															<tr>                                  
-																<td>
-																	<p>
-																		<b>Invoice Number:</b> ${invoice_id}
-																	</p>
-																	<p>
-																		<b>You can pay for your Tow @ this link: http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/${invoice_id}</b>
-																	</p>
-																	<p>
-																		<b>Service Type:</b> ${invoice.service_type}
-																	</p>
-																	<p>
-																		<b>Amount:</b> ${invoice.amount}
-																	</p>
-																</td>
-															</tr>                                  
-															<tr>
-																<td><hr /></td>
-															</tr>
-															<tr>
-																<td>Thank you</td>
-															</tr>
-														</table>
-													</td>
-											</tr>
-									</table>
-							</body>
-						</html>
-				`;
-				const isSend = await sendEmail(payment_email, 'Reg. resend details for your Tow', emailTemplate, 'Reg. resend details for your Tow');
+				const isSend = await resendPaymentLinkEmail(invoice_id);
 				if (isSend) {
 					return res.status(200).json({ errors: [], data: { msg: 'Payment link send again', invoice } });
 				} else {
 					return res.status(500).json({ errors: [], data: { msg: 'Payment link could not be send again', invoice } });
 				}
 			} else {
-				// Send SMS
-				const sms_content = `You can pay for your Tow @ this link: http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/${invoice_id}`;
-				const isSend = await sendSMS(sms_content, phone_number);
+				// Send SMS				
+				const isSend = await sendPaymentLinkSMS(invoice_id);
 				if (isSend) {
 					return res.status(200).json({ errors: [], data: { msg: 'Payment link send again', invoice } });
 				} else {
 					return res.status(500).json({ errors: [], data: { msg: 'Payment link could not be send again', invoice } });
+				}
+			}
+
+		}
+	}
+});
+
+// @route     POST /api/order/resendreceipt
+// @desc      Re-send payment receipt details
+// @access    Private
+router.post('/resendreceipt', [authMiddleware, [
+	check('invoice_id', 'Invalid invoice id').not().isEmpty(),
+	check('phone_number', 'Invalid phone number').not().isEmpty(),
+	check('payment_email', 'Invalid payment email').isEmail(),
+	check('send_payment_to', 'Invalid send payment link send type').not().isEmpty()
+]], async (req, res) => {
+
+	const errors = validationResult(req);
+
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { invoice_id, phone_number, payment_email, send_payment_to } = req.body;
+
+	const response = await InvoiceModel.getInvoiceById(invoice_id);
+
+	if (response.error) {
+		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+	} else if (response.result && response.result.length > 0) {
+		console.log('Invoice Info');
+		console.log(response.result[0]);
+
+		const invoiceinfo = await InvoiceModel.getInvoiceByInvoiceId(invoice_id);
+
+		if (invoiceinfo.error) {
+			return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+		} else {
+			const invoice = invoiceinfo.result[0];
+
+			if (send_payment_to === 'Email') {
+				// Send email			
+				const isSend = await sendPaymentConfirmationEmail(invoice_id);
+				if (isSend) {
+					return res.status(200).json({ errors: [], data: { msg: 'Payment receipt send again', invoice } });
+				} else {
+					return res.status(500).json({ errors: [], data: { msg: 'Payment receipt could not be send again', invoice } });
+				}
+			} else {
+				// Send SMS
+				const sms_content = `You can pay for your Tow @ this link: http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/${invoice_id}`;
+				const isSend = await sendSMS(sms_content, phone_number);
+				if (isSend) {
+					return res.status(200).json({ errors: [], data: { msg: 'Payment receipt send again', invoice } });
+				} else {
+					return res.status(500).json({ errors: [], data: { msg: 'Payment receipt could not be send again', invoice } });
 				}
 			}
 
@@ -658,7 +628,7 @@ router.get('/:invoicenumber', authMiddleware, async (req, res) => {
 
 
 // @route     POST /api/order
-// @desc      Get user list/by param order
+// @desc      Get invoice list/by param order
 // @access    Private
 router.post('/', authMiddleware, async (req, res) => {
 	const user_id = req.user.id;
@@ -755,7 +725,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
 // @route     GET /api/order/export
 // @desc      Get user list/by param order
-// @access    Private
+// @access    Private [Not used]
 router.get('/export', authMiddleware, async (req, res) => {
 	let csv;
 	const csvFilePath = './csvdownload/invoice_' + Date.now() + '.csv';

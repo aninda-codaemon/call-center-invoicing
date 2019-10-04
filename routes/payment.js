@@ -7,9 +7,16 @@ var md5 = require('md5');
 const router = express.Router();
 const date = require('date-and-time');
 
+const { sendPaymentConfirmationEmail } = require('../helpers/helpers');
+
 // Payment Gareway Anywhere Commerce Params
 const TERMINALID = process.env.TERMINALID;
 const secret = process.env.secret;
+
+router.get('/test-payment-email/:invoicenumber', async (req, res) => {
+    const invoice_id = req.params.invoicenumber;
+    const send = await sendPaymentConfirmationEmail(invoice_id);
+});
 
 router.get('/payment-status', async (req, res) => {
     // Get parameters from payment status redirect url
@@ -79,6 +86,9 @@ router.get('/payment-status', async (req, res) => {
 
             contextFlag = 1;
             responseText = "Payment Successfully Complete";
+
+            // Send payment confirmation email
+            sendPaymentConfirmationEmail(invoice_id);
         } else {
             contextFlag = 2;
             responseText = "Payment Failed";

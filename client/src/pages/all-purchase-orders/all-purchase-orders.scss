@@ -126,38 +126,47 @@
     }
 
     .invoice {
-      width: 77px;
+      min-width: 77px;
+      flex: 1;
     }
 
     .fname {
-      width: 78px;
+      min-width: 78px;
+      flex: 1;
     }
 
     .lname {
-      width: 78px;
+      min-width: 78px;
+      flex: 1;
     }
 
     .email {
-      width: 250px;
+      min-width: 250px;
+      flex: 1;
     }
 
     .phone {
-      width: 100px;
+      min-width: 100px;
+      flex:1;
     }
 
     .service-type {
-      width: 89px;
+      min-width: 89px;
+      flex:1;
     }
 
     .status {
-      width: 70px;
+      min-width: 70px;
+      flex: 1;
     }
 
     .amount {
-      width: 60px;
+      min-width: 60px;
+      flex: 1;
     }
 
     .data-opened {
+      min-width: 20%;
       flex: 1;
     }
 

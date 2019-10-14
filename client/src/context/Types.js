@@ -39,4 +39,4 @@ export const INVOICE_LOADING = 'INVOICE_LOADING';
 export const INVOICE_SENDLINK = 'INVOICE_SENDLINK';
 export const INVOICE_LINKLOADING = 'INVOICE_LINKLOADING';
 
-export const SERVER_URL = 'http://18.217.104.6' ;//'http://localhost:5000'; //'http://localhost:5000';
+export const SERVER_URL = 'http://localhost:5000' ;//'http://localhost:5000'; //'http://18.217.104.6';

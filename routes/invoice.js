@@ -147,7 +147,7 @@ router.post('/pricing', [authMiddleware, [
 							if (!err) {
 								console.log(distances);
 								if (distances.rows[0]['elements'][0].status === 'OK') {
-									let total_miles = parseFloat(distances.rows[0]['elements'][0].distance.text.split(' ')[0]);
+									let total_miles = parseFloat(distances.rows[0]['elements'][0].distance.text.split(' ')[0].replace(',', ''));
 									console.log('Total Miles', total_miles);
 									// Price calculation
 									if (total_miles > 10) {

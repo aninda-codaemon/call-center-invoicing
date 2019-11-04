@@ -22,6 +22,27 @@
   }
 }
 
+.navToggleIconFalse {
+  text-align: right;
+  padding: 8px 20px;
+  position: fixed;
+  width: calc(8% - 27px);
+  @include desk {
+    width: calc(8% - 26px);
+  }
+  @include tab {
+    width: calc(15% - 25.5px);
+  }
+  @include mobile {
+    display: none;
+  }
+  i{
+    color: #ffffff;
+    @include font-size(30);
+    cursor: pointer;
+  }
+}
+
 ul.sidebarnav {
   position: fixed;
   width: calc(20% - 27px);

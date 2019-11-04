@@ -18,17 +18,17 @@ function EditAccount() {
 
   return (
     <React.Fragment>
-      <Header />
+      {/* <Header />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">
             <Sidebar />
           </Col>
-          <Col md={9} className="right-part">
+          <Col md={9} className="right-part"> */}
             { user && showForm() }
-          </Col>
+          {/* </Col>
         </Row>
-      </Container>
+      </Container> */}
     </React.Fragment>
   );
 }

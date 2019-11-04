@@ -35,17 +35,17 @@ function EditUser(props) {
 
   return (
     <React.Fragment>
-      <Header loading={loading} />
+      {/* <Header loading={loading} />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">
             <Sidebar />
           </Col>
-          <Col md={9} className="right-part">
+          <Col md={9} className="right-part"> */}
             { user.first_name !== '' ? showForm() : 'Loading...' }
-          </Col>
+          {/* </Col>
         </Row>
-      </Container>
+      </Container> */}
     </React.Fragment>
   );
 }

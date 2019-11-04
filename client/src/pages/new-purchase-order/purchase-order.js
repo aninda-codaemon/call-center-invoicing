@@ -69,6 +69,9 @@ const Purchaseorder = (props) => {
   // Form state
   const [newData, setNewData] = useState(initialData);
 
+  // Show origin map
+  const [showOriginMap, setShowOriginMap] = useState(false);
+
   // Handle locations data
   const handleLocation = ({ description, latlng, place, zip_code }) => {
     console.log('Location Object');
@@ -81,6 +84,14 @@ const Purchaseorder = (props) => {
         origin: latlng,
         ozip: zip_code
       });
+
+      if (description !== '') {
+        setShowOriginMap(true);        
+      } else {
+        setShowOriginMap(false);
+      }
+      setShowMap(false);
+      setCalculateCostDisable(true);     
     } else {
       setNewData({
         ...newData,
@@ -88,7 +99,10 @@ const Purchaseorder = (props) => {
         destination: latlng,
         dzip: zip_code
       });
-    }
+      // setShowOriginMap(false);
+      setShowMap(false);
+      setCalculateCostDisable(true);
+    }    
   }
 
   // Calculate cost button enable/disable toggle
@@ -281,7 +295,8 @@ const Purchaseorder = (props) => {
           msa_system: system
         });
         setShowMap(true);
-      }      
+      }
+      setShowOriginMap(false); 
     } catch (error) {
       console.log('Price error');
       console.log(error);      
@@ -301,6 +316,29 @@ const Purchaseorder = (props) => {
     } else {
       render_url = `https://www.google.com/maps/embed/v1/place?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&q=${encodeURI(origin_address)}`;
     }
+    console.log('Render url: ', render_url);
+
+    return (
+      <Iframe
+        width="100%"
+        height="600"
+        id="route_map"
+        className="map-container"
+        display="initial"
+        frameBorder="0"
+        url={render_url}
+        />
+    );
+  }
+
+  const generateOriginMapUrl = () => {
+    console.log(newData.destinationaddress);
+    console.log(newData.originaddress);
+    console.log(newData.servicetype); // === "Towing"
+    const origin_address = newData.originaddress;
+    const destination_address = newData.destinationaddress;
+    let render_url = "";
+    render_url = `https://www.google.com/maps/embed/v1/place?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&q=${encodeURI(origin_address)}`;    
     console.log('Render url: ', render_url);
 
     return (
@@ -487,13 +525,13 @@ const Purchaseorder = (props) => {
 
   return (
     <React.Fragment>
-      <Header loading={loading} />
+      {/* <Header loading={loading} />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">
             <Sidebar />
           </Col>
-          <Col md={9} className="right-part">
+          <Col md={9} className="right-part"> */}
             {/* <InnerBanner /> */}
             <section className="invoice-wrap">
               <form onSubmit={handleSubmit} autoComplete="off">
@@ -787,6 +825,15 @@ const Purchaseorder = (props) => {
                     }                      
                   </div>
                     {
+                      showOriginMap && (
+                        <React.Fragment>                          
+                          <div className="map-container">                      
+                            { showOriginMap && generateOriginMapUrl() }
+                          </div>
+                        </React.Fragment>
+                      )
+                    }
+                    {
                       showMap && (
                         <React.Fragment>
                           <div className="cost-details">                        
@@ -914,7 +961,8 @@ const Purchaseorder = (props) => {
                 <div className="buttons-area">
                   <Row>
                     <Col lg={4}>
-                      <Button 
+                      <Button
+                        className="draft-btn" 
                         variant="warning" 
                         type="button"
                         onClick={saveDraft}
@@ -956,9 +1004,9 @@ const Purchaseorder = (props) => {
 
               </form>
             </section>
-          </Col>
+          {/* </Col>
         </Row>
-      </Container>
+      </Container> */}
 
       {/* alert for no one with the vehicle and diesel gas */}
 

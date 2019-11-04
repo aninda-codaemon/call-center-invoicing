@@ -42,21 +42,21 @@ function InvoiceOverview(props) {
 
   return (
     <React.Fragment>
-      <Header loading={loading} />      
+      {/* <Header loading={loading} />      
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">
             <Sidebar />
           </Col>
-          <Col md={9} className="right-part">
+          <Col md={9} className="right-part"> */}
             {/* <Alert variant="success" style={{ marginTop: '20px'}}>
               This is a alert—check it out!
             </Alert> */}
 
             { showOverview() }
-          </Col>
+          {/* </Col>
         </Row>
-      </Container>
+      </Container> */}
     </React.Fragment>
   );
 }

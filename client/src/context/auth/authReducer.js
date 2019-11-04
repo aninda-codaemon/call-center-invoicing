@@ -5,7 +5,8 @@ import {
   LOGOUT,
   CLEAR_ERRORS,
   USER_LOADED,
-  FORGET_PASSWORD
+  FORGET_PASSWORD,
+  SIDEBAR_COLS
 } from '../Types';
 
 export default (state, action) => {
@@ -53,6 +54,12 @@ export default (state, action) => {
         loading: true,
         user: null,
         error: [{ msg: action.payload.data.msg }]
+      }
+    case SIDEBAR_COLS:
+      return {
+        ...state,
+        sidebarLeftCol: action.payload.left,
+        sidebarRightCol: action.payload.right
       }
   }
 }

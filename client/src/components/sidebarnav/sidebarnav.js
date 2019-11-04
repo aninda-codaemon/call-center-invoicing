@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, Fragment } from "react";
+import React, { useState, useContext, useEffect, Fragment } from "react";
 import "./sidebarnav.scss";
 import { NavLink } from "react-router-dom";
 
@@ -7,6 +7,8 @@ import AuthContext from "../../context/auth/authContext";
 function SidebarNav() {
   const authContext = useContext(AuthContext);
   const { user } = authContext;
+  const [collapseMenu, setCollapseMenu] = useState(true);
+  const [iconClass, setIconClass] = useState('icon-only');
 
   const loadUserMenu = () => {
     if (user && user.role_id === 1) {
@@ -21,17 +23,28 @@ function SidebarNav() {
     }
   };
 
+  const handleMenuCollapse = (e) => {    
+    const newState = !collapseMenu;
+    setCollapseMenu(newState);
+    if (newState === true) {
+      setIconClass('icon-only');
+      authContext.collapseMenuCol(newState);
+    } else {
+      setIconClass('');
+      authContext.collapseMenuCol(newState);
+    }    
+  }
+
   useEffect(() => {
     loadUserMenu();
   }, [user]);
 
   return (
     <Fragment>
-      <div className="navToggleIcon">
-        <i class="fa fa-angle-left" aria-hidden="true"></i>
-      </div>
-      {/* <ul className="sidebarnav icon-only"> */}
-      <ul className="sidebarnav">
+      <div className={ collapseMenu ? 'navToggleIconFalse' : 'navToggleIcon' }>
+        <i onClick={handleMenuCollapse} className={ collapseMenu ? 'fa fa-angle-right' : 'fa fa-angle-left' } aria-hidden="true"></i>
+      </div>      
+      <ul className={`sidebarnav ${iconClass}`}>
         <li>
           <NavLink activeClassName="active" to="/all-purchase-orders">
             <i className="fa fa-file-text-o" aria-hidden="true" />

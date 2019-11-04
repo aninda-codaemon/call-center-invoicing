@@ -62,13 +62,13 @@ function CreateNewUser(props) {
   
   return (
     <React.Fragment>
-      <Header loading={loading} />
+      {/* <Header loading={loading} />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">
             <Sidebar />
           </Col>
-          <Col md={9} className="right-part">
+          <Col md={9} className="right-part"> */}
             <section className="invoice-wrap">
               {showError()}
               {showSuccess()}
@@ -176,9 +176,9 @@ function CreateNewUser(props) {
                 </div>
               </form>
             </section>
-          </Col>
+          {/* </Col>
         </Row>
-      </Container>
+      </Container> */}
     </React.Fragment>
   );
 }

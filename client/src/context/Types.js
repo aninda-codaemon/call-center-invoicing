@@ -5,6 +5,7 @@ export const LOGIN_FAIL = 'LOGIN_FAIL';
 export const FORGET_PASSWORD = 'FORGET_PASSWORD';
 export const LOGOUT = 'LOGOUT';
 export const CLEAR_ERRORS = 'CLEAR_ERRORS';
+export const SIDEBAR_COLS = 'SIDEBAR_COLS';
 
 export const USER_LIST = 'USER_LIST';
 export const USERS_CLEAR = 'USERS_CLEAR';

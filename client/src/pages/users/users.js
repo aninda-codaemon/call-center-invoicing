@@ -122,13 +122,13 @@ function Users(props) {
 
   return (
     <React.Fragment>
-      <Header loading={loading} />
+      {/* <Header loading={loading} />
       <Container fluid={true} className="content-area">
         <Row className="main-content">
           <Col md={3} className="align-self-stretch">
             <Sidebar />
           </Col>
-          <Col md={9} className="right-part">
+          <Col md={9} className="right-part"> */}
             <div className="data-table-area">
               <header>
                 <Row className="align-items-center">
@@ -203,9 +203,9 @@ function Users(props) {
               </div>
               { handlePagination() }
             </div>
-          </Col>
+          {/* </Col>
         </Row>
-      </Container>
+      </Container> */}
     </React.Fragment>
   );
 }

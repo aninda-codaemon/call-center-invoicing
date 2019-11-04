@@ -13,7 +13,8 @@ import {
   USER_PASSWORD,
   SERVER_URL,
   USER_ERROR,
-  FORGET_PASSWORD
+  FORGET_PASSWORD,
+  SIDEBAR_COLS
 } from '../Types';
 
 import AuthContext from './authContext';
@@ -25,7 +26,9 @@ const AuthState = (props) => {
     isAuthenticated: (localStorage.getItem('xtoken') ? true : false),
     user: null,
     error: null,
-    success: null
+    success: null,
+    sidebarLeftCol: 1,
+    sidebarRightCol: 11
   };
 
   const SERVER = SERVER_URL;
@@ -100,6 +103,27 @@ const AuthState = (props) => {
       });
     }
   }
+
+  const collapseMenuCol = (collapse_status) => {
+    let newCols = {};
+
+    if (collapse_status) {
+      newCols = {
+        left: 1,
+        right: 11
+      };
+    } else {
+      newCols = {
+        left: 3,
+        right: 9
+      };
+    }
+
+    dispatch({
+      type: SIDEBAR_COLS,
+      payload: newCols
+    });
+  }
   
   const logout = () => dispatch({ type: LOGOUT });
 
@@ -110,10 +134,13 @@ const AuthState = (props) => {
         user: state.user,
         error: state.error,
         success: state.success,
+        sidebarLeftCol: state.sidebarLeftCol,
+        sidebarRightCol: state.sidebarRightCol,
         login,
         logout,
         loadUser,
-        forget_password
+        forget_password,
+        collapseMenuCol
       }}
     >
       {props.children}

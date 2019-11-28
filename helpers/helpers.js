@@ -2,6 +2,9 @@ const dotenv = require('dotenv');
 const request = require('request-promise');
 const moment = require('moment');
 
+const InvoiceModel = require('../models/Invoice');
+const UserModel = require('../models/User');
+
 const accountSid = process.env.TWILIOSID;
 const authToken = process.env.TWILIOAUTH;
 
@@ -63,10 +66,10 @@ const sendPaymentLinkSMS = async (invoice_id) => {
 }
 
 const sendEmail = async (receiver ='aninda.kar@codaemonsoftwares.com', mail_subject, mail_message, mail_text='Send mail test dummy') => {
-  console.log('Send Email Sendgrid');
+  console.log('Send Email Sendgrid'); // info@eastindiatrading.co
   const msg = {
     to: receiver,
-    from: 'info@eastindiatrading.co',
+    from: 'no-reply@roadsideassistanceltd.com',
     subject: mail_subject,
     text: mail_text,
     html: mail_message,
@@ -356,6 +359,169 @@ const calculateDistance = async (origin, destination) => {
   } 
 }
 
+const callDispatcherAPI = async (invoice_id) => {
+  // Get invoice info
+  const invoice_info = await InvoiceModel.getInvoiceByInvoiceId(invoice_id);            
+
+  // Caller Object            
+  const caller_info = await UserModel.getUserById(invoice_info.result[0].user_id);
+
+  console.log(invoice_info, caller_info);
+
+  const callerObject = {
+      firstName: caller_info.result[0]['first_name'], // (string),
+      lastName: caller_info.result[0]['last_name'], // (string),
+      phone1: caller_info.result[0]['contact_no'], // (string),
+  };
+
+  // Customer Object
+  const customerObject = {
+      customerNo: invoice_info.result[0]['invoice_id'], // (string),
+      companyCode: '2630', //(string, optional): This is the Road America Associated Company Code. This field is only required if you have more than one Road America company code. ,
+      programCode: 'AA', // (string): You Road America Associated Program Code ,
+      firstName: invoice_info.result[0]['first_name'], // (string),
+      lastName: invoice_info.result[0]['last_name'], // (string),
+      address: '', //(string, optional),
+      city: '', // (string, optional),
+      state: '', // (string, optional),
+      zipCode: '', // (string),
+      country: '', // (string, optional),
+      phone: invoice_info.result[0]['phone_number'], // (string, optional),
+      statusCode: 'N', // (string): Get it from "Customer Status" lookup ,
+      // effectiveDate:  (string, optional): Format: MM/dd/yyyy ,
+      // expirationDate (string, optional): Format: MM/dd/yyyy
+  };
+
+  // Vehicle Object            
+  const vehicleObject = {
+      class: 'LD', // (string): Get it from "vehicleclassestypes" lokup. If vehicle type is truck, this field must be the code selected from "Truck Weight Ranges" lookups. for any other vehicle type this field must be the class obtained from "vehicles" lookup. ,
+      type: 'AU', // (string): Get it from "vehicleclassestypes" lokup ,
+      make: invoice_info.result[0]['make'], // (string),
+      model: invoice_info.result[0]['model'], // (string, optional),
+      color: invoice_info.result[0]['color'], // (string),
+      year: parseInt(invoice_info.result[0]['year']), // (integer),
+      vin: '', // (string, optional),
+      weight: 0, // (number, optional),
+      currentMileage: 1, // (integer),
+      effectiveMileage: '', // (string, optional),
+      expirationMileage: '', // (string, optional)
+  };
+
+  // Services Object
+  let serviceType = '',
+      serviceCode = [];
+
+  switch (invoice_info.result[0]['service_type']) {
+      case 'Fuel / Fluids':
+          serviceType = 'FL';
+          serviceCode = [1,2,3,4,5,6];
+          break;
+      case 'Jump Start':
+          serviceType = 'JS';
+          serviceCode = [1,2,3];
+          break;
+      case 'Lockout':
+          serviceType = 'LO';
+          serviceCode = [1,2,3];
+          break;
+      case 'Towing':
+          serviceType = 'ME';
+          serviceCode = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19];
+          break;
+      case 'Tire Change':
+          serviceType = 'TC';
+          serviceCode = [1,2,3];
+          break;
+  };
+
+  const servicesObject = {
+      type: serviceType, // (string): "Type" obtained from "Service Types" lookup. ,
+      isPrimary: true, // (boolean): Only one service can be the primary ,
+      details: serviceCode, // (Array[integer]): Array of service details codes. Get the codes from "ServiceType Details" lookup. ,
+      otherSpecified: '', // (string, optional): Only for "Jump Start" or "Tow" Services and only when the Service Detail Description is "Other" ,
+      isDiesel: false, // (boolean): Only for "Fuel/Fluids" Service ,
+      manualRelease: (serviceType === 'LO' ? true : false), // (boolean): Only for "Lockout" Service ,
+      powerRelease: (serviceType === 'LO' ? true : false), // (boolean): Only for "Lockout" Service ,
+      noRelease: (serviceType === 'LO' ? true : false), // (boolean): Only for "Lockout" Service ,
+      dualTires: (serviceType === 'TC' ? true : false), // (boolean): Only for Tire Change Service. ,
+      flatBedRequested: (serviceType === 'ME' ? true : false), // (boolean, optional): Only for "Towing" Service ,
+      distanceFromRoad: 0, // (number, optional): Only for "Winching" Service ,
+      stuckUnit: 0, // (integer, optional): Only for "Winching" Service. Code obtained from "Vehicle Stuck Units" lookup ,
+      stuckIn: 0, // (integer, optional): Only for "Winching" Service. Code obtained from "Vehicle Stuck Options" lookup ,
+      stuckDeep: 0, // (number, optional): Only for "Winching" Service.
+  };
+
+  // Breakdown Object
+  const origin_location = invoice_info.result[0]['origin_latlng'].split(',');
+
+  const breakdownObject = {
+      address: invoice_info.result[0]['start_address'], // (string),
+      city: '', // (string),
+      state: '', // (string),
+      zipCode: invoice_info.result[0]['origin_zipcode'], // (string),
+      country: 'US', // (string),
+      latitude: parseFloat(origin_location[0]), // (number),
+      longitude: parseFloat(origin_location[1]), // (number)
+  };
+
+  // Breakdown Location Object
+  let bdloType = '';
+  switch (invoice_info.result[0]['pickup_location']) {
+      case 'House':
+          bdloType = '1';
+          break;
+      case 'Business':
+          bdloType = '10';
+          break;
+      case 'Highway':
+          bdloType = '16';
+          break;
+      case 'Apartment':
+          bdloType = '7';
+          break;
+  }
+
+  const breakdownLocationObject = {
+      type: bdloType, // (string, optional): Code obtained from "Location Types" lookup (level1) ,
+      spec1: '', // (string, optional): Code obtained from "Location Types" lookup (level2) ,
+      spec2: '', // (string, optional): Code obtained from "Location Types" lookup (level3) ,
+      additionalInfo: invoice_info.result[0]['notes'], // (string, optional): Any additional information.
+  };
+
+  // Destination Object
+  const destination_location = invoice_info.result[0]['destination_latlng'].split(',');
+
+  const destinationObject = {
+      businessCode: '', // (string, optional),
+      businessName: '', // (string, optional),
+      address: invoice_info.result[0]['end_address'], // (string),
+      city: '', // (string),
+      state: '', // (string),
+      zipCode: invoice_info.result[0]['destination_zipcode'], // (string),
+      country: 'US', // (string),
+      latitude: parseFloat(destination_location[0]), // (number),
+      longitude: parseFloat(destination_location[1]), // (number)
+  }
+
+  // Call the dispatcher API
+  const dispatchObject = {
+      // poNumber (string): This field is required only if a PO was previously created. ,
+      tollFreeNumber: '', // (string, optional),
+      isCustomerSafe: true, // (boolean),
+      additionalInformation: '', // (string, optional),
+      issuingDealerDestination: false, // (boolean, optional): Only useful when "Tow" Service is requested. This specify if the vehicle will be towed to the issuing dealer. Default value is false ,
+      caller: callerObject, // (caller, optional),
+      customer: customerObject, // (customer),
+      vehicle: vehicleObject, // (vehicle),
+      services: servicesObject, // (Array[service]),
+      breakdownAddress: breakdownObject, // (breakdownAddress),
+      breakdownLocationInfo: breakdownLocationObject, // (breakdownLocationInfo, optional),
+      destinationAddress: destinationObject, // (destinationAddress, optional): Only required when "Tow" Service is requested.
+  }
+  
+  return dispatchObject;
+} 
+
 module.exports = { 
                     sendSMS, 
                     sendEmail, 
@@ -364,5 +530,6 @@ module.exports = {
                     sendPaymentConfirmationEmail,
                     sendPaymentLinkEmail,
                     resendPaymentLinkEmail,
-                    sendPaymentLinkSMS 
+                    sendPaymentLinkSMS,
+                    callDispatcherAPI
                   };

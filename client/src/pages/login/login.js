@@ -10,8 +10,8 @@ import AuthContext from '../../context/auth/authContext';
 
 const Login = (props) => {
   const authContext = useContext(AuthContext);
-  const { error, isAuthenticated, login, loadUser } = authContext;
-  const token = localStorage.getItem('xtoken');
+  const { error, isAuthenticated, keepLoggedIn, login, loadUser } = authContext;
+  const token = localStorage.getItem('xtoken');  
 
   const initialValues = {
     email: '',
@@ -29,10 +29,10 @@ const Login = (props) => {
   );
   
   useEffect(() => {
-    if (isAuthenticated) {
+    if (keepLoggedIn) {
       props.history.push('/all-purchase-orders');
     }
-  }, [isAuthenticated, error, props.history]);
+  }, [keepLoggedIn, error, props.history]);
 
   return (
     <div className="login-wrap">

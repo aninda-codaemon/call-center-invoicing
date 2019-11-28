@@ -1,4 +1,5 @@
 import React, {useState, useContext, useEffect} from "react";
+import { NavLink } from 'react-router-dom';
 import "../create-new-user/create-new-user.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
@@ -8,9 +9,11 @@ import Input from "../../components/input/input";
 // import useForm from "../../custom-hooks/form-validation";
 import useForm from "../form-logic/user-form-logic";
 
+import AuthContext from '../../context/auth/authContext';
 import UserContext from '../../context/user/userContext';
 
 function EditUserForm(props) {
+  const authContext = useContext(AuthContext);
   const userContext = useContext(UserContext);
 
   const { error, success, user, loading } = userContext;
@@ -35,12 +38,14 @@ function EditUserForm(props) {
     });
   }
 
-  const createNewUser = () => {
+  const createNewUser = async () => {
     console.log("No errors, submit callback called!");
     console.log(values);
+    authContext.refreshSpinnerLoading(true);
     setData(values);
-    userContext.toggle_loader(true);
-    userContext.update_user(values);
+    // userContext.toggle_loader(true);
+    const user_update = await userContext.update_user(values);
+    authContext.refreshSpinnerLoading(false);
   }
 
   const showError = () => {
@@ -64,8 +69,18 @@ function EditUserForm(props) {
   const showForm = () => {
       return (
         <section className="invoice-wrap">
+          <Row>
+            <Col md={12}>
+              <div style={{ marginBottom: '20px', float: 'right' }}>
+                <NavLink activeClassName="active" to="/users" style={{ }}>
+                  <i className="fa fa-plus-square-o" aria-hidden="true" />
+                  <span>Back to users</span>
+                </NavLink>
+              </div>
+            </Col>
+          </Row>
           {showError()}
-          {showSuccess()}
+          {showSuccess()}          
           <form onSubmit={handleSubmit} noValidate>
             <Row>
               <Col md={6}>
@@ -160,7 +175,7 @@ function EditUserForm(props) {
                     <span className="sr-only">Loading...</span>
                   </Button>
                 )
-              }              
+              }                           
             </div>
           </form>
         </section>

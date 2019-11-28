@@ -26,6 +26,7 @@ import UserReducer from './userReducer';
 const UserState = (props) => {
   const initialState = {
     users: [],
+    csv_data: null,
     user: {
       first_name: '',
       last_name: '',
@@ -72,6 +73,7 @@ const UserState = (props) => {
       });
     } catch (error) {
       console.log('User list error');
+      console.log(error);
       dispatch({
         type: USER_ERROR,
         payload: error.response.data.errors
@@ -284,6 +286,7 @@ const UserState = (props) => {
   return <UserContext.Provider
     value={{
       users: state.users,
+      csv_data: state.csv_data,
       user: state.user,
       sort_by: state.sort_by,
       sort_order: state.sort_order,

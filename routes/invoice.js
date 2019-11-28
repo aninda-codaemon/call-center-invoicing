@@ -6,7 +6,16 @@ const json2csv = require('json2csv').parse;
 const fs = require('fs');
 const distance = require('google-distance-matrix');
 
-const { sendSMS, sendEmail, sendPaymentLinkSMS, checkLocalTime, calculateDistance, sendPaymentLinkEmail, resendPaymentLinkEmail } = require('../helpers/helpers');
+const { 
+	sendSMS, 
+	sendEmail, 
+	sendPaymentLinkSMS, 
+	checkLocalTime, 
+	calculateDistance, 
+	sendPaymentLinkEmail, 
+	resendPaymentLinkEmail, 
+	callDispatcherAPI 
+} = require('../helpers/helpers');
 
 const authMiddleware = require('../middleware/auth');
 const UserModel = require('../models/User');
@@ -32,6 +41,18 @@ router.get('/send-mail', async (req, res) => {
 	console.log('mail body' + mail_message);
 	sendEmail(receiver, mail_subject, mail_message, mail_subject);
 	res.send('Mail Sendgrid');
+});
+
+router.get('/test-dispatch', async (req, res) => {
+	console.log('Test Dispatch');
+	const invoice_id = '1011290101';
+
+	try {
+		const dispatchObject = await callDispatcherAPI(invoice_id);	
+		return res.status(200).json({ errors: [], data: { msg: '', request: dispatchObject } });
+	} catch (error) {
+		console.log(error);
+	}	
 });
 
 // @route     POST /api/order/get-distance
@@ -336,7 +357,7 @@ router.post('/saveinvoice', [authMiddleware, [
 			baseprice,
 			calculatedcost,
 			color,
-			destination,
+			destination: `${destination.lat},${destination.lng}`,
 			destinationaddress,
 			draft,
 			dzip,			
@@ -347,7 +368,7 @@ router.post('/saveinvoice', [authMiddleware, [
 			make,
 			model,
 			neutral,
-			origin,
+			origin: `${origin.lat},${origin.lng}`,
 			originaddress,
 			ozip,
 			paymentamount,
@@ -669,7 +690,8 @@ router.post('/', authMiddleware, async (req, res) => {
     OR end_address LIKE "%${searchTerm.toLowerCase()}%"
     OR origin_zipcode LIKE "%${searchTerm.toLowerCase()}%"
     OR destination_zipcode LIKE "%${searchTerm.toLowerCase()}%"
-    OR amount LIKE "%${searchTerm.toLowerCase()}%"
+		OR amount LIKE "%${searchTerm.toLowerCase()}%"
+		OR date_opened_timestamp LIKE "%${searchTerm.toLowerCase()}%"
     OR distance LIKE "%${searchTerm.toLowerCase()}%")`;
 	}
 
@@ -698,7 +720,7 @@ router.post('/', authMiddleware, async (req, res) => {
 		next_page = 0; // Count for next page records
 		
 		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
-		console.log(sql_limit_query);
+		console.log('sql limit; ', sql_limit_query);
 		const resultArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page
 
 		if (resultArray.error) {

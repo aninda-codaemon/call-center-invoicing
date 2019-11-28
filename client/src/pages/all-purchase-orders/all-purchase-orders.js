@@ -50,33 +50,35 @@ function AllPurchaseOrders(props) {
 
       return (
         <React.Fragment key={invoice.id}>
-          <div className="table-body">
-            <div className="check-box-area">
-              <label className="custom-checkbox">
-                <input id={`invoice_${index}`} type="checkbox" />
-                <span className="checkmark" />
-              </label>
+          <Link style={{ textDecoration: 'none' }} to={`/invoice-overview/${invoice.invoice_id}`}>
+            <div className="table-body">
+              <div className="check-box-area">
+                <label className="custom-checkbox">
+                  <input id={`invoice_${index}`} type="checkbox" />
+                  <span className="checkmark" />
+                </label>
+              </div>
+              <div className="invoice">{ invoice.invoice_id }</div>
+              <div className="fname">{ invoice.first_name }</div>
+              <div className="lname">{ invoice.last_name }</div>
+              <div className="phone">{ invoice.phone_number }</div>
+              <div className="service-type">{ invoice.service_type }</div>
+              {/* <div className="status paid dispatched yet-to-pay visited ">{} { invoice.status }</div> */}
+              <div className={`status ${status_classname}`}>{ invoice.status }</div>
+              <div className="amount">{ invoice.amount }</div>
+              <div className="data-opened">
+                { time_full }
+              </div>
+              <div className="dispatching-system">
+                <Button variant={ invoice.msa_system === 'SYSTEM 1' ? 'danger' : 'primary' } size="sm">
+                { invoice.msa_system }
+                </Button>
+              </div>
+              <div className="edit">
+                <Link to={`/invoice-overview/${invoice.invoice_id}`}><i className="fa fa-pencil" aria-hidden="true" /></Link>
+              </div>
             </div>
-            <div className="invoice">{ invoice.invoice_id }</div>
-            <div className="fname">{ invoice.first_name }</div>
-            <div className="lname">{ invoice.last_name }</div>
-            <div className="phone">{ invoice.phone_number }</div>
-            <div className="service-type">{ invoice.service_type }</div>
-            {/* <div className="status paid dispatched yet-to-pay visited ">{} { invoice.status }</div> */}
-            <div className={`status ${status_classname}`}>{ invoice.status }</div>
-            <div className="amount">{ invoice.amount }</div>
-            <div className="data-opened">
-              { time_full }
-            </div>
-            <div className="dispatching-system">
-              <Button variant={ invoice.msa_system === 'SYSTEM 1' ? 'danger' : 'primary' } size="sm">
-              { invoice.msa_system }
-              </Button>
-            </div>
-            <div className="edit">
-              <Link to={`/invoice-overview/${invoice.invoice_id}`}><i className="fa fa-pencil" aria-hidden="true" /></Link>
-            </div>
-          </div>
+          </Link>
         </React.Fragment>
       );
     });
@@ -84,20 +86,32 @@ function AllPurchaseOrders(props) {
 
   const [searchTerms, setSearchTerms] = useState(search_term);
 
-  const handleSearchTermsChange = (e) => {
-    console.log('Search terms');
-    console.log(e.target.value);
+  const handleSearchTermsChange = (e) => {    
     setSearchTerms(e.target.value);
   }
 
-  const handleSearchTermsSubmit = (e) => {
+  const handleSearchTermsSubmit = async (e) => {    
     e.preventDefault();
+    authContext.refreshSpinnerLoading(true);
     const page_no = 1;
     invoiceContext.toggle_loader(true);
     invoiceContext.update_search_terms(searchTerms);
     invoiceContext.update_fetch_page(page_no);
-    invoiceContext.get_invoices(page_no, per_page, sort_by, sort_order, searchTerms);
+    const invoice_result = await invoiceContext.get_invoices(page_no, per_page, sort_by, sort_order, searchTerms);
+    authContext.refreshSpinnerLoading(false);
   };
+
+  const handleSearchTermsReset = async (e) => {
+    e.preventDefault();
+    authContext.refreshSpinnerLoading(true);
+    setSearchTerms('');
+    invoiceContext.update_search_terms('');
+    const page_no = 1;
+    invoiceContext.toggle_loader(true);    
+    invoiceContext.update_fetch_page(page_no);
+    const invoice_result = await invoiceContext.get_invoices(page_no, per_page, sort_by, sort_order, '');
+    authContext.refreshSpinnerLoading(false);
+  }
 
   const [mainCheckbox, setMainCheckbox] = useState(false);
 
@@ -110,11 +124,13 @@ function AllPurchaseOrders(props) {
     }
   }
 
-  const handleSortOrder = (sortBy, sortOrder) => {
+  const handleSortOrder = async (sortBy, sortOrder) => {
     console.log('Sort order');
     console.log({sortBy, sortOrder});
+    authContext.refreshSpinnerLoading(true);
     invoiceContext.update_sort_order({sortBy, sortOrder});
-    invoiceContext.get_invoices(fetch_page, per_page, sortBy, sortOrder, search_term);
+    const invoice_result = await invoiceContext.get_invoices(fetch_page, per_page, sortBy, sortOrder, search_term);
+    authContext.refreshSpinnerLoading(false);
   }
 
   const handlePagination = () => {
@@ -126,13 +142,14 @@ function AllPurchaseOrders(props) {
   }
 
   useEffect(() => {
-    // Call the invoices list from context
-    // console.log('User');
-    // console.log(user);
-    // if (user !== null) {
-    //   invoiceContext.get_invoices(fetch_page, per_page, sort_by, sort_order, search_term);
-    // }
-    invoiceContext.get_invoices(fetch_page, per_page, sort_by, sort_order, search_term);
+    // Call the invoices list from context    
+    const fetchInvoiceData = async () => {
+      authContext.refreshSpinnerLoading(true);
+      const invoice_result = await invoiceContext.get_invoices(fetch_page, per_page, sort_by, sort_order, search_term);      
+      authContext.refreshSpinnerLoading(false);      
+    };
+
+    fetchInvoiceData();    
   }, []);
 
   // For unmount
@@ -184,7 +201,17 @@ function AllPurchaseOrders(props) {
                             <span className="sr-only">Loading...</span>
                           </button>
                         )
-                      }                                            
+                      }
+                      <button
+                        className="btn btn-primary my-2 my-sm-0"
+                        type="button"
+                        style={{
+                          marginLeft: '5px'
+                        }}
+                        onClick={handleSearchTermsReset}
+                        >
+                        Reset Search
+                      </button>                                            
                     </form>
                   </Col>
                   <Col className="text-right export">
@@ -273,10 +300,10 @@ function AllPurchaseOrders(props) {
                         sortOrder={sort_order} 
                         />
                     </div>
-                    <div className="data-opened">Data Opened (Local Time)
+                    <div className="data-opened">Date Opened (Local Time)
                       <SortingIcon 
-                        workAction={(sort_by == 'date_opened_full') ? true : false} 
-                        sortBy={'date_opened_full'} 
+                        workAction={(sort_by == 'date_opened_timestamp') ? true : false} 
+                        sortBy={'date_opened_timestamp'} 
                         handleSortOrderClick={handleSortOrder} 
                         sortOrder={sort_order} 
                         />

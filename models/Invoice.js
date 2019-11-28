@@ -114,7 +114,9 @@ Invoice.saveInvoice = async (invoice) => {
         date_edit_timestamp=NOW(),
         msa_system=?,
         send_payment_to=?,        
-        user_id=? 
+        user_id=?,
+        origin_latlng=?,
+        destination_latlng=?
       WHERE invoice_id=?`,
         [
           invoice.fname,
@@ -149,7 +151,9 @@ Invoice.saveInvoice = async (invoice) => {
           'No',          
           invoice.msa_system,
           invoice.sendpaymentto,          
-          invoice.user_id, 
+          invoice.user_id,
+          invoice.origin,
+          invoice.destination,
           invoice.invoicenumber]);
     console.log(result);
     response.result = result;

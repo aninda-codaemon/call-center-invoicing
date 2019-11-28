@@ -20,6 +20,7 @@ import {
   INVOICE_SAVE,
   INVOICE_LOADING,
   INVOICE_SENDLINK,
+  INVOICE_SENDRECEIPT,
   INVOICE_LINKLOADING
 } from '../Types';
 import InvoiceContext from './invoiceContext';
@@ -66,10 +67,14 @@ const InvoiceState = (props) => {
       const response = await axios.post(`${SERVER_URL}/api/order`, formData, config);
       console.log('Invoice list response');
       console.log(response);
-      dispatch({
-        type: INVOICE_LIST,
-        payload: response.data
-      });
+
+      if (response) {
+        dispatch({
+          type: INVOICE_LIST,
+          payload: response.data
+        });
+        return true;
+      }
     } catch (error) {
       console.log('Invoice list error');
       console.log(error);
@@ -77,6 +82,7 @@ const InvoiceState = (props) => {
         type: INVOICE_ERROR,
         payload: error.response.data.errors
       });
+      return true;
     }
   }
 
@@ -226,6 +232,34 @@ const InvoiceState = (props) => {
     }
   }
 
+  const resend_receipt = async (formData) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    console.log('Form data');
+    console.log(formData);
+
+    try {
+      const response = await axios.post(`${SERVER_URL}/api/order/resendreceipt`, formData, config);
+      console.log('Invoice resend response');
+      console.log(response);
+      dispatch({
+        type: INVOICE_SENDRECEIPT,
+        payload: response.data
+      });
+    } catch (error) {
+      console.log('Invoice resend error');
+      console.log(error);
+      dispatch({
+        type: INVOICE_ERROR,
+        payload: error.response.data.errors
+      });
+    }
+  }
+
   const get_invoice_price = async (data) => {
     const config = {
       headers: {
@@ -345,6 +379,7 @@ const InvoiceState = (props) => {
       update_invoice,
       toggle_loader,
       resend_invoice,
+      resend_receipt,
       toggle_link_loader,
       get_invoice_price,
       get_invoice_number,

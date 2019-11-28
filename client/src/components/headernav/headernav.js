@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Dropdown } from "react-bootstrap";
 import "./headernav.scss";
 import { Link } from "react-router-dom";
 
+import AuthContext from '../../context/auth/authContext';
+
 function HeaderNav(props) {
-  const spin = (props.loading) ? 'fa-counter-spin' : '';
+  const authContext = useContext(AuthContext);
+  const { topSpinner } = authContext;
+  const spin = (topSpinner) ? 'fa-counter-spin' : '';
 
   return (
     <ul className="headernav">
@@ -17,7 +21,7 @@ function HeaderNav(props) {
           <Dropdown.Toggle variant="success" id="dropdown-basic">
             Account <i className="fa fa-angle-down" aria-hidden="true" />
           </Dropdown.Toggle>
-
+          
           <Dropdown.Menu>
             <Dropdown.Item as={Link} to="/edit-account">
               Edit Account

@@ -22,9 +22,11 @@ import {
   pickup_location
 } from "../../assets/data/staticdata";
 
+import AuthContext from '../../context/auth/authContext';
 import InvoiceContext from '../../context/invoice/invoiceContext';
 
 const Purchaseorder = (props) => {
+  const authContext = useContext(AuthContext);
   const invoiceContext = useContext(InvoiceContext);
   const { invoice_number, loading, success, error } = invoiceContext;
 
@@ -273,7 +275,9 @@ const Purchaseorder = (props) => {
   const calculateDistance = async () => {
     const additional_cost = refreshAdditionalCost();
     try {
+      authContext.refreshSpinnerLoading(true);
       const price = await invoiceContext.get_invoice_price(newData);
+      authContext.refreshSpinnerLoading(false);
       console.log('Price calculation API');
       console.log(price);
       if (price.data.errors.length > 0) {
@@ -354,13 +358,15 @@ const Purchaseorder = (props) => {
     );
   }
 
-  const createInvoice = () => {
+  const createInvoice = async () => {
     console.log("No errors, submit callback called!");
     if (showMap) {
       console.log(newData);
       const currentData = newData;
-      invoiceContext.toggle_loader(true);
-      invoiceContext.save_invoice(currentData);
+      // invoiceContext.toggle_loader(true);
+      authContext.refreshSpinnerLoading(true);
+      const invoice_save = await invoiceContext.save_invoice(currentData);
+      authContext.refreshSpinnerLoading(false);
 
       // Reset current form if it is draft
       if (newData.draft === 1) {
@@ -381,7 +387,8 @@ const Purchaseorder = (props) => {
     handleSubmit(e);
   }
 
-  const resetForm = () => {
+  const resetForm = async () => {
+    authContext.refreshSpinnerLoading(true);
     if (newData.draft !== 1) {
       setNewData(initialData);
       setNewData({
@@ -391,7 +398,8 @@ const Purchaseorder = (props) => {
     } else {
       setNewData(initialData);
       invoiceContext.get_invoice_number();
-    }    
+    }
+    authContext.refreshSpinnerLoading(false);
     console.log('Reset form');
   }
   

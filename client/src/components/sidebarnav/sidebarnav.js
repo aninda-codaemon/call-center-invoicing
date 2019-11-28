@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect, Fragment } from "react";
 import "./sidebarnav.scss";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 
 import AuthContext from "../../context/auth/authContext";
 
@@ -58,10 +58,10 @@ function SidebarNav() {
           </NavLink>
         </li>
         <li>
-          <NavLink activeClassName="active" to="/refund-request">
+          <a rel="noopener noreferrer" href="https://refundlink.roadsideassistanceltd.com/" target="_blank">
             <i className="fa fa-scissors" aria-hidden="true" />
             <span>Refund Request</span>
-          </NavLink>
+          </a>
         </li>
         {loadUserMenu()}
       </ul>

@@ -7,9 +7,9 @@ var md5 = require('md5');
 const router = express.Router();
 const date = require('date-and-time');
 
-const { sendPaymentConfirmationEmail } = require('../helpers/helpers');
+const { sendPaymentConfirmationEmail, callDispatcherAPI } = require('../helpers/helpers');
 
-// Payment Gareway Anywhere Commerce Params
+// Payment Gateway Anywhere Commerce Params
 const TERMINALID = process.env.TERMINALID;
 const secret = process.env.secret;
 
@@ -86,6 +86,8 @@ router.get('/payment-status', async (req, res) => {
 
             contextFlag = 1;
             responseText = "Payment Successfully Complete";
+
+            // Call the dispatch helper function
 
             // Send payment confirmation email
             sendPaymentConfirmationEmail(invoice_id);

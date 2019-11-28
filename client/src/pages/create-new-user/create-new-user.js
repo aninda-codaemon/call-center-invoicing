@@ -1,4 +1,5 @@
 import React, {useState, useContext, useEffect} from "react";
+import { NavLink } from 'react-router-dom';
 import "./create-new-user.scss";
 import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
@@ -8,9 +9,11 @@ import Input from "../../components/input/input";
 // import useForm from "../../custom-hooks/form-validation";
 import useForm from "../form-logic/user-form-logic";
 
+import AuthContext from '../../context/auth/authContext';
 import UserContext from '../../context/user/userContext';
 
 function CreateNewUser(props) {
+  const authContext = useContext(AuthContext);
   const userContext = useContext(UserContext);
 
   const { error, success, loading } = userContext;
@@ -33,12 +36,14 @@ function CreateNewUser(props) {
     });
   }
 
-  const createNewUser = () => {
+  const createNewUser = async () => {
     console.log("No errors, submit callback called!");
     console.log(values);
+    authContext.refreshSpinnerLoading(true);
     setData(values);
-    userContext.toggle_loader(true);
-    userContext.save_user(values);
+    // userContext.toggle_loader(true);
+    const user_save = await userContext.save_user(values);
+    authContext.refreshSpinnerLoading(false);
   }
 
   const showError = () => {
@@ -70,6 +75,16 @@ function CreateNewUser(props) {
           </Col>
           <Col md={9} className="right-part"> */}
             <section className="invoice-wrap">
+              <Row>
+                <Col md={12}>
+                  <div style={{ marginBottom: '20px', float: 'right' }}>
+                    <NavLink activeClassName="active" to="/users" style={{ }}>
+                      <i className="fa fa-plus-square-o" aria-hidden="true" />
+                      <span>Back to users</span>
+                    </NavLink>
+                  </div>
+                </Col>
+              </Row>
               {showError()}
               {showSuccess()}
               <form onSubmit={handleSubmit} noValidate>

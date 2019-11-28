@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const generator = require('generate-password');
+const json2csv = require('json2csv').parse;
 const {check, validationResult} = require('express-validator');
 const { sendEmail } = require('../helpers/helpers');
 
@@ -25,11 +26,18 @@ router.post('/', authMiddleware, async (req, res) => {
   let searchQuery = '';
 
   if (searchTerm !== '') {
-    searchQuery = `AND (first_name LIKE "%${searchTerm.toLowerCase()}%" OR last_name LIKE "%${searchTerm.toLowerCase()}%" OR email_id LIKE "%${searchTerm.toLowerCase()}%")`;
+    searchQuery = `AND (first_name LIKE "%${searchTerm.toLowerCase()}%" OR last_name LIKE "%${searchTerm.toLowerCase()}%" OR email_id LIKE "%${searchTerm.toLowerCase()}%" OR contact_no LIKE "%${searchTerm.toLowerCase()}%")`;
   }
   const sql_query = `SELECT id, role_id, first_name, last_name, email_id, contact_no, status FROM user WHERE role_id=${roleId} ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;  
 
   const users = await UserModel.getSortedUsers(sql_query);
+
+  const csvFields = ['ID', 'Role', 'First Name', 'Last Name', 'Email', 'Phone Number', 'Status'];
+
+  const csv = json2csv(users.result, { csvFields });
+  console.log('CSV');
+  console.log(csv);
+
   total_users = users.result.length;
   total_pages = parseInt(Math.ceil(total_users/perPage));
   start_page = (perPage * (fetchPage - 1));
@@ -46,12 +54,13 @@ router.post('/', authMiddleware, async (req, res) => {
       msg: 'Users listed', 
       users: dataArray.result,
       total_users,
-      fetchPage, 
+      fetchPage,
       perPage,
       start_page,
       next_start,
       next_page,
-      total_pages
+      total_pages,
+      csv
     }});
   }  
 });

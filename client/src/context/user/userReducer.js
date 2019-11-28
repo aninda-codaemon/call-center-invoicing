@@ -24,12 +24,14 @@ export default (state, action) => {
         ...state,
         users: action.payload.data.users,
         total_page: action.payload.data.total_pages,
+        csv_data: action.payload.data.csv,
         loading: false
       };
     case USERS_CLEAR:
       return {
         ...state,
         users: [],
+        csv_data: null,
         sort_by: 'first_name',
         sort_order: 'ASC',
         search_term: '',

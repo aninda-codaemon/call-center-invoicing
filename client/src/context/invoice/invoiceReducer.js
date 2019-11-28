@@ -16,6 +16,7 @@ import {
   INVOICE_SAVE,
   INVOICE_LOADING,
   INVOICE_SENDLINK,
+  INVOICE_SENDRECEIPT,
   INVOICE_LINKLOADING
 } from '../Types';
 
@@ -125,6 +126,14 @@ export default (state, action) => {
         linkloading: action.payload
       };
     case INVOICE_SENDLINK:
+      return {
+        ...state,
+        linkloading: false,
+        invoice: action.payload.data.invoice,
+        success: [{ msg: action.payload.data.msg }],
+        error: null
+      };
+    case INVOICE_SENDRECEIPT:
       return {
         ...state,
         linkloading: false,

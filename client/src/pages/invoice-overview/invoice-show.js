@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { NavLink } from 'react-router-dom';
 import ContentLoader, { Code, Facebook } from 'react-content-loader';
 
 import "./invoice-overview.scss";
@@ -13,9 +14,11 @@ import {
   pickup_location
 } from "../../assets/data/staticdata";
 
+import AuthContext from '../../context/auth/authContext';
 import InvoiceContext from '../../context/invoice/invoiceContext';
 
 const Invoiceform = (props) => {
+  const authContext = useContext(AuthContext);
   const invoiceContext = useContext(InvoiceContext);
   const { invoice, loading, linkloading } = invoiceContext;
 
@@ -27,23 +30,41 @@ const Invoiceform = (props) => {
     setInvoiceData({...invoiceData, [e.target.name]: e.target.value });
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Submit Form');
-    invoiceContext.toggle_loader(true);
-    invoiceContext.update_invoice(invoiceData);
+    authContext.refreshSpinnerLoading(true);
+    // invoiceContext.toggle_loader(true);
+    const invoice_submit = await invoiceContext.update_invoice(invoiceData);
+    authContext.refreshSpinnerLoading(false);
   };
 
-  const handleResendLink = (e) => {
+  const handleResendLink = async (e) => {
     e.preventDefault();
-    console.log('Re send payment link');    
+    console.log('Re send payment link');
+    authContext.refreshSpinnerLoading(true);
     invoiceContext.toggle_link_loader(true);
-    invoiceContext.resend_invoice({ 
+    const invoice_resend = await invoiceContext.resend_invoice({ 
       send_payment_to: invoiceData.send_payment_to, 
       invoice_id: invoiceData.invoice_id,
       payment_email: invoiceData.payment_email,
       phone_number: invoiceData.phone_number
     });
+    authContext.refreshSpinnerLoading(false);
+  }
+
+  const handleResendReceipt = async (e) => {
+    e.preventDefault();
+    console.log('Re send payment link');
+    authContext.refreshSpinnerLoading(true);
+    // invoiceContext.toggle_link_loader(true);
+    const invoice_resend = await invoiceContext.resend_receipt({ 
+      send_payment_to: invoiceData.send_payment_to, 
+      invoice_id: invoiceData.invoice_id,
+      payment_email: invoiceData.payment_email,
+      phone_number: invoiceData.phone_number
+    });
+    authContext.refreshSpinnerLoading(false);
   }
 
   // For first time after update
@@ -78,15 +99,25 @@ const Invoiceform = (props) => {
   const showOverview = () => {
     if (invoiceData !== null) {
       return (
-        <section className="invoice-wrap">
-          { invoiceData.status === 'Paid' && (
+        <section className="invoice-wrap">          
+          
           <div className="alert-area">
-            Submit this purchase order into DISPATCHING {invoiceData.msa_system || 1}
-          </div>)
-          }
+            Submit this purchase order into DISPATCHING {invoiceData.msa_system || `SYSTEM 1`}
+          </div>
+          
           <form onSubmit={handleSubmit}>
             <div className="info-area">
               <h2>Invoice Overview</h2>
+              <Row>
+                <Col md={12}>
+                  <div style={{ marginBottom: '20px', float: 'right' }}>
+                    <NavLink activeClassName="active" to="/all-purchase-orders" style={{ }}>
+                      <i className="fa fa-file-text-o" aria-hidden="true" />
+                      <span>&nbsp;Back to all purchase orders</span>
+                    </NavLink>
+                  </div>
+                </Col>
+              </Row>
               <Row>
                 <Col sm={6} lg={4}>
                   <Input

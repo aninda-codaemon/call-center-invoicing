@@ -5,10 +5,12 @@ import Header from "../../components/header/header";
 import Sidebar from "../../components/sidebar/sidebar";
 import { Row, Col, Button, Container } from "react-bootstrap";
 
+import AuthContext from '../../context/auth/authContext';
 import InvoiceContext from '../../context/invoice/invoiceContext';
 import Invoiceform from './invoice-show';
 
 function InvoiceOverview(props) {
+  const authContext = useContext(AuthContext);
   const invoiceContext = useContext(InvoiceContext);
   const invoice_id = props.match.params.invoice_id;
 
@@ -24,13 +26,20 @@ function InvoiceOverview(props) {
   }
   
   useEffect(() => {
-    invoiceContext.get_invoice_info(invoice_id);
+
+    const fetchInvoiceData = async () => {
+      authContext.refreshSpinnerLoading(true);
+      const invoice_data = await invoiceContext.get_invoice_info(invoice_id);
+      authContext.refreshSpinnerLoading(false);
+    };
 
     // Checks for status updates every 3 minutes
     interval = window.setInterval(() => {
       console.log('Fetch update from invoice details..');
-      invoiceContext.get_invoice_info(invoice_id);
+      fetchInvoiceData();
     }, 180000);
+
+    fetchInvoiceData();
   }, []);
 
   // For unmount

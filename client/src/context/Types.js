@@ -38,6 +38,9 @@ export const INVOICE_SAVE = 'INVOICE_SAVE';
 export const INVOICE_UPDATE = 'INVOICE_UPDATE';
 export const INVOICE_LOADING = 'INVOICE_LOADING';
 export const INVOICE_SENDLINK = 'INVOICE_SENDLINK';
+export const INVOICE_SENDRECEIPT = 'INVOICE_SENDRECEIPT';
 export const INVOICE_LINKLOADING = 'INVOICE_LINKLOADING';
+
+export const SPINNER_LOADING = 'SPINNER_LOADING';
 
 export const SERVER_URL = 'http://localhost:5000' ;//'http://localhost:5000'; //'http://18.217.104.6';

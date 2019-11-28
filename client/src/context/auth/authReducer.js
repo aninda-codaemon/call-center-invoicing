@@ -6,7 +6,8 @@ import {
   CLEAR_ERRORS,
   USER_LOADED,
   FORGET_PASSWORD,
-  SIDEBAR_COLS
+  SIDEBAR_COLS,
+  SPINNER_LOADING
 } from '../Types';
 
 export default (state, action) => {
@@ -20,32 +21,37 @@ export default (state, action) => {
       };
     case LOGIN_SUCCESS:
       localStorage.setItem('xtoken', action.payload.data.user.token);
+      sessionStorage.setItem('keepLoggedIn', true);
       return {
         ...state,
         token: action.payload.data.user.token,
         isAuthenticated: true,
+        keepLoggedIn: true,
         error: null
       };
     case LOGOUT:
     case LOGIN_FAIL:
-      localStorage.removeItem('xtoken');
-      return {
-        ...state,
-        token: null,
-        isAuthenticated: false,
-        loading: true,
-        user: null,
-        error: action.payload
-      };
     case AUTH_ERROR:
+      localStorage.removeItem('xtoken');
+      sessionStorage.removeItem('keepLoggedIn', true);
       return {
         ...state,
         token: null,
         isAuthenticated: false,
+        keepLoggedIn: false,
         loading: true,
         user: null,
-        error: action.payload
+        error: 'Invalid login credentials'
       };
+    // case AUTH_ERROR:
+    //   return {
+    //     ...state,
+    //     token: null,
+    //     isAuthenticated: false,
+    //     loading: true,
+    //     user: null,
+    //     error: action.payload
+    //   };
     case FORGET_PASSWORD:
       return {
         ...state,
@@ -61,5 +67,10 @@ export default (state, action) => {
         sidebarLeftCol: action.payload.left,
         sidebarRightCol: action.payload.right
       }
+    case SPINNER_LOADING:
+      return {
+        ...state,
+        topSpinner: action.payload
+      };
   }
 }

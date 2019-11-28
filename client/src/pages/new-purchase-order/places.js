@@ -12,7 +12,7 @@ const Locationsearch = (props) => {
 
 	const handleChange = async (address) => {		
     setAddress(address);
-
+    
     try {
   		const geocode = await geocodeByAddress(address);  		  		
   		const latLang = await getLatLng(geocode[0]);  		      

@@ -140,7 +140,7 @@ router.get('/:invoicenumber', async (req, res) => {
         const ORDERID = invoice_number;
         const AMOUNT = amount;
         const DATETIME = date.format(response.result[0].date_edit_timestamp, 'DD-MM-YYYY:HH:MM:SS:SSS');
-        const RECEIPTPAGEURL = 'http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/payment-status/';
+        const RECEIPTPAGEURL = `${process.env.PAYMENTLINK}payment/payment-status/`;
         const HASH = md5(TERMINALID + ORDERID + AMOUNT + DATETIME + RECEIPTPAGEURL + secret);
 
         if (response.error) {

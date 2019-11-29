@@ -43,4 +43,4 @@ export const INVOICE_LINKLOADING = 'INVOICE_LINKLOADING';
 
 export const SPINNER_LOADING = 'SPINNER_LOADING';
 
-export const SERVER_URL = 'http://18.217.104.6' ;//'http://localhost:5000'; //'http://18.217.104.6' //Mike Test AWS 'http://3.81.53.5/';
+export const SERVER_URL = 'http://18.204.208.221' ;//'http://localhost:5000'; //'http://18.217.104.6' //Mike Test AWS 'http://3.81.53.5/';

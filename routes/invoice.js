@@ -13,7 +13,8 @@ const {
 	checkLocalTime, 
 	calculateDistance, 
 	sendPaymentLinkEmail, 
-	resendPaymentLinkEmail, 
+	resendPaymentLinkEmail,
+	sendPaymentConfirmationEmail,
 	callDispatcherAPI 
 } = require('../helpers/helpers');
 
@@ -604,7 +605,7 @@ router.post('/resendreceipt', [authMiddleware, [
 				}
 			} else {
 				// Send SMS
-				const sms_content = `You can pay for your Tow @ this link: http://ec2-18-217-104-6.us-east-2.compute.amazonaws.com/payment/${invoice_id}`;
+				const sms_content = `You can pay for your Tow @ this link: ${process.env.PAYMENTLINK}payment/${invoice_id}`;
 				const isSend = await sendSMS(sms_content, phone_number);
 				if (isSend) {
 					return res.status(200).json({ errors: [], data: { msg: 'Payment receipt send again', invoice } });

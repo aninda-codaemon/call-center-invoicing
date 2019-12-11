@@ -51,6 +51,7 @@ const Invoiceform = (props) => {
       phone_number: invoiceData.phone_number
     });
     authContext.refreshSpinnerLoading(false);
+    invoiceContext.toggle_link_loader(false);
   }
 
   const handleResendReceipt = async (e) => {
@@ -237,7 +238,7 @@ const Invoiceform = (props) => {
                 </Row>
               </div>
               <div className="resend-buttons-area">
-                <Button variant="info" type="button">
+                <Button variant="info" type="button" onClick={handleResendReceipt}>
                   resend receipt
                 </Button>
 

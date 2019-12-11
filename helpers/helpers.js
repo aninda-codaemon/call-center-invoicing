@@ -13,7 +13,7 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRIDKEY);
 
 const sendSMS = async (message, receiver='+919874259153') => {
-  console.log('Send SMS Twilio');
+  console.log('Send SMS Twilio', receiver);
   const msg_body = message;
   const msg_sender = '+16827171861';
   const msg_receiver = receiver;
@@ -56,7 +56,7 @@ const sendPaymentLinkSMS = async (invoice_id) => {
         Hi ${first_name},\n
         You can pay for your service using the following link: ${paymentUrl}
         `;        
-        return await sendSMS(sms_content);
+        return await sendSMS(sms_content, `+${phone_number}`);
       }
     }
   } catch (error) {

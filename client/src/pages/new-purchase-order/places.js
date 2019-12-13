@@ -21,7 +21,8 @@ const Locationsearch = (props) => {
           props.onSelect({ description: address, latlng: latLang, zip_code: element.long_name, place: props.place });
         }
       });
-      // props.onSelect({ description: address, latlng: latLang });
+      props.onSelect({ description: address, latlng: latLang });
+      // props.onSelect({ description: address, latlng: {}, zip_code: '', place: props.place });
   	} catch (error) {
   		console.log('Geocoding error');
       console.log(error);
@@ -31,7 +32,7 @@ const Locationsearch = (props) => {
 
   };
 
-  const handleSelect = async (address) => { 	
+  const handleSelect = async (address) => {	
   	setAddress(address);
   	try {
   		const geocode = await geocodeByAddress(address);  		
@@ -88,6 +89,8 @@ const Locationsearch = (props) => {
         value={address}
         onChange={handleChange}
         onSelect={handleSelect}
+        debounce={500}
+        shouldFetchSuggestions={address.length > 3}
       >
       	{ renderFunc }
       </PlacesAutocomplete>

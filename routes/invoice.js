@@ -696,7 +696,7 @@ router.post('/', authMiddleware, async (req, res) => {
     OR distance LIKE "%${searchTerm.toLowerCase()}%")`;
 	}
 
-	const sql_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
+	const sql_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
 	console.log(sql_query);
 	const dataArray = await InvoiceModel.getSortedInvoices(sql_query); // perPage, start_page
 
@@ -710,8 +710,12 @@ router.post('/', authMiddleware, async (req, res) => {
 			'Pickup Location', 'Car Model', 'Car Color', 'Car Make', 'Car Year', 'Anyone With Vehicle', 'Keys Available', 'Four Wheels Turn',
 			'Back Wheels Turn', 'Front Wheels Turn', 'Is InNeutral', 'Fuel Type', 'Pick Notes', 'Date Open Fulled', 'Date Opened Timestamp',
 			'Date Edit Timestamp', 'User Id', 'MSA System', 'Dispatcher System', 'Payment Link Sent To'];
-
-		const csv = json2csv(dataArray.result, { csvFields });
+		let csv = "";
+		try {
+			csv = json2csv((dataArray.result.length > 0 ? dataArray.result : []), { csvFields }); // json2csv((dataArray.result.length > 0 ? dataArray.result : []), { csvFields }); // json2csv({data: dataArray.result, csvFields });
+		} catch (json2csverror) {
+			console.log(json2csverror);
+		}
 		console.log('CSV');
 		console.log(csv);
 		total_invoices = dataArray.result.length;
@@ -720,7 +724,7 @@ router.post('/', authMiddleware, async (req, res) => {
 		next_start = (perPage * fetchPage);
 		next_page = 0; // Count for next page records
 		
-		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
 		console.log('sql limit; ', sql_limit_query);
 		const resultArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page
 

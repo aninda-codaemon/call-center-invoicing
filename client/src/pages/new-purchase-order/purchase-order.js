@@ -87,7 +87,7 @@ const Purchaseorder = (props) => {
         ozip: zip_code
       });
 
-      if (description !== '') {
+      if (description !== '' && zip_code !== '') {
         setShowOriginMap(true);        
       } else {
         setShowOriginMap(false);

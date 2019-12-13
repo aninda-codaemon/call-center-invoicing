@@ -56,7 +56,7 @@ const sendPaymentLinkSMS = async (invoice_id) => {
         Hi ${first_name},\n
         You can pay for your service using the following link: ${paymentUrl}
         `;        
-        return await sendSMS(sms_content, `+${phone_number}`);
+        return await sendSMS(sms_content, `+1${phone_number}`);
       }
     }
   } catch (error) {

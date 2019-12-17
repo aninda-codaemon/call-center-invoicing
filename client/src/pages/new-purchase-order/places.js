@@ -20,9 +20,7 @@ const Locationsearch = (props) => {
         if (element.types[0] === "postal_code") {          
           props.onSelect({ description: address, latlng: latLang, zip_code: element.long_name, place: props.place });
         }
-      });
-      props.onSelect({ description: address, latlng: latLang });
-      // props.onSelect({ description: address, latlng: {}, zip_code: '', place: props.place });
+      });      
   	} catch (error) {
   		console.log('Geocoding error');
       console.log(error);

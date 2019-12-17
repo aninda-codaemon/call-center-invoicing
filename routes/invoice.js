@@ -106,7 +106,7 @@ router.post('/pricing', [authMiddleware, [
 
 	const origin_zipcode = req.body.ozip.toString();
 	const total_distance = parseFloat(req.body.tmiles) || 0.00;
-	const destination_zipcode = req.body.dzip.toString();
+	const destination_zipcode = (req.body.dzip) ? req.body.dzip.toString() : '';
 	const service_type = req.body.servicetype.toString();
 	const additional_charges = parseFloat(req.body.addlcharges) || 0.00;
 	const lat = req.body.lat.toString() || '40.7176546';

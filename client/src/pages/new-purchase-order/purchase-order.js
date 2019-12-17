@@ -336,13 +336,11 @@ const Purchaseorder = (props) => {
   }
 
   const generateOriginMapUrl = () => {
-    console.log(newData.destinationaddress);
-    console.log(newData.originaddress);
+    console.log(newData.originaddress);    
     console.log(newData.servicetype); // === "Towing"
-    const origin_address = newData.originaddress;
-    const destination_address = newData.destinationaddress;
+    const origin_address = newData.originaddress;    
     let render_url = "";
-    render_url = `https://www.google.com/maps/embed/v1/place?key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M&q=${encodeURI(origin_address)}`;    
+    render_url = `https://www.google.com/maps/embed/v1/place?q=${encodeURI(origin_address)}&key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M`;
     console.log('Render url: ', render_url);
 
     return (

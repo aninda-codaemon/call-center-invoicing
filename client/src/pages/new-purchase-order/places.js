@@ -24,8 +24,8 @@ const Locationsearch = (props) => {
   	} catch (error) {
   		console.log('Geocoding error');
       console.log(error);
-      props.onSelect({ description: '', latlng: {}, zip_code: '', place: props.place });
-      setAddress('');
+      props.onSelect({ description: address, latlng: {}, zip_code: '', place: props.place });
+      // setAddress('');
   	}
 
   };
@@ -43,8 +43,8 @@ const Locationsearch = (props) => {
   	} catch (error) {
   		console.log('Geocoding error');
       console.log(error);
-      props.onSelect({ description: '', latlng: {}, zip_code: '', place: props.place });
-      setAddress('');
+      props.onSelect({ description: address, latlng: {}, zip_code: '', place: props.place });
+      // setAddress('');
   	}
   };
 

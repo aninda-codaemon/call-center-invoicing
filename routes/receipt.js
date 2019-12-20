@@ -68,7 +68,7 @@ router.get('/payment-status', async (req, res) => {
     try {
       const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id, unique_ref);
 
-      if (paymentResponseStored.result == 0) {
+      if (paymentResponseStored.result) {
           const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
           var phraseResponseText = approval_code;
           var responsePhrase = phraseResponseText.indexOf('OK') !== -1 ? true : false;

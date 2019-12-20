@@ -107,15 +107,16 @@ router.get('/payment-status', async (req, res) => {
               responseText,
               contextFlag
           });
-      } else {
-        contextFlag = 2;
-        responseText = "Payment Failed";
+       } 
+      // else {
+      //   contextFlag = 2;
+      //   responseText = "Payment Failed";
 
-        return res.render('payment/payment-response', {
-          responseText,
-          contextFlag
-        });  
-      }
+      //   return res.render('payment/payment-response', {
+      //     responseText,
+      //     contextFlag
+      //   });  
+      // }
     } catch (error) {
       console.log('Payment status error', error);
       contextFlag = 2;

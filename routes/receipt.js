@@ -68,7 +68,7 @@ router.get('/payment-status', async (req, res) => {
     try {
       const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id, unique_ref);
 
-      if (paymentResponseStored.result) {
+      if (paymentResponseStored.result && paymentResponseStored.result.length === 0) {
           const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
           var phraseResponseText = approval_code;
           var responsePhrase = phraseResponseText.indexOf('OK') !== -1 ? true : false;
@@ -100,13 +100,21 @@ router.get('/payment-status', async (req, res) => {
               contextFlag
           });
 
-      } else {
+      } else if (paymentResponseStored.result && paymentResponseStored.result.length > 0) {
           contextFlag = 3;
           responseText = "Payment already processed";
           return res.render('payment/payment-response', {
               responseText,
               contextFlag
           });
+      } else {
+        contextFlag = 2;
+        responseText = "Payment Failed";
+        
+        return res.render('payment/payment-response', {
+          responseText,
+          contextFlag
+        });  
       }
     } catch (error) {
       console.log('Payment status error', error);

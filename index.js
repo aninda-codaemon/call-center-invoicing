@@ -22,6 +22,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/order', require('./routes/invoice'));
 app.use('/payment', require('./routes/payment'));
+app.use('/receipt', require('./routes/receipt'));
 
 if (process.env.PLATENV === 'production') {
   app.use(express.static('client/build'));

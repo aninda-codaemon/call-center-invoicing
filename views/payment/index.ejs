@@ -164,8 +164,8 @@
         <div class="panel-body">
           <div class="col-lg-6 col-lg-offset-3 text-center">
             <form method="post" name="paymentform" id="paymentform"
-              action="https://testpayments.anywherecommerce.com/merchant/paymentpage">
-              <input type="hidden" id="TERMINALID" name="TERMINALID" value="2994001" required>
+              action="<%= PAYMENTFORMLINK %>">
+              <input type="hidden" id="TERMINALID" name="TERMINALID" value="<%= TERMINALID %>" required>
               <input type="hidden" name="CURRENCY" value="USD" required>
               <input type="hidden" id="ORDERID" name="ORDERID" value="<%= response[0].invoice_id %>" required>
               <input type="hidden" id="AMOUNT" name="AMOUNT" value="<%= AMOUNT %>" required>

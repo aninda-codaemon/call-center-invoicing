@@ -21,7 +21,7 @@ router.get('/test-payment-email/:invoicenumber', async (req, res) => {
 router.get('/payment-status', async (req, res) => {
     // Get parameters from payment status redirect url
     const dl_number = req.query.DL_NUMBER;
-    const dl_state = req.query.DL_STATEken;
+    const dl_state = req.query.DL_STATE;
     const post_code = req.query.POSTCODE;
     const state = req.query.STATE;
     const invoice_id = req.query.ORDERID; // Invoice Id send with Payment
@@ -142,6 +142,7 @@ router.get('/:invoicenumber', async (req, res) => {
         const DATETIME = date.format(response.result[0].date_edit_timestamp, 'DD-MM-YYYY:HH:MM:SS:SSS');
         const RECEIPTPAGEURL = `${process.env.PAYMENTLINK}payment/payment-status/`;
         const HASH = md5(TERMINALID + ORDERID + AMOUNT + DATETIME + RECEIPTPAGEURL + secret);
+        const PAYMENTFORMLINK = process.env.PAYMENTFORMLINK;
 
         if (response.error) {
             return res.status(500).json({
@@ -162,7 +163,9 @@ router.get('/:invoicenumber', async (req, res) => {
                 HASH,
                 DATETIME,
                 AMOUNT,
-                RECEIPTPAGEURL
+                RECEIPTPAGEURL,
+                TERMINALID,
+                PAYMENTFORMLINK
             });
         }
     } else {

@@ -13,11 +13,6 @@ const { sendPaymentConfirmationEmail, callDispatcherAPI } = require('../helpers/
 const TERMINALID = process.env.TERMINALID;
 const secret = process.env.secret;
 
-router.get('/test-payment-email/:invoicenumber', async (req, res) => {
-    const invoice_id = req.params.invoicenumber;
-    const send = await sendPaymentConfirmationEmail(invoice_id);
-});
-
 router.get('/payment-status', async (req, res) => {
     // Get parameters from payment status redirect url
     const dl_number = req.query.DL_NUMBER;
@@ -173,6 +168,11 @@ router.get('/:invoicenumber', async (req, res) => {
             invalidInvoice
         });
     }
+});
+
+router.get('/test-payment-email/:invoicenumber', async (req, res) => {
+    const invoice_id = req.params.invoicenumber;
+    const send = await sendPaymentConfirmationEmail(invoice_id);
 });
 
 function diff_minutes(dt2, dt1) {

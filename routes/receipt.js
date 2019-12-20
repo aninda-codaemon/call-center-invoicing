@@ -67,7 +67,7 @@ router.get('/payment-status', async (req, res) => {
 
     try {
       const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id, unique_ref);
-
+      console.log('Payment response ', paymentResponseStored);
       if (paymentResponseStored.result && paymentResponseStored.result.length === 0) {
           const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
           var phraseResponseText = approval_code;
@@ -110,7 +110,7 @@ router.get('/payment-status', async (req, res) => {
       } else {
         contextFlag = 2;
         responseText = "Payment Failed";
-        
+
         return res.render('payment/payment-response', {
           responseText,
           contextFlag

@@ -52,10 +52,7 @@ const sendPaymentLinkSMS = async (invoice_id) => {
         const { status, payment_email, first_name, last_name, phone_number, service_type, model, color, make, year, start_address, end_address, amount, date_payment } = info.result[0];
         const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoice_id}`;
         const sms_content = `
-        Roadside Assistance: \n
-        Hi ${first_name},\n
-        You can pay for your service using the following link: ${paymentUrl}
-        `;        
+        Roadside Assistance: \nHi ${first_name},\nYou can pay for your service using the following link: ${paymentUrl}`;        
         return await sendSMS(sms_content, `+1${phone_number}`);
       }
     }

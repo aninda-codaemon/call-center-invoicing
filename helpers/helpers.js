@@ -53,7 +53,7 @@ const sendPaymentLinkSMS = async (invoice_id) => {
         const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoice_id}`;
         const sms_content = `
         Roadside Assistance: \n\nHi ${first_name},\n\nYou can pay for your service using the following link: ${paymentUrl}`;        
-        return await sendSMS(sms_content, `+91${phone_number}`);
+        return await sendSMS(sms_content, `+1${phone_number}`);
       }
     }
   } catch (error) {
@@ -188,7 +188,7 @@ const sendPaymentConfirmationSMS = async (invoice_id) => {
         const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoice_id}`;
         const sms_content = `
         Roadside Assistance: \n\nHi ${first_name},\nWe received your payment of ${amount} for the Service Call you requested to the location you provided.\n\nThis is your Digital Receipt for payment of the Service Call Invoice, # ${invoice_id}.\n\nA service truck is being dispatched to your location now.\nThank you.`;
-        return await sendSMS(sms_content, `+91${phone_number}`);
+        return await sendSMS(sms_content, `+1${phone_number}`);
       }
     }
   } catch (error) {

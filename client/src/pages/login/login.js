@@ -30,10 +30,10 @@ const Login = (props) => {
   
   useEffect(() => {
     if (keepLoggedIn) {
-      props.history.push('/all-purchase-orders');
+      props.history.push('/new-purchase-order');
     }
   }, [keepLoggedIn, error, props.history]);
-
+  
   return (
     <div className="login-wrap">
       <div className="login-area">

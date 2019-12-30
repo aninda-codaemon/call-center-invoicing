@@ -20,7 +20,7 @@ import InvoiceContext from '../../context/invoice/invoiceContext';
 const Invoiceform = (props) => {
   const authContext = useContext(AuthContext);
   const invoiceContext = useContext(InvoiceContext);
-  const { invoice, loading, linkloading } = invoiceContext;
+  const { invoice, loading, linkloading, success, error } = invoiceContext;
 
   const [invoiceData, setInvoiceData] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(loading);
@@ -37,6 +37,7 @@ const Invoiceform = (props) => {
     // invoiceContext.toggle_loader(true);
     const invoice_submit = await invoiceContext.update_invoice(invoiceData);
     authContext.refreshSpinnerLoading(false);
+    alert('Invoice has been updated!');
   };
 
   const handleResendLink = async (e) => {
@@ -57,15 +58,20 @@ const Invoiceform = (props) => {
   const handleResendReceipt = async (e) => {
     e.preventDefault();
     console.log('Re send payment link');
-    authContext.refreshSpinnerLoading(true);
-    // invoiceContext.toggle_link_loader(true);
-    const invoice_resend = await invoiceContext.resend_receipt({ 
-      send_payment_to: invoiceData.send_payment_to, 
-      invoice_id: invoiceData.invoice_id,
-      payment_email: invoiceData.payment_email,
-      phone_number: invoiceData.phone_number
-    });
-    authContext.refreshSpinnerLoading(false);
+    if (invoice.status === 'Paid' || invoice.status === 'Dispatched') {
+      authContext.refreshSpinnerLoading(true);
+      // invoiceContext.toggle_link_loader(true);
+      const invoice_resend = await invoiceContext.resend_receipt({ 
+        send_payment_to: invoiceData.send_payment_to, 
+        invoice_id: invoiceData.invoice_id,
+        payment_email: invoiceData.payment_email,
+        phone_number: invoiceData.phone_number
+      });
+      authContext.refreshSpinnerLoading(false);
+      alert('Invoice receipt has been sent!');
+    } else {
+      alert('The customer has not paid for the service!');
+    }   
   }
 
   // For first time after update
@@ -238,10 +244,14 @@ const Invoiceform = (props) => {
                 </Row>
               </div>
               <div className="resend-buttons-area">
-                <Button variant="info" type="button" onClick={handleResendReceipt}>
+                <Button
+                  variant="info" 
+                  type="button" 
+                  onClick={handleResendReceipt}
+                >
                   resend receipt
                 </Button>
-
+                  
                 {
                   !submitLinkLoading ? (
                     <Button variant="danger" type="button" onClick={handleResendLink}>
@@ -431,7 +441,7 @@ const Invoiceform = (props) => {
                     value={invoiceData.start_address}
                     onChange={handleChange}
                     label="Origin"
-                    disabled={true}
+                    readOnly={true}
                   />
                 </Col>
                 { invoiceData.service_type === 'Towing' && (
@@ -442,7 +452,7 @@ const Invoiceform = (props) => {
                     value={invoiceData.end_address}
                     onChange={handleChange}
                     label="Destination"
-                    disabled={true}
+                    readOnly={true}
                   />
                 </Col> )}
               </Row>

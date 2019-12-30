@@ -1,5 +1,6 @@
 node_modules/
 aws-key/
+cr-bugs/
 build/
 .env
 *.sql

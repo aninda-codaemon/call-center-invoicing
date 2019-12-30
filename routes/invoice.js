@@ -15,6 +15,7 @@ const {
 	sendPaymentLinkEmail, 
 	resendPaymentLinkEmail,
 	sendPaymentConfirmationEmail,
+	sendPaymentConfirmationSMS,
 	callDispatcherAPI 
 } = require('../helpers/helpers');
 
@@ -493,7 +494,8 @@ router.post('/updateinvoice', [authMiddleware, [
 		if (invoice.error) {
 			return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
 		} else {
-			return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully updated', invoice: invoice.result } });
+			const invoiceData = await InvoiceModel.getInvoiceByInvoiceId(invoice_id);
+			return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully updated', invoice: invoiceData.result[0] } });
 		}
 	}
 });
@@ -573,7 +575,7 @@ router.post('/resendreceipt', [authMiddleware, [
 ]], async (req, res) => {
 
 	const errors = validationResult(req);
-
+	
 	if (!errors.isEmpty()) {
 		return res.status(400).json({ errors: errors.array() });
 	}
@@ -604,9 +606,8 @@ router.post('/resendreceipt', [authMiddleware, [
 					return res.status(500).json({ errors: [], data: { msg: 'Payment receipt could not be send again', invoice } });
 				}
 			} else {
-				// Send SMS
-				const sms_content = `You can pay for your Tow @ this link: ${process.env.PAYMENTLINK}payment/${invoice_id}`;
-				const isSend = await sendSMS(sms_content, phone_number);
+				// Send SMS			
+				const isSend = await sendPaymentConfirmationSMS(invoice_id);
 				if (isSend) {
 					return res.status(200).json({ errors: [], data: { msg: 'Payment receipt send again', invoice } });
 				} else {
@@ -696,7 +697,8 @@ router.post('/', authMiddleware, async (req, res) => {
     OR distance LIKE "%${searchTerm.toLowerCase()}%")`;
 	}
 
-	const sql_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
+	// const sql_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
+	const sql_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;	
 	console.log(sql_query);
 	const dataArray = await InvoiceModel.getSortedInvoices(sql_query); // perPage, start_page
 
@@ -724,7 +726,8 @@ router.post('/', authMiddleware, async (req, res) => {
 		next_start = (perPage * fetchPage);
 		next_page = 0; // Count for next page records
 		
-		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+		// const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
 		console.log('sql limit; ', sql_limit_query);
 		const resultArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page
 

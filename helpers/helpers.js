@@ -52,8 +52,8 @@ const sendPaymentLinkSMS = async (invoice_id) => {
         const { status, payment_email, first_name, last_name, phone_number, service_type, model, color, make, year, start_address, end_address, amount, date_payment } = info.result[0];
         const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoice_id}`;
         const sms_content = `
-        Roadside Assistance: \nHi ${first_name},\nYou can pay for your service using the following link: ${paymentUrl}`;        
-        return await sendSMS(sms_content, `+1${phone_number}`);
+        Roadside Assistance: \n\nHi ${first_name},\n\nYou can pay for your service using the following link: ${paymentUrl}`;        
+        return await sendSMS(sms_content, `+91${phone_number}`);
       }
     }
   } catch (error) {
@@ -167,6 +167,34 @@ const sendPaymentConfirmationEmail = async (invoice_id) => {
     return false;
   }
 
+}
+
+const sendPaymentConfirmationSMS = async (invoice_id) => {
+  const InvoiceModel = require('../models/Invoice');
+
+  try {
+    const response = await InvoiceModel.getInvoiceById(invoice_id);
+    console.log(response.result[0].invoice_id);
+    if (response.result.length <= 0) {
+      return false;
+    } else {
+      // Get the invoice details
+      const info = await InvoiceModel.getInvoiceByInvoiceId(invoice_id);
+
+      if (info.result.length <= 0) {
+        return false;
+      } else {
+        const { status, payment_email, first_name, last_name, phone_number, service_type, model, color, make, year, start_address, end_address, amount, date_payment } = info.result[0];
+        const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoice_id}`;
+        const sms_content = `
+        Roadside Assistance: \n\nHi ${first_name},\nWe received your payment of ${amount} for the Service Call you requested to the location you provided.\n\nThis is your Digital Receipt for payment of the Service Call Invoice, # ${invoice_id}.\n\nA service truck is being dispatched to your location now.\nThank you.`;
+        return await sendSMS(sms_content, `+91${phone_number}`);
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 
 const sendPaymentLinkEmail = async (invoice_id) => {
@@ -525,6 +553,7 @@ module.exports = {
                     checkLocalTime, 
                     calculateDistance, 
                     sendPaymentConfirmationEmail,
+                    sendPaymentConfirmationSMS,
                     sendPaymentLinkEmail,
                     resendPaymentLinkEmail,
                     sendPaymentLinkSMS,

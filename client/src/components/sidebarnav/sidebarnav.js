@@ -15,7 +15,7 @@ function SidebarNav() {
       return (
         <li>
           <NavLink activeClassName="active" to="/users">
-            <i className="fa fa-phone" aria-hidden="true" />
+            <i className="fa fa-user" aria-hidden="true" />
             <span>Users</span>
           </NavLink>
         </li>
@@ -53,7 +53,7 @@ function SidebarNav() {
         </li>
         <li>
           <NavLink activeClassName="active" to="/new-purchase-order">
-            <i className="fa fa-plus-square-o" aria-hidden="true" />
+            <i className="fa fa-pencil" aria-hidden="true" />
             <span>New Purchase Order</span>
           </NavLink>
         </li>

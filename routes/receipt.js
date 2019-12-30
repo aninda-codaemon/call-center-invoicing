@@ -7,16 +7,13 @@ var md5 = require('md5');
 const router = express.Router();
 const date = require('date-and-time');
 
-const { sendPaymentConfirmationEmail, callDispatcherAPI } = require('../helpers/helpers');
+const { sendPaymentConfirmationEmail, sendPaymentConfirmationSMS, callDispatcherAPI } = require('../helpers/helpers');
 
 // Payment Gateway Anywhere Commerce Params
 const TERMINALID = process.env.TERMINALID;
 const secret = process.env.secret;
 
 router.get('/payment-status', async (req, res) => {
-
-    // return res.send('<h1>Receipt Page</h1>');
-
     // Get parameters from payment status redirect url
     const dl_number = req.query.DL_NUMBER;
     const dl_state = req.query.DL_STATE;
@@ -90,6 +87,9 @@ router.get('/payment-status', async (req, res) => {
 
               // Send payment confirmation email
               sendPaymentConfirmationEmail(invoice_id);
+
+              // Send payment confirmation SMS
+              sendPaymentConfirmationSMS(invoice_id);
           } else {
               contextFlag = 2;
               responseText = "Payment Failed";
@@ -97,7 +97,8 @@ router.get('/payment-status', async (req, res) => {
 
           return res.render('payment/payment-response', {
               responseText,
-              contextFlag
+              contextFlag,
+              newPaymentResponse
           });
 
       } else if (paymentResponseStored.result && paymentResponseStored.result.length > 0) {
@@ -105,7 +106,8 @@ router.get('/payment-status', async (req, res) => {
           responseText = "Payment already processed";
           return res.render('payment/payment-response', {
               responseText,
-              contextFlag
+              contextFlag,
+              invoice_id
           });
        } 
       // else {

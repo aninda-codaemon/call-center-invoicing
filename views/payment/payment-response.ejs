@@ -46,7 +46,7 @@
             <div class="container bg-faded">
               <h1 class="text-center">
                 <% if(contextFlag == '1'){ %>
-                  <i style="font-size: 90px;" class="fa fa-check-circle alert alert-success" aria-hidden="true"></i>
+                  <i style="font-size: 90px; color:#3c763d;" class="fa fa-check-circle" aria-hidden="true"></i>
                 <% } else{ %>
                   OOPS..!
                 <% } %>
@@ -56,8 +56,7 @@
                   <div class="center-block well text-center hidden-sm hidden-xs" style="width: 80%">
                     <% if(contextFlag == '1'){ %>
                     <div class="" role="alert">
-                      <div>
-                        <p class="alert alert-success"><i class="fa fa-check-circle" aria-hidden="true"></i></p>
+                      <div>                        
                         <p class="text-justify">
                           Payment Received! from Card <%=newPaymentResponse.card_number %> of amount $ <%=newPaymentResponse.amount %> for invoice <%=newPaymentResponse.invoice_id %>
                         </p>

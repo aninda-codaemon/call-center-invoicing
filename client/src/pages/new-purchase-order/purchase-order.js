@@ -562,7 +562,7 @@ const Purchaseorder = (props) => {
                         // required={true}
                         label="First Name *"
                       />
-                      {validator.message("fname", newData.fname, "required|alpha", {messages: {required: 'First name field is required'}})}
+                      {validator.message("fname", newData.fname, "required", {messages: {required: 'First name field is required'}})}
                       {touched.fname && validator.errorMessages.fname && (
                         <p className="error-text">{validator.errorMessages.fname}</p>
                       )}                     
@@ -576,7 +576,7 @@ const Purchaseorder = (props) => {
                         // required={true}
                         label="Last Name *"
                       />
-                      {validator.message("lname", newData.lname, "required|alpha", {messages: {required: 'Last name field is required'}} )}
+                      {validator.message("lname", newData.lname, "required", {messages: {required: 'Last name field is required'}} )}
                       {touched.lname && validator.errorMessages.lname && (
                         <p className="error-text">{validator.errorMessages.lname}</p>
                       )}

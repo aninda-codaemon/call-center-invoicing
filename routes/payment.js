@@ -121,48 +121,59 @@ router.get('/:invoicenumber', async (req, res) => {
             invalidInvoice
         });
     } else if (isResponse.result && isResponse.result.length > 0) {
+        const invoice_data = await InvoiceModel.getInvoiceByInvoiceId(invoice_number);
 
-        const response = await InvoiceModel.getInvoiceByInvoiceId(invoice_number);
-
-        const time_differ = diff_minutes(response.result[0].date_edit_timestamp, timeNow);
-        const amount = Number(response.result[0].amount).toFixed(2);
-        const conv_amount = 3.5;
-        const sub_total_deduct = Number((response.result[0].amount * conv_amount) / 100).toFixed(2);
-        const sub_total = Number(amount - sub_total_deduct).toFixed(2);;
-
-        // Anywherecommerce payment parameters
-        const CURRENCY = 'USD';
-        const ORDERID = invoice_number;
-        const AMOUNT = amount;
-        const DATETIME = date.format(response.result[0].date_edit_timestamp, 'DD-MM-YYYY:HH:MM:SS:SSS');
-        const RECEIPTPAGEURL = `${process.env.PAYMENTLINK}receipt/payment-status/`;
-        const HASH = md5(TERMINALID + ORDERID + AMOUNT + DATETIME + RECEIPTPAGEURL + secret);
-        const PAYMENTFORMLINK = process.env.PAYMENTFORMLINK;
-
-        if (response.error) {
-            return res.status(500).json({
-                errors: [{
-                    msg: 'Internal server error!'
-                }]
-            });
-        } else if (time_differ > 10) {
-            res.render('payment/expired', {
-                time_differ,
-                invoice_number
+        if (invoice_data.result && invoice_data.result[0].status === 'Paid') {
+            contextFlag = 3;
+            responseText = "Payment already processed";
+            return res.render('payment/payment-response', {
+                responseText,
+                contextFlag,
+                invoice_id: invoice_number
             });
         } else {
-            res.render('payment/index', {
-                response: response.result,
-                sub_total_deduct,
-                sub_total,
-                HASH,
-                DATETIME,
-                AMOUNT,
-                RECEIPTPAGEURL,
-                TERMINALID,
-                PAYMENTFORMLINK
-            });
+            const response = await InvoiceModel.getInvoiceByInvoiceId(invoice_number);
+            const time_differ = diff_minutes(response.result[0].date_edit_timestamp, timeNow);
+            const amount = Number(response.result[0].amount).toFixed(2);
+            const conv_amount = 3.5;
+            const sub_total_deduct = Number((response.result[0].amount * conv_amount) / 100).toFixed(2);
+            const sub_total = Number(amount - sub_total_deduct).toFixed(2);;
+
+            // Anywherecommerce payment parameters
+            const CURRENCY = 'USD';
+            const ORDERID = invoice_number;
+            const AMOUNT = amount;
+            const DATETIME = date.format(response.result[0].date_edit_timestamp, 'DD-MM-YYYY:HH:MM:SS:SSS');
+            const RECEIPTPAGEURL = `${process.env.PAYMENTLINK}receipt/payment-status/`;
+            const HASH = md5(TERMINALID + ORDERID + AMOUNT + DATETIME + RECEIPTPAGEURL + secret);
+            const PAYMENTFORMLINK = process.env.PAYMENTFORMLINK;
+
+            if (response.error) {
+                return res.status(500).json({
+                    errors: [{
+                        msg: 'Internal server error!'
+                    }]
+                });
+            } else if (time_differ > 10) {
+                res.render('payment/expired', {
+                    time_differ,
+                    invoice_number
+                });
+            } else {
+                res.render('payment/index', {
+                    response: response.result,
+                    sub_total_deduct,
+                    sub_total,
+                    HASH,
+                    DATETIME,
+                    AMOUNT,
+                    RECEIPTPAGEURL,
+                    TERMINALID,
+                    PAYMENTFORMLINK
+                });
+            }
         }
+        
     } else {
         res.render('payment/invoice-not-found', {
             invalidInvoice

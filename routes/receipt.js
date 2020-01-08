@@ -66,12 +66,11 @@ router.get('/payment-status', async (req, res) => {
       const paymentResponseStored = await PaymentModel.getPaymentResponseExists(invoice_id, unique_ref);
       console.log('Payment response ', paymentResponseStored);
       if (paymentResponseStored.result && paymentResponseStored.result.length === 0) {
-          const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
           var phraseResponseText = approval_code;
           var responsePhrase = phraseResponseText.length === 6 ? true : false;
 
           if (responsePhrase && (response_code == 'A' || response_code == 'E')) {
-
+              const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
               // Update Invoice table after successfull payment
               const status = 'Paid';
               let updateInvoice = {
@@ -92,7 +91,7 @@ router.get('/payment-status', async (req, res) => {
               sendPaymentConfirmationSMS(invoice_id);
           } else {
               contextFlag = 2;
-              responseText = "Payment Failed";
+              responseText = response_text;
           }
 
           return res.render('payment/payment-response', {

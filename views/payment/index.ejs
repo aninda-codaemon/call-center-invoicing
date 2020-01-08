@@ -83,6 +83,16 @@
       -ms-transform: rotate(45deg);
       transform: rotate(45deg);
     }
+
+    /* For left justify */
+    div.panel-body p.content-justify {
+      text-align: justify;
+    }
+
+    /* For Safari disabled button */
+    .btn.disabled, .btn[disabled], fieldset[disabled] .btn {
+      -webkit-opacity: 0.65;
+    }
   </style>
 
 </head>
@@ -92,7 +102,7 @@
     <header>
       <div class="row">
         <div class="col-lg-6 col-lg-offset-3 text-center">
-          <img src="/images/logo.png" height="65" width="90" />
+          <img src="/images/logo.png" class="img-responsive" />
         </div>
       </div>
     </header>
@@ -107,7 +117,7 @@
         <div class="row">
           <div class="col-xs-12">
             <address>
-              Hello <strong><%= response[0].first_name %> <%= response[0].last_name %>,</strong><br>
+              <h4>Hello <strong><%= response[0].first_name %> <%= response[0].last_name %>,</strong></h4>
               <br>
               <h4 class="text-justify">Please complete the payment below. A receipt will be send to email on file.</h4>
             </address>
@@ -186,10 +196,10 @@
           </label>
         </div>
         <div class="col-xs-10 col-sm-11 col-md-11 col-lg-11">
-          <span class="text-justify">By clicking this box, I understand I am agreeing to pay the above amount, and that a service call will be dispatched at my request. If I need to cancel I must
-            do within 5 minutes of submitting payment or I will be charged in full. I understand I will be charged
+          <p class="content-justify">By clicking this box, I understand I am agreeing to pay the above amount, and that a service call will be dispatched at my request. If I need to cancel I must
+            do so within 5 minutes of submitting payment or I will be charged in full. I understand I will be charged
             for the full amount if I am not with the vehicle at the service location when the service truck
-            arrives.</span>
+            arrives.</p>
         </div>
       </div>
     </div>

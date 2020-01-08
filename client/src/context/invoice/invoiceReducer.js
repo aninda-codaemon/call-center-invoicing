@@ -46,7 +46,7 @@ export default (state, action) => {
         invoice_number: null,
         csv_data: null,
         sort_by: 'invoice_id',
-        sort_order: 'ASC',
+        sort_order: 'DESC',
         search_term: '',
         fetch_page: 1,
         total_page: 0,

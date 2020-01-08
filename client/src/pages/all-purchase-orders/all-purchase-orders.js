@@ -28,7 +28,7 @@ function AllPurchaseOrders(props) {
     loading,
     total_page 
   } = invoiceContext;
-
+  
   const showInvoicesList = () => {
     return invoices.map( (invoice, index) => {
       const time_full = `${moment(invoice.date_opened_timestamp).format('ddd MMM D YYYY kk:mm:ss')} GMT ${moment(invoice.date_opened_timestamp).format('Z')}`;
@@ -149,7 +149,7 @@ function AllPurchaseOrders(props) {
       authContext.refreshSpinnerLoading(false);      
     };
 
-    fetchInvoiceData();    
+    fetchInvoiceData();   
   }, []);
 
   // For unmount
@@ -231,7 +231,7 @@ function AllPurchaseOrders(props) {
                       ) : (
                         <React.Fragment>Export <i className="fa fa-share" aria-hidden="true" /></React.Fragment>
                       )
-                    }                   
+                    }                 
                   </Col>
                 </Row>
               </header>

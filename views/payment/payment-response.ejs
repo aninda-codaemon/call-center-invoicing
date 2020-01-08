@@ -32,7 +32,7 @@
     <header>
       <div class="row">
         <div class="col-lg-6 col-lg-offset-3 text-center">
-          <img src="/images/logo.png" height="65" width="90" />
+          <img src="/images/logo.png" class="img-responsive" />
         </div>
       </div>
     </header>
@@ -60,14 +60,14 @@
                         <p class="text-justify">
                           Payment Received! from Card <%=newPaymentResponse.card_number %> of amount $ <%=newPaymentResponse.amount %> for invoice <%=newPaymentResponse.invoice_id %>
                         </p>
-                        <p class="text-justify"><strong>CONFIRMATION NUMBER: <%=newPaymentResponse.unique_ref %></strong></p>
+                        <p class="text-left"><strong>CONFIRMATION NUMBER: <%=newPaymentResponse.unique_ref %></strong></p>
                         <P class="text-justify">Your service call dispatch is now in progress.</P>
                       </div>
                     </div>
                     <% } %>
                     <% if(contextFlag == '2'){ %>
-                    <div class="alert alert-danger" role="alert">
-                      Payment Failed.
+                    <div class="text-justify" role="alert">
+                      PAYMENT DECLINED! Please try again with another card. Bank response: <%=responseText %>
                     </div>
                     <% } %>
                     <% if(contextFlag == '3'){ %>
@@ -81,17 +81,17 @@
                     <% if(contextFlag == '1'){ %>
                     <div class="" role="alert">
                       <div>
-                        <p class="text-left">
+                        <p class="text-justify">
                           Payment Received! from Card <%=newPaymentResponse.card_number %> of amount $ <%=newPaymentResponse.amount %> for invoice <%=newPaymentResponse.invoice_id %>
                         </p>
-                        <p class="text-justify"><strong>CONFIRMATION NUMBER: <%=newPaymentResponse.unique_ref %></strong></p>
+                        <p class="text-left"><strong>CONFIRMATION NUMBER: <%=newPaymentResponse.unique_ref %></strong></p>
                         <P class="text-justify">Your service call dispatch is now in progress.</P>
                       </div>
                     </div>
                     <% } %>
                     <% if(contextFlag == '2'){ %>
-                    <div class="alert alert-danger" role="alert">
-                      Payment Failed.
+                    <div class="text-justify" role="alert">
+                      PAYMENT DECLINED! Please try again with another card. Bank response: <%=responseText %>
                     </div>
                     <% } %>
                     <% if(contextFlag == '3'){ %>

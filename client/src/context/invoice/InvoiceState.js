@@ -60,14 +60,10 @@ const InvoiceState = (props) => {
       fetch_page,
       per_page
     };
-    console.log('Form data');
-    console.log(formData);
-
+    
     try {
       const response = await axios.post(`${SERVER_URL}/api/order`, formData, config);
-      console.log('Invoice list response');
-      console.log(response);
-
+      
       if (response) {
         dispatch({
           type: INVOICE_LIST,
@@ -94,13 +90,10 @@ const InvoiceState = (props) => {
     };
 
     const formData = {};
-    console.log('Form data');
-    console.log(formData);
-
+    
     try {
       const response = await axios.get(`${SERVER_URL}/api/order/getInvoiceNumber`, formData, config);
-      console.log('Invoice number response');
-      console.log(response);
+      
       dispatch({
         type: INVOICE_NUMBER,
         payload: response.data
@@ -122,14 +115,9 @@ const InvoiceState = (props) => {
       }
     };
     
-    console.log('Form data');
-    console.log(formData);
-
     try {
       const response = await axios.post(`${SERVER_URL}/api/order/saveinvoice`, formData, config);
-      console.log('Invoice save response');
-      console.log(response);
-
+      
       if (formData.draft === 1){
         // Re populate the invoice number for next invoice
         get_invoice_number();
@@ -160,8 +148,7 @@ const InvoiceState = (props) => {
     
     try {
       const response = await axios.get(`${SERVER_URL}/api/order/${invoice_id}`, formData, config);
-      console.log('Invoice info response');
-      console.log(response);
+      
       dispatch({
         type: INVOICE_INFO,
         payload: response.data
@@ -183,13 +170,9 @@ const InvoiceState = (props) => {
       }
     };
     
-    console.log('Form data');
-    console.log(formData);
-
     try {
       const response = await axios.post(`${SERVER_URL}/api/order/updateinvoice`, formData, config);
-      console.log('Invoice update response');
-      console.log(response);
+      
       dispatch({
         type: INVOICE_UPDATE,
         payload: response.data
@@ -211,13 +194,9 @@ const InvoiceState = (props) => {
       }
     };
     
-    console.log('Form data');
-    console.log(formData);
-
     try {
       const response = await axios.post(`${SERVER_URL}/api/order/resendlink`, formData, config);
-      console.log('Invoice resend response');
-      console.log(response);
+      
       dispatch({
         type: INVOICE_SENDLINK,
         payload: response.data
@@ -239,13 +218,9 @@ const InvoiceState = (props) => {
       }
     };
     
-    console.log('Form data');
-    console.log(formData);
-
     try {
       const response = await axios.post(`${SERVER_URL}/api/order/resendreceipt`, formData, config);
-      console.log('Invoice resend response');
-      console.log(response);
+      
       dispatch({
         type: INVOICE_SENDRECEIPT,
         payload: response.data
@@ -280,8 +255,6 @@ const InvoiceState = (props) => {
     
     try {
       const response = await axios.post(`${SERVER_URL}/api/order/pricing`, formData, config);
-      console.log('Invoice price response');
-      console.log(response);
       return response;
     } catch (error) {
       console.log('Invoice price error');

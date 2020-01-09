@@ -697,8 +697,8 @@ router.post('/', authMiddleware, async (req, res) => {
     OR distance LIKE "%${searchTerm.toLowerCase()}%")`;
 	}
 
-	// const sql_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
-	const sql_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;	
+	const sql_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;
+	// const sql_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder}`;	
 	console.log(sql_query);
 	const dataArray = await InvoiceModel.getSortedInvoices(sql_query); // perPage, start_page
 
@@ -726,8 +726,8 @@ router.post('/', authMiddleware, async (req, res) => {
 		next_start = (perPage * fetchPage);
 		next_page = 0; // Count for next page records
 		
-		// const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
-		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+		const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND DATE(date_opened_timestamp) >= DATE_SUB(CURDATE(), INTERVAL 3 DAY) AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
+		// const sql_limit_query = `SELECT * FROM user_invoice WHERE 1 AND service_type != 'NULL' ${searchQuery} ORDER BY ${sortBy} ${sortOrder} LIMIT ${start_page},${perPage}`;
 		console.log('sql limit; ', sql_limit_query);
 		const resultArray = await InvoiceModel.getSortedInvoices(sql_limit_query); // perPage, start_page
 

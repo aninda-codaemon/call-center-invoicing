@@ -344,7 +344,7 @@ const checkLocalTime = async (lat, lng) => {
     console.log('Response');
     console.log(response);
 
-    if (response.status == 'OK'){
+    if (response.status == 'OK') {
       console.log(response.status);
       const offsets = response.dstOffset * 1000 + response.rawOffset * 1000; // get DST and time zone offsets in milliseconds
       const localdate = new Date(timestamp * 1000 + offsets); // Date object containing current time of Tokyo (timestamp + dstOffset + rawOffset)
@@ -384,6 +384,7 @@ const calculateDistance = async (origin, destination) => {
   } 
 }
 
+// Call To Dispatcher API 
 const callDispatcherAPI = async (invoice_id) => {
   // Get invoice info
   const invoice_info = await InvoiceModel.getInvoiceByInvoiceId(invoice_id);            
@@ -545,7 +546,18 @@ const callDispatcherAPI = async (invoice_id) => {
   }
   
   return dispatchObject;
-} 
+}
+
+// Find the abandoned records inserted
+const getAbandonedEntries = async () => {
+  try {
+    const response = await InvoiceModel.getNullInvoices();
+    return response.result;
+  } catch (error) {
+    console.log(`getAbandonedEntries error: ${error}`);
+    return null;
+  }
+}
 
 module.exports = { 
                     sendSMS, 
@@ -557,5 +569,6 @@ module.exports = {
                     sendPaymentLinkEmail,
                     resendPaymentLinkEmail,
                     sendPaymentLinkSMS,
-                    callDispatcherAPI
+                    callDispatcherAPI,
+                    getAbandonedEntries
                   };

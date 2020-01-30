@@ -708,10 +708,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
 		const csvFields = [
 			'Invoice Number', 'First Name', 'Last Name', 'Payment Email', 'Phone Number', 'Service Type', 'Problem Type',
-			'Total Amount', 'Total Distance', 'Payment Status', 'Start Address', 'End Address', 'Origin Zip', 'Destination Zip', 'Sms Sent', 'Email Sent',
-			'Pickup Location', 'Car Model', 'Car Color', 'Car Make', 'Car Year', 'Anyone With Vehicle', 'Keys Available', 'Four Wheels Turn',
-			'Back Wheels Turn', 'Front Wheels Turn', 'Is InNeutral', 'Fuel Type', 'Pick Notes', 'Date Open Fulled', 'Date Opened Timestamp',
-			'Date Edit Timestamp', 'User Id', 'MSA System', 'Dispatcher System', 'Payment Link Sent To'];
+			'Total Amount', 'Total Distance', 'Payment Status', 'Start Address', 'End Address', 'Origin Zip', 'Destination Zip', 'Sms Sent', 'Email Sent', 'Pickup Location', 'Car Model', 'Car Color', 'Car Make', 'Car Year', 'Anyone With Vehicle', 'Keys Available', 'Four Wheels Turn', 'Back Wheels Turn', 'Front Wheels Turn', 'Is InNeutral', 'Fuel Type', 'Pick Notes', 'Date Open Fulled', 'Date Opened Timestamp', 'Date Edit Timestamp', 'User Id', 'MSA System', 'Dispatcher System', 'Payment Link Sent To'];
 		let csv = "";
 		try {
 			csv = json2csv((dataArray.result.length > 0 ? dataArray.result : []), { csvFields }); // json2csv((dataArray.result.length > 0 ? dataArray.result : []), { csvFields }); // json2csv({data: dataArray.result, csvFields });

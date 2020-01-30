@@ -278,7 +278,7 @@ Invoice.getAllInvoice = async (user_id) => {
 Invoice.updateInvoicePaymentStatus = async (updateInvoice) => {
   let response = {};
   try {
-    const [result, fields] = await pool.query('UPDATE user_invoice SET status = ?,date_payment = NOW() WHERE invoice_id =?', [updateInvoice.status, updateInvoice.invoice_id]);
+    const [result, fields] = await pool.query('UPDATE user_invoice SET status = ?, date_payment = NOW() WHERE invoice_id =?', [updateInvoice.status, updateInvoice.invoice_id]);
     console.log(result);
     response.result = result;
     return response;
@@ -289,5 +289,19 @@ Invoice.updateInvoicePaymentStatus = async (updateInvoice) => {
   }
 };
 
+Invoice.getNullInvoices = async () => {
+  let response = {};
+  try {
+    // const [result, fields] = await pool.query(`SELECT id, invoice_id FROM user_invoice WHERE DATE(date_opened_timestamp) < DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND first_name IS NULL AND is_draft IS NULL`);
+    const [result, fields] = await pool.query(`DELETE FROM user_invoice WHERE DATE(date_opened_timestamp) < DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND first_name IS NULL AND is_draft IS NULL ORDER BY id`);
+    console.log(result);
+    response.result = result;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+}
 
 module.exports = Invoice;

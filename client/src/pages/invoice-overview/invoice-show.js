@@ -77,6 +77,8 @@ const Invoiceform = (props) => {
   // For first time after update
   useEffect(() => {
     setInvoiceData({ ...invoice });
+    console.log("Hii");
+    
   }, []);
 
   // For checking if invoice data is updated or not

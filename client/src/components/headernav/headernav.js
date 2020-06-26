@@ -10,9 +10,17 @@ function HeaderNav(props) {
   const { topSpinner } = authContext;
   const spin = (topSpinner) ? 'fa-counter-spin' : '';
 
+  //For Route
+  // const history = useHistory();
+
+  // const handleRefresh = () =>{
+  //   window.location.reload(false);
+  // }
+
   return (
     <ul className="headernav">
       <li>
+        {/* <Link to="#" onChange={handleRefresh}></Link> */}
         <i className={ `fa fa-undo ${spin}` } aria-hidden="true" />
         {/* <i className="fa fa-undo fa-counter-spin" aria-hidden="true" /> */}
       </li>

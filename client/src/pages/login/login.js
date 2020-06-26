@@ -36,6 +36,7 @@ const Login = (props) => {
   
   return (
     <div className="login-wrap">
+      <div className="iris_text"><h5 className="text-white mt-2">IRIS 1.2</h5></div>
       <div className="login-area">
         <figure className="logo">
           <img src={logo} alt="logo" />

@@ -74,6 +74,7 @@ const Invoiceform = (props) => {
     }   
   }
 
+  
   // For first time after update
   useEffect(() => {
     setInvoiceData({ ...invoice });
@@ -110,7 +111,7 @@ const Invoiceform = (props) => {
       return (
         <section className="invoice-wrap">          
           
-          <div className="alert-area">
+          <div className="alert-area" style={{"color": invoiceData.msa_system === "SYSTEM 2"  ? '#6636da' : '#dd2d3e'}}>
             Submit this purchase order into DISPATCHING {invoiceData.msa_system || `SYSTEM 1`}
           </div>
           

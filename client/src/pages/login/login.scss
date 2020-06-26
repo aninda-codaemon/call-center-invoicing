@@ -8,6 +8,16 @@
   align-items: center;
   justify-content: center;
 
+  .iris_text{
+    position: absolute;
+    z-index: 1;
+    top:2%;
+    left:3%;
+    h5{
+      @include font-size(14);
+    }
+  }
+
   .login-area {
     width: 390px;
 

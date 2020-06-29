@@ -384,7 +384,6 @@ const Purchaseorder = (props) => {
     setNewData({ ...newData, draft: '1'});
     console.log('Save as draft'+newData.draft);
     if(newData.draft === '1'){
-      // alert("after check"+newData.draft);
       handleSubmit(e);
     }
    

@@ -32,7 +32,7 @@ const Locationsearch = (props) => {
      // console.log("hello");
         geocoder.geocode({'location': latlng}, async function(results, status) {
           /// console.log("address23"+results[0].formatted_address);
-          if(results[0]){
+          if(status === "OK"){
             setAddress(results[0].formatted_address);
 
           }
@@ -100,7 +100,10 @@ const Locationsearch = (props) => {
       //console.log("hello");
         geocoder.geocode({'location': latlng}, function(results, status) {
           /// console.log("address23"+results[0].formatted_address);
-         setAddress(results[0].formatted_address);
+          if(status === "OK"){
+            setAddress(results[0].formatted_address);
+
+          }
         });
     }else{
       //console.log("hello Piu");

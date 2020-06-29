@@ -387,6 +387,9 @@ router.post('/saveinvoice', [authMiddleware, [
 			msa_system
 		};
 
+		// console.log(newInvoice);
+		
+
 		const invoice = await InvoiceModel.saveInvoice(newInvoice);
 
 		if (invoice.error) {

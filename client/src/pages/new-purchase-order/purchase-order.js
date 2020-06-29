@@ -65,7 +65,8 @@ const Purchaseorder = (props) => {
     paymenttotalamount: '',
     sendpaymentto: "Phone",
     draft: 0,
-    msa_system: 'SYSTEM 1'
+    msa_system: 'SYSTEM 1',
+    paymentnotes: ''
   };
 
   // Form state
@@ -367,7 +368,7 @@ const Purchaseorder = (props) => {
       authContext.refreshSpinnerLoading(false);
 
       // Reset current form if it is draft
-      if (newData.draft === 1) {
+      if (newData.draft === '1') {
         resetForm();
       }
     } else {
@@ -380,24 +381,31 @@ const Purchaseorder = (props) => {
   }
 
   const saveDraft = (e) => {
-    setNewData({ ...newData, draft: 1});
-    console.log('Save as draft');
-    handleSubmit(e);
+    setNewData({ ...newData, draft: '1'});
+    console.log('Save as draft'+newData.draft);
+    if(newData.draft === '1'){
+      // alert("after check"+newData.draft);
+      handleSubmit(e);
+    }
+   
   }
 
   const resetForm = async () => {
-    authContext.refreshSpinnerLoading(true);
-    if (newData.draft !== 1) {
-      setNewData(initialData);
+    // authContext.refreshSpinnerLoading(true);
+  
+    if (newData.draft !== '1') {
+      // setNewData(initialData);
       setNewData({
-        ...newData,
+        ...initialData,
         invoicenumber: invoice_number
       });
+      
     } else {
+      
       setNewData(initialData);
       invoiceContext.get_invoice_number();
     }
-    authContext.refreshSpinnerLoading(false);
+    // authContext.refreshSpinnerLoading(false);
     console.log('Reset form');
   }
   

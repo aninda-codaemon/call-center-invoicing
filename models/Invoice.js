@@ -148,7 +148,7 @@ Invoice.saveInvoice = async (invoice) => {
           invoice.neutral,          
           invoice.fueltype,
           invoice.paymentnotes,
-          'No',          
+          invoice.draft,          
           invoice.msa_system,
           invoice.sendpaymentto,          
           invoice.user_id,

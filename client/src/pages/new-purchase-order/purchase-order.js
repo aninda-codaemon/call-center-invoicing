@@ -279,8 +279,8 @@ const Purchaseorder = (props) => {
       authContext.refreshSpinnerLoading(true);
       const price = await invoiceContext.get_invoice_price(newData);
       authContext.refreshSpinnerLoading(false);
-      console.log('Price calculation API');
-      console.log(price);
+      //console.log('Price calculation API');
+      //console.log(price);
       if (price.data.errors.length > 0) {
         handleShow(
           price.data.errors.join('\n'),
@@ -304,7 +304,7 @@ const Purchaseorder = (props) => {
       setShowOriginMap(false); 
     } catch (error) {
       console.log('Price error');
-      console.log(error);      
+      //console.log(error);    
     }    
   }
 
@@ -380,18 +380,25 @@ const Purchaseorder = (props) => {
     }
   }
 
+  // const savedAsDraft = async () => {
+
+  // }
+
   const saveDraft = (e) => {
     setNewData({ ...newData, draft: '1'});
-    console.log('Save as draft'+newData.draft);
-    if(newData.draft === '1'){
-      handleSubmit(e);
-    }
-   
+    handleSubmit(e);
+    //console.log('Save as draft'+newData.draft);
+    //callback(e);
+    // if(newData.draft === '1'){
+    //   console.log('Save as draft'+newData.draft);
+    //   alert(newData.draft);
+    //   //handleSubmit(e);
+     
+    // }
   }
 
   const resetForm = async () => {
-    // authContext.refreshSpinnerLoading(true);
-  
+   
     if (newData.draft !== '1') {
       // setNewData(initialData);
       setNewData({
@@ -404,8 +411,7 @@ const Purchaseorder = (props) => {
       setNewData(initialData);
       invoiceContext.get_invoice_number();
     }
-    // authContext.refreshSpinnerLoading(false);
-    console.log('Reset form');
+    //console.log('Reset form');
   }
   
   const { handleChange, values, touched, handleBlur, validator, handleSubmit } = useForm(

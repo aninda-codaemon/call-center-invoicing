@@ -116,122 +116,126 @@ router.post('/pricing', [authMiddleware, [
 	const destination = req.body.daddress.toString() || '';
 	const timestamp = req.body.timestamp;
 	const msa = await InvoiceModel.getMsaFromZip(origin_zipcode);
-
-	if (msa.error) {
-		return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
-	} else {
-		if (msa.result.length > 0) {
-			const msa_price = await InvoiceModel.getPriceForMSA(msa.result[0]['msa_id']);
-			if (msa_price.error) {
-				return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
-			} else {
-				const pricing = msa_price.result[0];
-				const over_miles_price = parseFloat(pricing['per_mile_rate_over_ten_miles'].replace('$', ''));
-				const service_charges = 3.5 / 100;
-				let base_price = 0.00;
-				let net_price = 0.00;
-				let total_price = 0.00;
-				let hour = 0;
-				let min = 0;
-				let night_charges = 0.00;
-
-				// Check local time
-				const local_time = await checkLocalTime(lat, lng);
-
-				if (local_time !== null) {
-					console.log(`Local time is: ${local_time.hour}:${local_time.min}`);
-					hour = parseInt(local_time.hour);
-					min = parseInt(local_time.min);
+	let msa_price ="";
+	
+		if (msa.error) {
+			return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
+		} else {
+			if (msa.result.length > 0){
+				msa_price = await InvoiceModel.getPriceForMSA(msa.result[0]['msa_id']);
+			}
+			else{
+				msa_price = await InvoiceModel.getPriceForMSA(0);
+			}
+			
+				if (msa_price.error) {
+					return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
 				} else {
-					hour = 7;
-					min = 0;
-				}
-
-				// Calculate night time charges
-				if (hour >= 20 && hour <= 23) {
-					night_charges = 9.00;
-				} else if (hour >= 0 && hour < 7) {
-					night_charges = 13.00;
-				} else {
-					night_charges = 0.00;
-				}
-
-				if (service_type === 'Towing') {
-					// Base rate calculation on location timestamp 
-					base_price = parseFloat((parseFloat(pricing['retail_tow_rate'].replace('$', '')) + night_charges).toFixed(2));
-
-					// Calculate the distance
-					distance.key(process.env.GOOGLEAPIKEY);
-					distance.units('imperial');
-					var origins = [origin];
-					var destinations = [destination];
-					
-					distance.matrix(origins, destinations, function (err, distances) {
-							if (!err) {
-								console.log(distances);
-								if (distances.rows[0]['elements'][0].status === 'OK') {
-									let total_miles = parseFloat(distances.rows[0]['elements'][0].distance.text.split(' ')[0].replace(',', ''));
-									console.log('Total Miles', total_miles);
-									// Price calculation
-									if (total_miles > 10) {
-										const chargable_miles = Math.ceil(total_miles - 10);
-										net_price = base_price + (chargable_miles * over_miles_price);
-									} else {
-										net_price = base_price;
-									}
-
-									net_price = parseFloat((net_price + additional_charges).toFixed(2));
-									total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
-
-									return res.status(200).json({
-										errors: [], data: {
-											msg: 'Total price',
-											total_miles,
-											base_price,
-											total_price,
-											net_price,
-											service_charges,
-											system: pricing['system'],
-											night_charges,
-											mileage: Math.ceil(total_miles - 10),
-											mileage_charges: over_miles_price
+					const pricing = msa_price.result[0];
+					const over_miles_price = parseFloat(pricing['per_mile_rate_over_ten_miles'].replace('$', ''));
+					const service_charges = 3.5 / 100;
+					let base_price = 0.00;
+					let net_price = 0.00;
+					let total_price = 0.00;
+					let hour = 0;
+					let min = 0;
+					let night_charges = 0.00;
+	
+					// Check local time
+					const local_time = await checkLocalTime(lat, lng);
+	
+					if (local_time !== null) {
+						console.log(`Local time is: ${local_time.hour}:${local_time.min}`);
+						hour = parseInt(local_time.hour);
+						min = parseInt(local_time.min);
+					} else {
+						hour = 7;
+						min = 0;
+					}
+	
+					// Calculate night time charges
+					if (hour >= 20 && hour <= 23) {
+						night_charges = 9.00;
+					} else if (hour >= 0 && hour < 7) {
+						night_charges = 13.00;
+					} else {
+						night_charges = 0.00;
+					}
+	
+					if (service_type === 'Towing') {
+						// Base rate calculation on location timestamp 
+						base_price = parseFloat((parseFloat(pricing['retail_tow_rate'].replace('$', '')) + night_charges).toFixed(2));
+	
+						// Calculate the distance
+						distance.key(process.env.GOOGLEAPIKEY);
+						distance.units('imperial');
+						var origins = [origin];
+						var destinations = [destination];
+						
+						distance.matrix(origins, destinations, function (err, distances) {
+								if (!err) {
+									console.log(distances);
+									if (distances.rows[0]['elements'][0].status === 'OK') {
+										let total_miles = parseFloat(distances.rows[0]['elements'][0].distance.text.split(' ')[0].replace(',', ''));
+										console.log('Total Miles', total_miles);
+										// Price calculation
+										if (total_miles > 10) {
+											const chargable_miles = Math.ceil(total_miles - 10);
+											net_price = base_price + (chargable_miles * over_miles_price);
+										} else {
+											net_price = base_price;
 										}
-									});
+	
+										net_price = parseFloat((net_price + additional_charges).toFixed(2));
+										total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
+	
+										return res.status(200).json({
+											errors: [], data: {
+												msg: 'Total price',
+												total_miles,
+												base_price,
+												total_price,
+												net_price,
+												service_charges,
+												system: pricing['system'],
+												night_charges,
+												mileage: Math.ceil(total_miles - 10),
+												mileage_charges: over_miles_price
+											}
+										});
+									} else {
+										return res.status(400).json({ errors: [{ msg: 'Distance calculation error' }] });
+									}				
 								} else {
 									return res.status(400).json({ errors: [{ msg: 'Distance calculation error' }] });
-								}				
-							} else {
-								return res.status(400).json({ errors: [{ msg: 'Distance calculation error' }] });
+								}
+						});					
+					} else {
+						// Base rate calculation on location timestamp
+						base_price = parseFloat(pricing['retail_light_service_rate'].replace('$', '')) + night_charges;
+						net_price = base_price;
+	
+						net_price = parseFloat((net_price + additional_charges).toFixed(2));
+						total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
+	
+						return res.status(200).json({
+							errors: [], data: {
+								msg: 'Total price',
+								total_miles: 0,
+								base_price,
+								total_price,
+								net_price,
+								service_charges,
+								system: pricing['system'],
+								night_charges,
+								mileage: parseFloat((total_distance - 10).toFixed(2)),
+								mileage_charges: over_miles_price
 							}
-					});					
-				} else {
-					// Base rate calculation on location timestamp
-					base_price = parseFloat(pricing['retail_light_service_rate'].replace('$', '')) + night_charges;
-					net_price = base_price;
-
-					net_price = parseFloat((net_price + additional_charges).toFixed(2));
-					total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
-
-					return res.status(200).json({
-						errors: [], data: {
-							msg: 'Total price',
-							total_miles: 0,
-							base_price,
-							total_price,
-							net_price,
-							service_charges,
-							system: pricing['system'],
-							night_charges,
-							mileage: parseFloat((total_distance - 10).toFixed(2)),
-							mileage_charges: over_miles_price
-						}
-					});
-				}				
-			}
-		} else {
-			return res.status(400).json({ errors: [{ msg: 'No service for this location' }] });
+						});
+					}				
+				}
 		}
-	}
+	
 });
 
 // @route     GET /api/order/getInvoiceNumber

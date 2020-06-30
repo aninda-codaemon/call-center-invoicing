@@ -72,6 +72,9 @@ const Purchaseorder = (props) => {
   // Form state
   const [newData, setNewData] = useState(initialData);
 
+  // Save For later State(Click on Save for Later)
+  const [saveForLater, setSaveForLater] = useState({status:false, formdata:""});
+
   // Show origin map
   const [showOriginMap, setShowOriginMap] = useState(false);
 
@@ -361,6 +364,7 @@ const Purchaseorder = (props) => {
     console.log("No errors, submit callback called!");
     if (showMap) {
       console.log(newData);
+      setNewData({ ...newData, draft: 0});
       const currentData = newData;
       // invoiceContext.toggle_loader(true);
       authContext.refreshSpinnerLoading(true);
@@ -368,8 +372,10 @@ const Purchaseorder = (props) => {
       authContext.refreshSpinnerLoading(false);
 
       // Reset current form if it is draft
-      if (newData.draft === '1') {
+      if (newData.draft == 1) {
         resetForm();
+        setSaveForLater({...saveForLater,status:false,formdata:""});
+        setNewData({ ...newData, draft: 0});
       }
     } else {
       handleShow(
@@ -380,38 +386,26 @@ const Purchaseorder = (props) => {
     }
   }
 
-  // const savedAsDraft = async () => {
-
-  // }
-
+ 
   const saveDraft = (e) => {
     setNewData({ ...newData, draft: '1'});
-    handleSubmit(e);
-    //console.log('Save as draft'+newData.draft);
-    //callback(e);
-    // if(newData.draft === '1'){
-    //   console.log('Save as draft'+newData.draft);
-    //   alert(newData.draft);
-    //   //handleSubmit(e);
-     
-    // }
+    setSaveForLater({...saveForLater,status:true,formdata:e});
+    console.log('Save as draft'+newData.draft);
+    //handleSubmit(e);
   }
 
+  
+
   const resetForm = async () => {
-   
     if (newData.draft !== '1') {
-      // setNewData(initialData);
       setNewData({
         ...initialData,
         invoicenumber: invoice_number
       });
-      
     } else {
-      
       setNewData(initialData);
       invoiceContext.get_invoice_number();
     }
-    //console.log('Reset form');
   }
   
   const { handleChange, values, touched, handleBlur, validator, handleSubmit } = useForm(
@@ -497,6 +491,13 @@ const Purchaseorder = (props) => {
       );
     }    
   }
+
+  // Save For Later
+  useEffect(() =>{
+    if(newData.draft == '1'){
+      handleSubmit(saveForLater.formdata);
+    }
+  },[saveForLater.status]);
   
   useEffect(() => {
     setSuccessModal(false);
@@ -983,10 +984,10 @@ const Purchaseorder = (props) => {
                       <Button
                         className="draft-btn" 
                         variant="warning" 
-                        type="button"
-                        onClick={saveDraft}
+                         type="button"
+                         onClick={saveDraft}
                       >
-                        save for later
+                        save for later {newData.draft && newData.draft }
                       </Button>
                     </Col>
                     <Col lg={4}>

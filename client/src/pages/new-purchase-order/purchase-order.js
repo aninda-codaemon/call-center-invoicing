@@ -72,8 +72,8 @@ const Purchaseorder = (props) => {
   // Form state
   const [newData, setNewData] = useState(initialData);
 
-  // Save For later State(Click on Save for Later)
-  const [saveForLater, setSaveForLater] = useState({status:false, formdata:""});
+  // Save For Later state
+  const [isDraft, setIsDarft] = useState(false);
 
   // Show origin map
   const [showOriginMap, setShowOriginMap] = useState(false);
@@ -364,18 +364,22 @@ const Purchaseorder = (props) => {
     console.log("No errors, submit callback called!");
     if (showMap) {
       console.log(newData);
-      setNewData({ ...newData, draft: 0});
       const currentData = newData;
       // invoiceContext.toggle_loader(true);
       authContext.refreshSpinnerLoading(true);
-      const invoice_save = await invoiceContext.save_invoice(currentData);
+      let invoice_save = await invoiceContext.save_invoice(currentData);
       authContext.refreshSpinnerLoading(false);
 
       // Reset current form if it is draft
-      if (newData.draft == 1) {
-        resetForm();
-        setSaveForLater({...saveForLater,status:false,formdata:""});
-        setNewData({ ...newData, draft: 0});
+      //console.log("++++++++++++++++++++++++++"+isDraft);
+      if (isDraft === true) {
+        handleShow(
+          "Invoice details successfully saved",
+          "noOne"
+        );
+        // resetForm();
+        setNewData(initialData);
+        invoiceContext.get_invoice_number();
       }
     } else {
       handleShow(
@@ -387,16 +391,18 @@ const Purchaseorder = (props) => {
   }
 
  
-  const saveDraft = (e) => {
+  const saveDraft = async (e) => {
     setNewData({ ...newData, draft: '1'});
-    setSaveForLater({...saveForLater,status:true,formdata:e});
+    setIsDarft(true);
+    //setSaveForLater({...saveForLater,status:true,formdata:e});
     console.log('Save as draft'+newData.draft);
-    //handleSubmit(e);
+     handleSubmit(e);
   }
 
   
 
   const resetForm = async () => {
+    setIsDarft(false);
     if (newData.draft !== '1') {
       setNewData({
         ...initialData,
@@ -452,7 +458,7 @@ const Purchaseorder = (props) => {
 
   const towingSuccessModalClose = () => {
     setSuccessModal(false);
-    props.history.push(`/invoice-overview/${newData.invoicenumber}`);
+      props.history.push(`/invoice-overview/${newData.invoicenumber}`);
   }
   
   // const towingToggle = value => {
@@ -492,15 +498,10 @@ const Purchaseorder = (props) => {
     }    
   }
 
-  // Save For Later
-  useEffect(() =>{
-    if(newData.draft == '1'){
-      handleSubmit(saveForLater.formdata);
-    }
-  },[saveForLater.status]);
   
   useEffect(() => {
     setSuccessModal(false);
+    // setIsDarft(false);
     invoiceContext.toggle_loader(true);
     invoiceContext.get_invoice_number();
   }, []);
@@ -537,6 +538,7 @@ const Purchaseorder = (props) => {
   useEffect( () => () => {
     setNewData(initialData);
     setSuccessModal(false);
+    // setIsDarft(false);
     invoiceContext.clear_invoice_list();
     invoiceContext.clear_success();
     invoiceContext.clear_error(); 
@@ -987,7 +989,7 @@ const Purchaseorder = (props) => {
                          type="button"
                          onClick={saveDraft}
                       >
-                        save for later {newData.draft && newData.draft }
+                        save for later
                       </Button>
                     </Col>
                     <Col lg={4}>
@@ -1062,7 +1064,7 @@ const Purchaseorder = (props) => {
 
       {/* alert for showing success message after invoice is created */}
 
-      <Modal show={successModal} onHide={towingSuccessModalClose} className="error-bg">
+      <Modal show={successModal && !isDraft} onHide={towingSuccessModalClose} className="error-bg">
         {/* <i
           className="fa fa-times-circle close-icon"
           aria-hidden="true"

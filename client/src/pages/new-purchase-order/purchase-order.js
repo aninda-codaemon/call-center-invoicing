@@ -86,33 +86,33 @@ const Purchaseorder = (props) => {
   const handleLocation = ({ description, latlng, place, zip_code }) => {
     console.log('Location Object');
     console.log(description, latlng, place, zip_code);
-
-    if (place === 'origin') {
-      setNewData({
-        ...newData,
-        originaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
-        origin: latlng,
-        ozip: zip_code
-      });
-
-      if (description !== '') {
-        setShowOriginMap(true);        
+      if (place === 'origin') {
+        setNewData({
+          ...newData,
+          originaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
+          origin: latlng,
+          ozip: zip_code
+        });
+  
+        if (description !== '') {
+          setShowOriginMap(true);        
+        } else {
+          setShowOriginMap(false);
+        }
+        setShowMap(false);
+        setCalculateCostDisable(true);     
       } else {
-        setShowOriginMap(false);
-      }
-      setShowMap(false);
-      setCalculateCostDisable(true);     
-    } else {
-      setNewData({
-        ...newData,
-        destinationaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
-        destination: latlng,
-        dzip: zip_code
-      });
-      // setShowOriginMap(false);
-      setShowMap(false);
-      setCalculateCostDisable(true);
-    }    
+        setNewData({
+          ...newData,
+          destinationaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
+          destination: latlng,
+          dzip: zip_code
+        });
+        // setShowOriginMap(false);
+        setShowMap(false);
+        setCalculateCostDisable(true);
+      }    
+    
   }
 
   // Calculate cost button enable/disable toggle
@@ -348,20 +348,26 @@ const Purchaseorder = (props) => {
     console.log(newData.servicetype); // === "Towing"
     const origin_address = newData.originaddress;    
     let render_url = "";
-    render_url = `https://www.google.com/maps/embed/v1/place?q=${encodeURI(origin_address)}&key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M`;
-    console.log('Render url: ', render_url);
-
-    return (
-      <Iframe
-        width="100%"
-        height="600"
-        id="route_map"
-        className="map-container"
-        display="initial"
-        frameBorder="0"
-        url={render_url}
-        />
-    );
+    if(newData.originaddress){
+      render_url = `https://www.google.com/maps/embed/v1/place?q=${encodeURI(origin_address)}&key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M`;
+      console.log('Render url: ', render_url);
+    }else{
+      render_url = "";
+    }
+   
+    if(newData.originaddress){
+        return (
+          <Iframe
+            width="100%"
+            height="600"
+            id="route_map"
+            className="map-container"
+            display="initial"
+            frameBorder="0"
+            url={render_url}
+            />
+        );
+      }
   }
 
   const createInvoice = async () => {
@@ -382,7 +388,6 @@ const Purchaseorder = (props) => {
         );
         // resetForm();
         setNewData(initialData);
-        setNewData({ ...newData, originaddress: ""});
         invoiceContext.get_invoice_number();
       }
       }catch (error) {
@@ -580,7 +585,7 @@ const Purchaseorder = (props) => {
                   />
                 </div>
                 <div className="info-area">
-                  <h2>Caller Info{isClicked === true && "hii"}</h2>
+                  <h2>Caller Info</h2>
                   <Row>
                     <Col sm={6} lg={4}>
                       <Input

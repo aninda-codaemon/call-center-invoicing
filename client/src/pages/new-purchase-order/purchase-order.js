@@ -74,7 +74,7 @@ const Purchaseorder = (props) => {
   // Form state
   const [newData, setNewData] = useState(initialData);
 
-  // Save For Later state
+  // Save For Later state and Send Payment Link 
   const [isDraft, setIsDarft] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
   const [formData, setFormData] = useState(null);
@@ -502,7 +502,7 @@ const Purchaseorder = (props) => {
     }    
   }
 
-  // Save data when click on Payment Link and Save for Later
+  // Save data when click on Send Payment Link and Save for Later
   useEffect(() => {
     if(formData !==null && isClicked === true){
       handleSubmit(formData);

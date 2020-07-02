@@ -28,24 +28,34 @@ const Invoiceform = (props) => {
   const [submitLinkLoading, setSubmitLinkLoading] = useState(linkloading);  
 
 
-  // modal state
+  // Error modal  state
   const initModalData = {
     isShown: false,
     text: "",
     id: ""
   };
-  
-  const [modal, setModal] = useState(initModalData);
 
-  // modal handler
+  // success modal  state
+  const initSuccessModalData = {
+    isShow: false,
+    msg: "",
+    id: ""
+  };
+  
+   // Successful modal
+   const [successModal, setSuccessModal] = useState(initSuccessModalData);
+   const handleShowSuccess = (msg, id) => setSuccessModal({ ...successModal, isShow: true, msg, id });
+
+  //Error modal handler
+  const [modal, setModal] = useState(initModalData);
   const handleClose = () => {
       setModal(initModalData);
       invoiceContext.clear_error(); 
   };
-
-  // Successful modal
-  const [successModal, setSuccessModal] = useState(false);
   const handleShow = (text, id) => setModal({ ...modal, isShown: true, text, id });
+  
+ 
+  
 
   const handleChange = (e) => {
     setInvoiceData({...invoiceData, [e.target.name]: e.target.value });
@@ -59,6 +69,10 @@ const Invoiceform = (props) => {
     const invoice_submit = await invoiceContext.update_invoice(invoiceData);
     authContext.refreshSpinnerLoading(false);
     // alert('Invoice has been updated!');
+    handleShowSuccess(
+      "Invoice has been updated!",
+      "great"
+    );
   };
 
   const handleResendLink = async (e) => {
@@ -90,6 +104,10 @@ const Invoiceform = (props) => {
       });
       authContext.refreshSpinnerLoading(false);
       //alert('Invoice receipt has been sent!');
+      handleShowSuccess(
+        "Invoice receipt has been sent!",
+        "great"
+      );
     } else {
       //alert('The customer has not paid for the service!');
       handleShow(
@@ -101,13 +119,20 @@ const Invoiceform = (props) => {
 
 
   const towingSuccessModalClose = () => {
-    setSuccessModal(false);
+    setSuccessModal(initSuccessModalData);
     invoiceContext.clear_success();
   }
 
   const showSuccess = () => {
     if (success !== null) {
-      setSuccessModal(true);
+      const msg = success.map(suc => {
+        return suc.msg;
+      });
+      handleShowSuccess(
+        msg.join('<br/>'),
+        "great"
+      );
+        
     }    
   }
 
@@ -598,6 +623,8 @@ const Invoiceform = (props) => {
             </div>
           </form>
 
+
+          {/* Error Modal */}
           <Modal show={modal.isShown} onHide={handleClose} className="error-bg">
           <i
           className="fa fa-times-circle close-icon"
@@ -606,16 +633,17 @@ const Invoiceform = (props) => {
         ></i>
         <Modal.Body className="text-center">{modal.text}</Modal.Body>
       </Modal>
-      <Modal show={successModal} onHide={towingSuccessModalClose} className="error-bg">
+
+      {/* Success Modal */}
+      <Modal show={successModal.isShow} onHide={towingSuccessModalClose} className="error-bg">
+        <i
+          className="fa fa-times-circle close-icon"
+          aria-hidden="true"
+          onClick={towingSuccessModalClose}
+        ></i>
         <Modal.Body className="text-center">
-          {/* <p>Invoice receipt has been sent!</p> */}
-          <p>Invoice has been updated!</p>
+          <p>{successModal.msg}</p>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" size="sm" onClick={towingSuccessModalClose}>
-            Close
-          </Button>
-        </Modal.Footer>
       </Modal>
         </section>
       );

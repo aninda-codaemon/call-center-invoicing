@@ -148,7 +148,7 @@ Invoice.saveInvoice = async (invoice) => {
           invoice.neutral,          
           invoice.fueltype,
           invoice.paymentnotes,
-          'No',          
+          invoice.draft,          
           invoice.msa_system,
           invoice.sendpaymentto,          
           invoice.user_id,
@@ -236,7 +236,7 @@ Invoice.getInvoiceByInvoiceId = async (invoice_number) => {
   let response = {};
   try {
     const [result, fields] = await pool.query(`SELECT * FROM user_invoice WHERE invoice_id=?`, [invoice_number]);
-    console.log(result);
+    //console.log(result);
     response.result = result;
     return response;
   } catch (error) {
@@ -250,7 +250,7 @@ Invoice.getSortedInvoices = async (sqlQuery) => {
   let response = {};
   try {
     const [result, fields] = await pool.query(sqlQuery);
-    console.log(result);
+    //console.log(result);
     response.result = result;
     return response;
   } catch (error) {
@@ -264,7 +264,7 @@ Invoice.getAllInvoice = async (user_id) => {
   let response = {};
   try {
     const [result, fields] = await pool.query('SELECT * FROM `user_invoice` WHERE user_id=? ORDER BY invoice_id ASC', [user_id]);
-    console.log(result);
+    //console.log(result);
     response.result = result;
     return response;
   } catch (error) {
@@ -279,7 +279,75 @@ Invoice.updateInvoicePaymentStatus = async (updateInvoice) => {
   let response = {};
   try {
     const [result, fields] = await pool.query('UPDATE user_invoice SET status = ?,date_payment = NOW() WHERE invoice_id =?', [updateInvoice.status, updateInvoice.invoice_id]);
-    console.log(result);
+    //console.log(result);
+    response.result = result;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
+// Check  current call is Google Addword or not
+Invoice.checkCurrentCallAddword = async (phone_number) => {
+  let response = {};
+  try {
+    const [result, fields] = await pool.query('SELECT `tracking_number` FROM `ctm_call_metrics` WHERE  tracking_number=?',[phone_number]);
+    //console.log("tracking number"+result);
+    response.result = result;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
+// get all CTM  Google addword data those are not pay
+Invoice.getCtmPaymentStatus = async () => {
+  let response = {};
+  try {
+    const [result, fields] = await pool.query('SELECT `id` FROM `ctm_call_metrics` WHERE call_status=? AND is_add_word=? ORDER BY id DESC',['0',1]);
+    // console.log("something"+result);
+    response.result = result;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
+// Update Payment Status those are CTM Google addword data
+Invoice.ctmInvoiceUpdate = async (call_id,invoicenumber,payment_status) => {
+  let response = {};
+  let query_result = "";
+  try {
+    if(payment_status === '1')
+    {
+      query_result = await pool.query(`UPDATE ctm_call_metrics SET invoice_id = ?, call_status = ?, datetime_processed = NOW() WHERE id IN (${call_id})`, [invoicenumber,payment_status]);
+    }else{
+      query_result = await pool.query('UPDATE ctm_call_metrics SET call_status = ? datetime_processed = NOW()  WHERE invoice_id = ?', [payment_status,invoicenumber]);
+    }
+    const [result, fields] = query_result;
+   // console.log(result);
+    response.result = result;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
+
+//After payment Check Invoice Id is CTM Google Addword or not
+Invoice.checkInvoiceIdGoogleAddWord = async (invoice_id) => {
+  let response = {};
+  try {
+    const [result, fields] = await pool.query('SELECT `invoice_id` FROM `ctm_call_metrics` WHERE  invoice_id=?',[invoice_id]);
+    //console.log("tracking number"+result);
     response.result = result;
     return response;
   } catch (error) {

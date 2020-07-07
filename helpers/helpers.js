@@ -686,14 +686,14 @@ const callDispatcherAPI = async (invoice_id) => {
 
 
 // CTM API authentication token get
-const callCtmAuthApi = async () => {
+const callCtmAuthApi = async (search_flag) => {
   const apiAuthUrl = `${CTMAPIURL}authentication?user=${CTMUSER}&password=${CTMUSERPASS}`;
   try {
     console.log("CTM API call");
     let response = await request.post(apiAuthUrl);
     response = JSON.parse(response);
     if (response.success == true) {
-      callCtmApiCallsData(response.token, response.first_account.id);
+      callCtmApiCallsData(response.token, response.first_account.id,search_flag);
     } else {
       return null;
     }
@@ -704,8 +704,13 @@ const callCtmAuthApi = async () => {
 };
 
 // CTM API call data pull
-const callCtmApiCallsData = async (token, account) => {
-  const apiCallsUrl = `${CTMAPIURL}accounts/${account}/calls?per_page=100`;
+const callCtmApiCallsData = async (token, account,search_flag) => {
+  let apiCallsUrl = "";
+  if (search_flag === "search_activities") {
+    apiCallsUrl = `${CTMAPIURL}accounts/${account}/calls/search.json?time_duration=last1hours`;
+  } else {
+    apiCallsUrl = `${CTMAPIURL}accounts/${account}/calls?per_page=100`;
+  }
   const headers = { headers: { Authorization: "Token " + token } };
 
   try {

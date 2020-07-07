@@ -35,12 +35,12 @@ if (process.env.PLATENV === 'production') {
 }
 
 // Cron schedular for API data pull
-schedule.scheduleJob({ rule: '*/30' }, function(){
-  callCtmAuthApi();
+schedule.scheduleJob({ rule: '*/1' }, function(){
+  callCtmAuthApi("");
 });
 
 // Cron schedular for CTM table local data update
-schedule.scheduleJob({ rule: '*/60' }, function(){
+schedule.scheduleJob({ rule: '*/1' }, function(){
   updateOnHoldCtmRecords();
 });
 

@@ -16,7 +16,8 @@ const {
 	resendPaymentLinkEmail,
 	sendPaymentConfirmationEmail,
 	sendPaymentConfirmationSMS,
-	callDispatcherAPI 
+	callDispatcherAPI,
+	callCtmAuthApi
 } = require('../helpers/helpers');
 
 const authMiddleware = require('../middleware/auth');
@@ -116,7 +117,10 @@ router.post('/pricing', [authMiddleware, [
 	const destination = req.body.daddress.toString() || '';
 	const timestamp = req.body.timestamp;
 	const msa = await InvoiceModel.getMsaFromZip(origin_zipcode);
+	const mobile_number = req.body.phone || '';
 	let msa_price ="";
+	let ctm_call_id = "";
+	let ctm_call_price = 0.00;
 	
 		if (msa.error) {
 			return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
@@ -127,6 +131,35 @@ router.post('/pricing', [authMiddleware, [
 			else{
 				msa_price = await InvoiceModel.getPriceForMSA(0);
 			}
+
+				
+
+				//Fetch Last 1 hour CTM Call Data and insert into db
+				const ctm_flag = "search_activities";
+				callCtmAuthApi(ctm_flag);
+				
+				// Check  current call is Google Addword or not
+				let is_current_call_addword = await InvoiceModel.checkCurrentCallAddword(mobile_number);
+				if(is_current_call_addword.result.length > 0){
+				// get all CTM  Google addword data those are not pay
+				let call_payment_status = await InvoiceModel.getCtmPaymentStatus();
+					if(call_payment_status.result.length > 0){
+						let no_of_records_array = [];
+						call_payment_status.result.forEach(function(value,index) {
+							no_of_records_array.push(value['id']);
+						});
+						//console.log("elem "+no_of_records_array);
+						ctm_call_id = no_of_records_array;
+						let total_record = parseInt(call_payment_status.result.length);
+						let per_record_price = 3.00;
+						ctm_call_price = parseFloat(total_record * per_record_price);
+					}
+
+					//console.log(call_payment_status.result.length+"///"+ctm_call_price+"////");
+				}
+				
+				
+				
 			
 				if (msa_price.error) {
 					return res.status(500).json({ errors: [{ msg: 'Internal server error!' }] });
@@ -186,7 +219,7 @@ router.post('/pricing', [authMiddleware, [
 											net_price = base_price;
 										}
 	
-										net_price = parseFloat((net_price + additional_charges).toFixed(2));
+										net_price = parseFloat((net_price + additional_charges + ctm_call_price).toFixed(2));
 										total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
 	
 										return res.status(200).json({
@@ -196,6 +229,7 @@ router.post('/pricing', [authMiddleware, [
 												base_price,
 												total_price,
 												net_price,
+												ctm_call_id,
 												service_charges,
 												system: pricing['system'],
 												night_charges,
@@ -215,9 +249,10 @@ router.post('/pricing', [authMiddleware, [
 						base_price = parseFloat(pricing['retail_light_service_rate'].replace('$', '')) + night_charges;
 						net_price = base_price;
 	
-						net_price = parseFloat((net_price + additional_charges).toFixed(2));
+						net_price = parseFloat((net_price + additional_charges + ctm_call_price).toFixed(2));
 						total_price = parseFloat((net_price + (net_price * service_charges)).toFixed(2));
-	
+						// console.log("CTM PRICE"+ ctm_price +"======"+net_price);
+						
 						return res.status(200).json({
 							errors: [], data: {
 								msg: 'Total price',
@@ -225,6 +260,7 @@ router.post('/pricing', [authMiddleware, [
 								base_price,
 								total_price,
 								net_price,
+								ctm_call_id,
 								service_charges,
 								system: pricing['system'],
 								night_charges,
@@ -343,7 +379,8 @@ router.post('/saveinvoice', [authMiddleware, [
 		sendpaymentto,
 		servicetype,
 		tmiles,
-		msa_system
+		msa_system,
+		ctm_call_id
 	} = req.body;
 
 	const response = await InvoiceModel.getInvoiceById(invoicenumber);
@@ -388,7 +425,8 @@ router.post('/saveinvoice', [authMiddleware, [
 			servicetype,
 			tmiles,
 			user_id,
-			msa_system
+			msa_system,
+			ctm_call_id
 		};
 
 		// console.log(newInvoice);
@@ -404,6 +442,13 @@ router.post('/saveinvoice', [authMiddleware, [
 			if (draft === '1') {
 				return res.status(200).json({ errors: [], data: { msg: 'Invoice details successfully saved', invoice: invoice_number } });
 			} else {
+
+				// Update Payment Status 1 ctm call 
+				if(ctm_call_id !==""){
+					let payment_status = '1';
+					await InvoiceModel.ctmInvoiceUpdate(ctm_call_id,invoicenumber,payment_status);
+				}
+
 				if (sendpaymentto === 'Phone') {
 					// SMS send process here
 					const isSend = await sendPaymentLinkSMS(invoicenumber);

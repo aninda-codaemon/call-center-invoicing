@@ -143,4 +143,41 @@ User.getSortedUsers = async (sqlQuery) => {
   }
 };
 
+// Duplicate Checking
+User.getApiData = async (tracking_number_id) => {
+  let response = {};
+  try {
+    const [
+      result,
+      fields,
+    ] = await pool.query(
+      "SELECT id, tracking_number_id FROM `ctm_call_metrics` WHERE tracking_number_id=? ORDER BY tracking_number_id ASC",
+      [tracking_number_id]
+    );
+    response.result = result;
+    return response;
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+};
+
+// CTM User Data Save
+User.saveApiData = async (apiData) => {
+  let response = {};
+  try {
+    apiData.forEach(async element => {
+      const [result, fields] = await pool.query('INSERT INTO `ctm_call_metrics` SET account_id=?, caller_id=?, tracking_number_id=?, tracking_number=?, is_add_word=?, api_full_response=?, datetime_pull= NOW()', [element.account_id, element.caller_id, element.tracking_number_id, element.tracking_number, element.is_add_word, element.api_full_response]);
+      //console.log(element.tracking_number);
+    }) 
+    //console.log(apiData);
+  } catch (error) {
+    console.log(`Error: ${error.sqlMessage}`);
+    response.error = error.sqlMessage;
+    return response;
+  }
+ //console.log(Object.keys(apiData).length);
+};
+
 module.exports = User;

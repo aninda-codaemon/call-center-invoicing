@@ -68,7 +68,8 @@ const Purchaseorder = (props) => {
     sendpaymentto: "Phone",
     draft: 0,
     msa_system: 'SYSTEM 1',
-    paymentnotes: ''
+    paymentnotes: '',
+    ctm_call_id: ''
   };
 
   // Form state
@@ -124,7 +125,7 @@ const Purchaseorder = (props) => {
   // Check conditions to check if calculate cost button should be enabled or disabled
   const checkCalculateCostBtnStatus = () => {
     console.log('Check btn status');
-    if (newData.servicetype !== '' && newData.originaddress !== ''  && newData.pickuplocation !== '') {
+    if (newData.servicetype !== '' && newData.originaddress !== ''  && newData.pickuplocation !== '' && newData.phone !== '') {
       if (newData.anyonewithvehicle === 'Yes' && newData.keysforvehicle !== '') {
         if (newData.servicetype === 'Towing') {
           if (newData.problemtype !== '' && newData.neutral !== '' && newData.destinationaddress !== '' && newData.fourwheelsturn === 'Yes') {
@@ -296,7 +297,7 @@ const Purchaseorder = (props) => {
         setShowMap(false);
         return false;
       } else {
-        const { total_miles, base_price, total_price, net_price, system } = price.data.data;
+        const { total_miles, base_price, total_price, net_price, system, ctm_call_id } = price.data.data;
         setNewData({
           ...newData,
           tmiles: total_miles,
@@ -304,7 +305,8 @@ const Purchaseorder = (props) => {
           calculatedcost: net_price,
           paymentamount: net_price,
           paymenttotalamount: total_price,
-          msa_system: system
+          msa_system: system,
+          ctm_call_id: ctm_call_id
         });
         setShowMap(true);
       }
@@ -941,7 +943,8 @@ const Purchaseorder = (props) => {
                       {validator.message("paymenttotalamount", newData.paymenttotalamount, "required", {messages: {required: 'Total amount field is required'}} )}
                       {touched.paymenttotalamount && validator.errorMessages.paymenttotalamount && (
                         <p className="error-text">{validator.errorMessages.paymenttotalamount}</p>
-                      )}                    
+                      )}
+                      <input type="hidden" value={newData.ctm_call_id} name="ctm_call_id" />                 
                     </Col>
                   </Row>
                   <div className="form-group">

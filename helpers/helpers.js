@@ -28,7 +28,7 @@ const sendSMS = async (message, receiver = "+919874259153") => {
     const sms_response = await twilio.messages.create({
       body: msg_body,
       from: msg_sender,
-      to: msg_receiver
+      to: msg_receiver,
     });
     console.log("SMS Sent");
     return sms_response ? true : false;
@@ -39,7 +39,7 @@ const sendSMS = async (message, receiver = "+919874259153") => {
   }
 };
 
-const sendPaymentLinkSMS = async invoice_id => {
+const sendPaymentLinkSMS = async (invoice_id) => {
   const InvoiceModel = require("../models/Invoice");
 
   try {
@@ -68,7 +68,7 @@ const sendPaymentLinkSMS = async invoice_id => {
           start_address,
           end_address,
           amount,
-          date_payment
+          date_payment,
         } = info.result[0];
         const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoice_id}`;
         const sms_content = `
@@ -94,7 +94,7 @@ const sendEmail = async (
     from: "no-reply@roadsideassistanceltd.com",
     subject: mail_subject,
     text: mail_text,
-    html: mail_message
+    html: mail_message,
   };
 
   try {
@@ -108,7 +108,7 @@ const sendEmail = async (
   }
 };
 
-const sendPaymentConfirmationEmail = async invoice_id => {
+const sendPaymentConfirmationEmail = async (invoice_id) => {
   const InvoiceModel = require("../models/Invoice");
 
   try {
@@ -137,7 +137,7 @@ const sendPaymentConfirmationEmail = async invoice_id => {
           start_address,
           end_address,
           amount,
-          date_payment
+          date_payment,
         } = info.result[0];
         const date_paid =
           moment(date_payment).format("ddd MMM D YYYY kk:mm:ss") +
@@ -216,7 +216,7 @@ const sendPaymentConfirmationEmail = async invoice_id => {
   }
 };
 
-const sendPaymentConfirmationSMS = async invoice_id => {
+const sendPaymentConfirmationSMS = async (invoice_id) => {
   const InvoiceModel = require("../models/Invoice");
 
   try {
@@ -245,7 +245,7 @@ const sendPaymentConfirmationSMS = async invoice_id => {
           start_address,
           end_address,
           amount,
-          date_payment
+          date_payment,
         } = info.result[0];
         const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoice_id}`;
         const sms_content = `
@@ -259,7 +259,7 @@ const sendPaymentConfirmationSMS = async invoice_id => {
   }
 };
 
-const sendPaymentLinkEmail = async invoice_id => {
+const sendPaymentLinkEmail = async (invoice_id) => {
   const InvoiceModel = require("../models/Invoice");
 
   try {
@@ -288,7 +288,7 @@ const sendPaymentLinkEmail = async invoice_id => {
           start_address,
           end_address,
           amount,
-          date_payment
+          date_payment,
         } = info.result[0];
         const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoice_id}`;
         const mail_subject = "Payment Link For Roadside Assistance";
@@ -348,7 +348,7 @@ const sendPaymentLinkEmail = async invoice_id => {
   }
 };
 
-const resendPaymentLinkEmail = async invoice_id => {
+const resendPaymentLinkEmail = async (invoice_id) => {
   const InvoiceModel = require("../models/Invoice");
 
   try {
@@ -377,7 +377,7 @@ const resendPaymentLinkEmail = async invoice_id => {
           start_address,
           end_address,
           amount,
-          date_payment
+          date_payment,
         } = info.result[0];
         const paymentUrl = `${process.env.PAYMENTLINK}payment/${invoice_id}`;
         const mail_subject = "Payment Link For Roadside Assistance";
@@ -462,7 +462,7 @@ const checkLocalTime = async (lat, lng) => {
       );
       return {
         hour: localdate.getHours(),
-        min: localdate.getMinutes()
+        min: localdate.getMinutes(),
       };
     } else {
       return null;
@@ -497,7 +497,7 @@ const calculateDistance = async (origin, destination) => {
   }
 };
 
-const callDispatcherAPI = async invoice_id => {
+const callDispatcherAPI = async (invoice_id) => {
   // Get invoice info
   const invoice_info = await InvoiceModel.getInvoiceByInvoiceId(invoice_id);
 
@@ -511,7 +511,7 @@ const callDispatcherAPI = async invoice_id => {
   const callerObject = {
     firstName: caller_info.result[0]["first_name"], // (string),
     lastName: caller_info.result[0]["last_name"], // (string),
-    phone1: caller_info.result[0]["contact_no"] // (string),
+    phone1: caller_info.result[0]["contact_no"], // (string),
   };
 
   // Customer Object
@@ -527,7 +527,7 @@ const callDispatcherAPI = async invoice_id => {
     zipCode: "", // (string),
     country: "", // (string, optional),
     phone: invoice_info.result[0]["phone_number"], // (string, optional),
-    statusCode: "N" // (string): Get it from "Customer Status" lookup ,
+    statusCode: "N", // (string): Get it from "Customer Status" lookup ,
     // effectiveDate:  (string, optional): Format: MM/dd/yyyy ,
     // expirationDate (string, optional): Format: MM/dd/yyyy
   };
@@ -544,7 +544,7 @@ const callDispatcherAPI = async invoice_id => {
     weight: 0, // (number, optional),
     currentMileage: 1, // (integer),
     effectiveMileage: "", // (string, optional),
-    expirationMileage: "" // (string, optional)
+    expirationMileage: "", // (string, optional)
   };
 
   // Services Object
@@ -585,7 +585,7 @@ const callDispatcherAPI = async invoice_id => {
         16,
         17,
         18,
-        19
+        19,
       ];
       break;
     case "Tire Change":
@@ -608,7 +608,7 @@ const callDispatcherAPI = async invoice_id => {
     distanceFromRoad: 0, // (number, optional): Only for "Winching" Service ,
     stuckUnit: 0, // (integer, optional): Only for "Winching" Service. Code obtained from "Vehicle Stuck Units" lookup ,
     stuckIn: 0, // (integer, optional): Only for "Winching" Service. Code obtained from "Vehicle Stuck Options" lookup ,
-    stuckDeep: 0 // (number, optional): Only for "Winching" Service.
+    stuckDeep: 0, // (number, optional): Only for "Winching" Service.
   };
 
   // Breakdown Object
@@ -621,7 +621,7 @@ const callDispatcherAPI = async invoice_id => {
     zipCode: invoice_info.result[0]["origin_zipcode"], // (string),
     country: "US", // (string),
     latitude: parseFloat(origin_location[0]), // (number),
-    longitude: parseFloat(origin_location[1]) // (number)
+    longitude: parseFloat(origin_location[1]), // (number)
   };
 
   // Breakdown Location Object
@@ -645,7 +645,7 @@ const callDispatcherAPI = async invoice_id => {
     type: bdloType, // (string, optional): Code obtained from "Location Types" lookup (level1) ,
     spec1: "", // (string, optional): Code obtained from "Location Types" lookup (level2) ,
     spec2: "", // (string, optional): Code obtained from "Location Types" lookup (level3) ,
-    additionalInfo: invoice_info.result[0]["notes"] // (string, optional): Any additional information.
+    additionalInfo: invoice_info.result[0]["notes"], // (string, optional): Any additional information.
   };
 
   // Destination Object
@@ -662,7 +662,7 @@ const callDispatcherAPI = async invoice_id => {
     zipCode: invoice_info.result[0]["destination_zipcode"], // (string),
     country: "US", // (string),
     latitude: parseFloat(destination_location[0]), // (number),
-    longitude: parseFloat(destination_location[1]) // (number)
+    longitude: parseFloat(destination_location[1]), // (number)
   };
 
   // Call the dispatcher API
@@ -678,24 +678,22 @@ const callDispatcherAPI = async invoice_id => {
     services: servicesObject, // (Array[service]),
     breakdownAddress: breakdownObject, // (breakdownAddress),
     breakdownLocationInfo: breakdownLocationObject, // (breakdownLocationInfo, optional),
-    destinationAddress: destinationObject // (destinationAddress, optional): Only required when "Tow" Service is requested.
+    destinationAddress: destinationObject, // (destinationAddress, optional): Only required when "Tow" Service is requested.
   };
 
   return dispatchObject;
 };
 
-const callCtmAuthApi = async search_flag => {
+
+// CTM API authentication token get
+const callCtmAuthApi = async (search_flag) => {
   const apiAuthUrl = `${CTMAPIURL}authentication?user=${CTMUSER}&password=${CTMUSERPASS}`;
   try {
     console.log("CTM API call");
     let response = await request.post(apiAuthUrl);
     response = JSON.parse(response);
     if (response.success == true) {
-      callCtmApiCallsData(
-        response.token,
-        response.first_account.id,
-        search_flag
-      );
+      callCtmApiCallsData(response.token, response.first_account.id,search_flag);
     } else {
       return null;
     }
@@ -705,7 +703,8 @@ const callCtmAuthApi = async search_flag => {
   }
 };
 
-const callCtmApiCallsData = async (token, account, search_flag) => {
+// CTM API call data pull
+const callCtmApiCallsData = async (token, account,search_flag) => {
   let apiCallsUrl = "";
   if (search_flag === "search_activities") {
     apiCallsUrl = `${CTMAPIURL}accounts/${account}/calls/search.json?time_duration=last1hours`;
@@ -718,10 +717,7 @@ const callCtmApiCallsData = async (token, account, search_flag) => {
     console.log("CTM Call Data API call");
     let response = await request.get(apiCallsUrl, headers);
     response = JSON.parse(response);
-    //console.log('Response');
-    //console.log(response);
     if (response.per_page !== 0) {
-      //console.log(response);
       callCtmApiSaveData(response.calls);
     } else {
       return null;
@@ -732,32 +728,28 @@ const callCtmApiCallsData = async (token, account, search_flag) => {
   }
 };
 
-const callCtmApiSaveData = async responseData => {
+// CTM API call data save on local CTM table
+const callCtmApiSaveData = async (responseData) => {
   try {
-    responseData.forEach(async function(element) {
+    responseData.forEach(async function (element) {
       if (element.call_path) {
-        element.call_path.forEach(async function(addData) {
+        element.call_path.forEach(async function (addData) {
           if (addData.route_name === "Google Ads") {
             let dataObject = [
               {
-                account_id: element.account_id, // (string, optional),
-                caller_id: element.account_id, // (string, optional),
-                tracking_number_id: element.tracking_number_id, // (string),
-                tracking_number: element.caller_number_bare, // (string),
+                account_id: element.account_id,
+                caller_id: element.account_id,
+                tracking_number_id: element.tracking_number_id,
+                tracking_number: element.caller_number_bare,
                 is_add_word: 1,
-                api_full_response: JSON.stringify(element) // (string),
-                //datetime_pull: Date.now()
-              }
+                api_full_response: JSON.stringify(element),
+              },
             ];
-           
             const getResponse = await UserModel.getApiData(
               element.tracking_number_id
             );
-            //console.log(getResponse);
             if (getResponse.error) {
-              //console.log("Error in response!");
             } else if (getResponse.result && getResponse.result.length > 0) {
-              //console.log("Tracking id is already exists!");
             } else {
               await UserModel.saveApiData(dataObject);
             }
@@ -765,11 +757,22 @@ const callCtmApiSaveData = async responseData => {
         });
       }
     });
-
-    console.log("Done!");
+    console.log("CTM API Call Done!");
   } catch (error) {
     console.log(error);
   }
+};
+
+// Update old/onhold CTM table data by CRON schedular
+const updateOnHoldCtmRecords = async () => {
+  try {
+    const getResponse = await UserModel.getOnHoldApiData();
+    if (getResponse.result.length > 0) {
+      getResponse.result.forEach(async function (items) {
+        await UserModel.updateOnHoldApiData(items["id"]);
+      });
+    }
+  } catch (error) { }
 };
 
 module.exports = {
@@ -783,5 +786,6 @@ module.exports = {
   resendPaymentLinkEmail,
   sendPaymentLinkSMS,
   callDispatcherAPI,
-  callCtmAuthApi
+  callCtmAuthApi,
+  updateOnHoldCtmRecords,
 };

@@ -1,14 +1,11 @@
-const schedule = require('node-schedule');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const helmet = require('helmet');
+var schedule = require('node-schedule');
 
-const { 
-	callCtmAuthApi
-} = require('./helpers/helpers');
-
+const { callCtmAuthApi, updateOnHoldCtmRecords } = require('./helpers/helpers');
 
 const app = express();
 
@@ -37,23 +34,15 @@ if (process.env.PLATENV === 'production') {
   });
 }
 
-// var rule = new schedule.RecurrenceRule();
-// rule.minute = 1;
- 
-// schedule.scheduleJob(rule, function(){
-//   console.log('The answer to life, the universe, and everything!');
-// });
+// Cron schedular for API data pull
+schedule.scheduleJob({ rule: '*/1' }, function(){
+  callCtmAuthApi("");
+});
 
-//let startTime = new Date(Date.now() + 5000);
-//let endTime = new Date(startTime.getTime() + 5000);
-
-// schedule.scheduleJob({ rule: '*/1 * * * *' }, function(){
-//   callCtmAuthApi("");
-// });
-
-// schedule.scheduleJob('1 * * * *', function(){
-//   console.log('The answer to life, the universe, and everything!');
-// });
+// Cron schedular for CTM table local data update
+schedule.scheduleJob({ rule: '*/1' }, function(){
+  updateOnHoldCtmRecords();
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

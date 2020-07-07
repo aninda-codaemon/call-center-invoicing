@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import ContentLoader, { Code, Facebook } from 'react-content-loader';
 
 import "./invoice-overview.scss";
-import { Row, Col, Button, Spinner } from "react-bootstrap";
+import { Row, Col, Button, Modal, Spinner } from "react-bootstrap";
 import Input from "../../components/input/input";
 import SelectOption from "../../components/select-option/select-option";
 import {
@@ -16,6 +16,7 @@ import {
 
 import AuthContext from '../../context/auth/authContext';
 import InvoiceContext from '../../context/invoice/invoiceContext';
+import NumberInput from '../../components/input/numberInput';
 
 const Invoiceform = (props) => {
   const authContext = useContext(AuthContext);
@@ -25,6 +26,36 @@ const Invoiceform = (props) => {
   const [invoiceData, setInvoiceData] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(loading);
   const [submitLinkLoading, setSubmitLinkLoading] = useState(linkloading);  
+
+
+  // Error modal  state
+  const initModalData = {
+    isShown: false,
+    text: "",
+    id: ""
+  };
+
+  // success modal  state
+  const initSuccessModalData = {
+    isShow: false,
+    msg: "",
+    id: ""
+  };
+  
+   // Successful modal
+   const [successModal, setSuccessModal] = useState(initSuccessModalData);
+   const handleShowSuccess = (msg, id) => setSuccessModal({ ...successModal, isShow: true, msg, id });
+
+  //Error modal handler
+  const [modal, setModal] = useState(initModalData);
+  const handleClose = () => {
+      setModal(initModalData);
+      invoiceContext.clear_error(); 
+  };
+  const handleShow = (text, id) => setModal({ ...modal, isShown: true, text, id });
+  
+ 
+  
 
   const handleChange = (e) => {
     setInvoiceData({...invoiceData, [e.target.name]: e.target.value });
@@ -37,7 +68,11 @@ const Invoiceform = (props) => {
     // invoiceContext.toggle_loader(true);
     const invoice_submit = await invoiceContext.update_invoice(invoiceData);
     authContext.refreshSpinnerLoading(false);
-    alert('Invoice has been updated!');
+    // alert('Invoice has been updated!');
+    handleShowSuccess(
+      "Invoice has been updated!",
+      "great"
+    );
   };
 
   const handleResendLink = async (e) => {
@@ -68,15 +103,63 @@ const Invoiceform = (props) => {
         phone_number: invoiceData.phone_number
       });
       authContext.refreshSpinnerLoading(false);
-      alert('Invoice receipt has been sent!');
+      //alert('Invoice receipt has been sent!');
+      handleShowSuccess(
+        "Invoice receipt has been sent!",
+        "great"
+      );
     } else {
-      alert('The customer has not paid for the service!');
+      //alert('The customer has not paid for the service!');
+      handleShow(
+        "The customer has not paid for the service!",
+        "noOne"
+      );
     }   
   }
 
+
+  const towingSuccessModalClose = () => {
+    setSuccessModal(initSuccessModalData);
+    invoiceContext.clear_success();
+  }
+
+  const showSuccess = () => {
+    if (success !== null) {
+      const msg = success.map(suc => {
+        return suc.msg;
+      });
+      handleShowSuccess(
+        msg.join('<br/>'),
+        "great"
+      );
+        
+    }    
+  }
+
+  const showError = () => {
+    if (error !== null) {
+      const msg = error.map(err => {
+        return err.msg;
+      });
+      handleShow(
+        msg.join('<br/>'),
+        "noOne"
+      );
+    }    
+  }
+
+  useEffect(() => {
+    if (success != null) {
+      showSuccess();
+    } else if (error != null) {
+      showError();
+    }
+  }, [success, error]);
+  
   // For first time after update
   useEffect(() => {
     setInvoiceData({ ...invoice });
+    console.log("Hii"+invoice.status);
   }, []);
 
   // For checking if invoice data is updated or not
@@ -100,6 +183,9 @@ const Invoiceform = (props) => {
   // For unmount
   useEffect( () => () => {
     setInvoiceData(null);
+    setSuccessModal(false);
+    invoiceContext.clear_success();
+    invoiceContext.clear_error(); 
     console.log("unmount invoice show");
   }, []);
 
@@ -108,7 +194,7 @@ const Invoiceform = (props) => {
       return (
         <section className="invoice-wrap">          
           
-          <div className="alert-area">
+          <div className="alert-area" style={{"color": invoiceData.msa_system === "SYSTEM 2"  ? '#6636da' : '#dd2d3e'}}>
             Submit this purchase order into DISPATCHING {invoiceData.msa_system || `SYSTEM 1`}
           </div>
           
@@ -183,11 +269,12 @@ const Invoiceform = (props) => {
                   />
                 </Col>
                 <Col sm={6}>
-                  <Input
+                  <NumberInput
                     type="tel"
                     name="phone_number"
                     value={invoiceData.phone_number}
                     onChange={handleChange}
+                    format="##########"
                     label="Phone Number"
                   />
                 </Col>
@@ -276,10 +363,11 @@ const Invoiceform = (props) => {
               <h2>Vehicle Info</h2>
               <Row>
                 <Col sm={6}>
-                  <Input
+                  <NumberInput
                     type="text"
                     name="year"
                     value={invoiceData.year}
+                    format="####"
                     onChange={handleChange}
                     label="Year"
                   />
@@ -534,6 +622,29 @@ const Invoiceform = (props) => {
               </div>
             </div>
           </form>
+
+
+          {/* Error Modal */}
+          <Modal show={modal.isShown} onHide={handleClose} className="error-bg">
+          <i
+          className="fa fa-times-circle close-icon"
+          aria-hidden="true"
+          onClick={handleClose}
+        ></i>
+        <Modal.Body className="text-center">{modal.text}</Modal.Body>
+      </Modal>
+
+      {/* Success Modal */}
+      <Modal show={successModal.isShow} onHide={towingSuccessModalClose} className="error-bg">
+        <i
+          className="fa fa-times-circle close-icon"
+          aria-hidden="true"
+          onClick={towingSuccessModalClose}
+        ></i>
+        <Modal.Body className="text-center">
+          <p>{successModal.msg}</p>
+        </Modal.Body>
+      </Modal>
         </section>
       );
     } else {

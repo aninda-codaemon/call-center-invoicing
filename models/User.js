@@ -257,7 +257,7 @@ User.saveApiData = async (apiData) => {
 User.getOnHoldApiData = async () => {
   let response = {};
   try {
-    const [result,fields] = await pool.query("SELECT id FROM ctm_call_metrics WHERE call_status = '1' AND `datetime_processed` > NOW() - INTERVAL 2 HOUR");
+    const [result,fields] = await pool.query("SELECT id FROM ctm_call_metrics WHERE call_status = '1' AND `datetime_processed` > NOW() - INTERVAL 3 HOUR");
     response.result = result;
     return response;
   } catch (error) {

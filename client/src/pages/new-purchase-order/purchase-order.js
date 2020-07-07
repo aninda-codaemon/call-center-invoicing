@@ -14,6 +14,7 @@ import Locationsearch from './places';
 
 import useForm from "../form-logic/user-form-logic";
 
+
 import {
   vehicle_make,
   vehicle_color,
@@ -24,6 +25,7 @@ import {
 
 import AuthContext from '../../context/auth/authContext';
 import InvoiceContext from '../../context/invoice/invoiceContext';
+import NumberInput from '../../components/input/numberInput';
 
 const Purchaseorder = (props) => {
   const authContext = useContext(AuthContext);
@@ -65,11 +67,18 @@ const Purchaseorder = (props) => {
     paymenttotalamount: '',
     sendpaymentto: "Phone",
     draft: 0,
-    msa_system: 'SYSTEM 1'
+    msa_system: 'SYSTEM 1',
+    paymentnotes: '',
+    ctm_call_id: ''
   };
 
   // Form state
   const [newData, setNewData] = useState(initialData);
+
+  // Save For Later state and Send Payment Link 
+  const [isDraft, setIsDarft] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
+  const [formData, setFormData] = useState(null);
 
   // Show origin map
   const [showOriginMap, setShowOriginMap] = useState(false);
@@ -78,33 +87,33 @@ const Purchaseorder = (props) => {
   const handleLocation = ({ description, latlng, place, zip_code }) => {
     console.log('Location Object');
     console.log(description, latlng, place, zip_code);
-
-    if (place === 'origin') {
-      setNewData({
-        ...newData,
-        originaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
-        origin: latlng,
-        ozip: zip_code
-      });
-
-      if (description !== '') {
-        setShowOriginMap(true);        
+      if (place === 'origin') {
+        setNewData({
+          ...newData,
+          originaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
+          origin: latlng,
+          ozip: zip_code
+        });
+  
+        if (description !== '') {
+          setShowOriginMap(true);        
+        } else {
+          setShowOriginMap(false);
+        }
+        setShowMap(false);
+        setCalculateCostDisable(true);     
       } else {
-        setShowOriginMap(false);
-      }
-      setShowMap(false);
-      setCalculateCostDisable(true);     
-    } else {
-      setNewData({
-        ...newData,
-        destinationaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
-        destination: latlng,
-        dzip: zip_code
-      });
-      // setShowOriginMap(false);
-      setShowMap(false);
-      setCalculateCostDisable(true);
-    }    
+        setNewData({
+          ...newData,
+          destinationaddress: description.replace(/[&\/\\#+()$~%.'":*?<>{}]/g, ''),
+          destination: latlng,
+          dzip: zip_code
+        });
+        // setShowOriginMap(false);
+        setShowMap(false);
+        setCalculateCostDisable(true);
+      }    
+    
   }
 
   // Calculate cost button enable/disable toggle
@@ -116,7 +125,7 @@ const Purchaseorder = (props) => {
   // Check conditions to check if calculate cost button should be enabled or disabled
   const checkCalculateCostBtnStatus = () => {
     console.log('Check btn status');
-    if (newData.servicetype !== '' && newData.originaddress !== ''  && newData.pickuplocation !== '') {
+    if (newData.servicetype !== '' && newData.originaddress !== ''  && newData.pickuplocation !== '' && newData.phone !== '') {
       if (newData.anyonewithvehicle === 'Yes' && newData.keysforvehicle !== '') {
         if (newData.servicetype === 'Towing') {
           if (newData.problemtype !== '' && newData.neutral !== '' && newData.destinationaddress !== '' && newData.fourwheelsturn === 'Yes') {
@@ -278,8 +287,8 @@ const Purchaseorder = (props) => {
       authContext.refreshSpinnerLoading(true);
       const price = await invoiceContext.get_invoice_price(newData);
       authContext.refreshSpinnerLoading(false);
-      console.log('Price calculation API');
-      console.log(price);
+      //console.log('Price calculation API');
+      //console.log(price);
       if (price.data.errors.length > 0) {
         handleShow(
           price.data.errors.join('\n'),
@@ -288,7 +297,7 @@ const Purchaseorder = (props) => {
         setShowMap(false);
         return false;
       } else {
-        const { total_miles, base_price, total_price, net_price, system } = price.data.data;
+        const { total_miles, base_price, total_price, net_price, system, ctm_call_id } = price.data.data;
         setNewData({
           ...newData,
           tmiles: total_miles,
@@ -296,14 +305,15 @@ const Purchaseorder = (props) => {
           calculatedcost: net_price,
           paymentamount: net_price,
           paymenttotalamount: total_price,
-          msa_system: system
+          msa_system: system,
+          ctm_call_id: ctm_call_id
         });
         setShowMap(true);
       }
       setShowOriginMap(false); 
     } catch (error) {
       console.log('Price error');
-      console.log(error);      
+      //console.log(error);    
     }    
   }
 
@@ -340,35 +350,50 @@ const Purchaseorder = (props) => {
     console.log(newData.servicetype); // === "Towing"
     const origin_address = newData.originaddress;    
     let render_url = "";
-    render_url = `https://www.google.com/maps/embed/v1/place?q=${encodeURI(origin_address)}&key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M`;
-    console.log('Render url: ', render_url);
-
-    return (
-      <Iframe
-        width="100%"
-        height="600"
-        id="route_map"
-        className="map-container"
-        display="initial"
-        frameBorder="0"
-        url={render_url}
-        />
-    );
+    if(newData.originaddress){
+      render_url = `https://www.google.com/maps/embed/v1/place?q=${encodeURI(origin_address)}&key=AIzaSyCcZyvEkGx4i1cQlbiFvQBM8kM_x53__5M`;
+      console.log('Render url: ', render_url);
+    }else{
+      render_url = "";
+    }
+   
+    if(newData.originaddress){
+        return (
+          <Iframe
+            width="100%"
+            height="600"
+            id="route_map"
+            className="map-container"
+            display="initial"
+            frameBorder="0"
+            url={render_url}
+            />
+        );
+      }
   }
 
   const createInvoice = async () => {
     console.log("No errors, submit callback called!");
+   
     if (showMap) {
       console.log(newData);
       const currentData = newData;
-      // invoiceContext.toggle_loader(true);
-      authContext.refreshSpinnerLoading(true);
-      const invoice_save = await invoiceContext.save_invoice(currentData);
-      authContext.refreshSpinnerLoading(false);
-
-      // Reset current form if it is draft
-      if (newData.draft === 1) {
-        resetForm();
+      try{
+        const invoice_save = await invoiceContext.save_invoice(currentData);
+        console.log("save++++++++++++++"+success);
+        // Reset current form if it is draft
+      //console.log("++++++++++++++++++++++++++"+isDraft);
+      if (isDraft === true) {
+        handleShow(
+          "Invoice details successfully saved",
+          "noOne"
+        );
+        // resetForm();
+        setNewData(initialData);
+        invoiceContext.get_invoice_number();
+      }
+      }catch (error) {
+        console.log("error");
       }
     } else {
       handleShow(
@@ -379,26 +404,42 @@ const Purchaseorder = (props) => {
     }
   }
 
-  const saveDraft = (e) => {
+  // Send Payment Link (Button click)
+  const sendPaymentLink = async (e) =>{
+    e.persist();
+    setNewData({ ...newData, draft: 0});
+    setIsDarft(false);
+    setIsClicked(true);
+    setFormData(e);
+    //alert(newData.draft);
+   
+  }
+
+ 
+  const saveDraft = async (e) => {
+    e.persist();
     setNewData({ ...newData, draft: 1});
-    console.log('Save as draft');
-    handleSubmit(e);
+    setIsDarft(true);
+    setIsClicked(true);
+    setFormData(e);
+    //alert(newData.draft);
+    //alert(isClicked);
+    //console.log('Save as draft'+newData.draft);
+    //handleSubmit(e);
   }
 
   const resetForm = async () => {
-    authContext.refreshSpinnerLoading(true);
-    if (newData.draft !== 1) {
-      setNewData(initialData);
+    setIsDarft(false);
+    setIsClicked(false);
+    if (newData.draft !== '1') {
       setNewData({
-        ...newData,
+        ...initialData,
         invoicenumber: invoice_number
       });
     } else {
       setNewData(initialData);
       invoiceContext.get_invoice_number();
     }
-    authContext.refreshSpinnerLoading(false);
-    console.log('Reset form');
   }
   
   const { handleChange, values, touched, handleBlur, validator, handleSubmit } = useForm(
@@ -445,27 +486,10 @@ const Purchaseorder = (props) => {
 
   const towingSuccessModalClose = () => {
     setSuccessModal(false);
-    props.history.push(`/invoice-overview/${newData.invoicenumber}`);
+      props.history.push(`/invoice-overview/${newData.invoicenumber}`);
   }
   
-  // const towingToggle = value => {
-  //   setServiceInfo({ ...serviceInfo, towing: value, fuelfluids: false });
-  // };
-
-  // serviceinfo state
-  // const initialServiceData = {
-  //   fuelfluids: false,
-  //   towing: false,
-  //   fourwheelsturn: false
-  // };
-
-  // const [serviceInfo, setServiceInfo] = useState(initialServiceData);
-
-  // const fuelfluidsToggle = value => {
-  //   const fuelData = serviceInfo;
-  //   fuelData.fuelfluids = value;
-  //   setServiceInfo(fuelData);
-  // };
+  
 
   const showSuccess = () => {
     if (success !== null) {
@@ -484,10 +508,20 @@ const Purchaseorder = (props) => {
       );
     }    
   }
-  
+
+  // Save data when click on Send Payment Link and Save for Later
+  useEffect(() => {
+    if(formData !==null && isClicked === true){
+      handleSubmit(formData);
+    }
+   setIsClicked(false);
+  },[isClicked]);
+
   useEffect(() => {
     setSuccessModal(false);
-    invoiceContext.toggle_loader(true);
+    setIsClicked(false);
+    setIsDarft(false);
+    // invoiceContext.toggle_loader(true);
     invoiceContext.get_invoice_number();
   }, []);
 
@@ -523,6 +557,8 @@ const Purchaseorder = (props) => {
   useEffect( () => () => {
     setNewData(initialData);
     setSuccessModal(false);
+    setIsDarft(false);
+    setIsClicked(false);
     invoiceContext.clear_invoice_list();
     invoiceContext.clear_success();
     invoiceContext.clear_error(); 
@@ -540,7 +576,7 @@ const Purchaseorder = (props) => {
           <Col md={9} className="right-part"> */}
             {/* <InnerBanner /> */}
             <section className="invoice-wrap">
-              <form onSubmit={handleSubmit} autoComplete="off">
+              <form name="order_form" id="order_form" onSubmit={handleSubmit}  autoComplete="off">
                 <div className="invoice-title">
                   <Input
                     type="text"
@@ -582,12 +618,12 @@ const Purchaseorder = (props) => {
                       )}
                     </Col>
                     <Col sm={6} lg={4}>
-                      <Input
+                      <NumberInput
                         type="tel"
                         name="phone"
                         value={newData.phone}
                         onChange={handleChangeInput}
-                        // required={true}
+                        format="##########"
                         label="Phone Number *"
                       />
                       {validator.message("phone", newData.phone, "required|max:10", {messages: {required: 'Phone number field is required'}} )}
@@ -601,12 +637,13 @@ const Purchaseorder = (props) => {
                   <h2>Vehicle Info</h2>
                   <Row>
                     <Col sm={6}>
-                      <Input
+                      <NumberInput
                         type="text"
                         name="year"
                         value={newData.year}
                         onChange={handleChangeInput}
                         // required={true}
+                        format="####"
                         label="Year *"
                       />
                       {validator.message("year", newData.year, "required|max:4", {messages: {required: 'Vehicle year field is required'}} )}
@@ -906,7 +943,8 @@ const Purchaseorder = (props) => {
                       {validator.message("paymenttotalamount", newData.paymenttotalamount, "required", {messages: {required: 'Total amount field is required'}} )}
                       {touched.paymenttotalamount && validator.errorMessages.paymenttotalamount && (
                         <p className="error-text">{validator.errorMessages.paymenttotalamount}</p>
-                      )}                    
+                      )}
+                      <input type="hidden" value={newData.ctm_call_id} name="ctm_call_id" />                 
                     </Col>
                   </Row>
                   <div className="form-group">
@@ -970,8 +1008,9 @@ const Purchaseorder = (props) => {
                       <Button
                         className="draft-btn" 
                         variant="warning" 
-                        type="button"
-                        onClick={saveDraft}
+                         type="button"
+                         value="save for letter"
+                         onClick={saveDraft}
                       >
                         save for later
                       </Button>
@@ -979,7 +1018,7 @@ const Purchaseorder = (props) => {
                     <Col lg={4}>
                       {
                         !loading ? (
-                          <Button variant="info" type="submit">
+                          <Button variant="info" type="button" value="send payment link" onClick={sendPaymentLink}>
                             send payment link
                           </Button>
                         ) : (
@@ -1048,7 +1087,7 @@ const Purchaseorder = (props) => {
 
       {/* alert for showing success message after invoice is created */}
 
-      <Modal show={successModal} onHide={towingSuccessModalClose} className="error-bg">
+      <Modal show={successModal && !isDraft} onHide={towingSuccessModalClose} className="error-bg">
         {/* <i
           className="fa fa-times-circle close-icon"
           aria-hidden="true"

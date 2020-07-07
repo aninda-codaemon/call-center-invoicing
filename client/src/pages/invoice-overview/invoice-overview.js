@@ -37,7 +37,7 @@ function InvoiceOverview(props) {
     interval = window.setInterval(() => {
       console.log('Fetch update from invoice details..');
       fetchInvoiceData();
-    }, 180000);
+    }, 45000);
 
     fetchInvoiceData();
   }, []);

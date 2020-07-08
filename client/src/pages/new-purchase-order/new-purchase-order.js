@@ -145,20 +145,24 @@ function NewPurchaseOrder() {
 
   //Places Auto complete Handler
   const latZipFinder = async (description, place) => {
-    console.log('latZipFinder');
-    console.log(place);
+    // console.log('latZipFinder');
+    // console.log(place);
+    // alert(description)
+    // console.log("Amrita"+description);
     let currentData = newData;
     try {
 
       if (description !== '') {
         const allData = await geocodeByAddress(description);
         const latLng = await getLatLng(allData[0]);
-        console.log(allData);
-        console.log(latLng);
+        // console.log(allData);
+        // console.log(latLng);
         
         if (place === "origin") {
           currentData.originaddress = description;
           currentData.origin = latLng;
+         
+          
         } else {
           currentData.destinationaddress = description;
           currentData.destination = latLng;
@@ -194,7 +198,28 @@ function NewPurchaseOrder() {
   
   //onselect origin
   const onSelectPlaceOrigin = ({ description }) => {
-    latZipFinder(description, "origin");
+    const google = window.google;
+  let geocoder = new google.maps.Geocoder;
+    let latlngStr = description.split(',', 2);
+    let latlng = {lat: parseFloat(latlngStr[0]), lng: parseFloat(latlngStr[1])};	
+    // console.log("latlong"+latlngStr[0]);
+
+    // 40.714224,-73.961452
+    // New York University, New York, NY, USA
+   
+    if(isNaN(latlng.lat) === false && isNaN(latlng.lng) === false){
+      console.log("hello");
+        geocoder.geocode({'location': latlng}, function(results, status) {
+          /// console.log("address23"+results[0].formatted_address);
+          latZipFinder(results[0].formatted_address, "origin");
+        });
+    }else{
+      console.log("hello Piu");
+      latZipFinder(description, "origin");
+      
+    }
+
+   
   };
 
   // On change origin
@@ -719,6 +744,7 @@ function NewPurchaseOrder() {
       } catch (error) {
         console.log('cost error');
         console.log(error);
+        
         handleShow(
           "This location is not servicable by our system",
           "noOne"
@@ -1249,7 +1275,7 @@ function NewPurchaseOrder() {
                         type="button"
                         onClick={resetForm}
                       >
-                        reset
+                        reset 
                       </Button>
                     </Col>
                   </Row>

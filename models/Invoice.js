@@ -308,7 +308,7 @@ Invoice.checkCurrentCallAddword = async (phone_number) => {
 Invoice.getCtmPaymentStatus = async () => {
   let response = {};
   try {
-    const [result, fields] = await pool.query('SELECT `id` FROM `ctm_call_metrics` WHERE call_status=? AND is_add_word=? ORDER BY id DESC',['0',1]);
+    const [result, fields] = await pool.query('SELECT `id`,`ctm_price` FROM `ctm_call_metrics` WHERE call_status=? AND is_add_word=? ORDER BY id DESC',['0',1]);
     // console.log("something"+result);
     response.result = result;
     return response;
@@ -328,10 +328,9 @@ Invoice.ctmInvoiceUpdate = async (call_id,invoicenumber,payment_status) => {
     {
       query_result = await pool.query(`UPDATE ctm_call_metrics SET invoice_id = ?, call_status = ?, datetime_processed = NOW() WHERE id IN (${call_id})`, [invoicenumber,payment_status]);
     }else{
-      query_result = await pool.query('UPDATE ctm_call_metrics SET call_status = ? datetime_processed = NOW()  WHERE invoice_id = ?', [payment_status,invoicenumber]);
+      query_result = await pool.query('UPDATE ctm_call_metrics SET call_status = ?, datetime_processed = NOW()  WHERE invoice_id = ?', [payment_status,invoicenumber]);
     }
     const [result, fields] = query_result;
-   // console.log(result);
     response.result = result;
     return response;
   } catch (error) {

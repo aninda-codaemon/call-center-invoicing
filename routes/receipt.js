@@ -84,6 +84,13 @@ router.get('/payment-status', async (req, res) => {
 
               // Call the dispatch helper function
 
+            //Check Invoice Id is CTM Google Addword or not and if yes update payment status 2
+             const is_invoice_addword = await InvoiceModel.checkInvoiceIdGoogleAddWord(invoice_id);
+             if(is_invoice_addword.result.length > 0){
+                let payment_status = '2';
+                const paymentStatus = await InvoiceModel.ctmInvoiceUpdate("",invoice_id,payment_status);
+            }
+
               // Send payment confirmation email
               sendPaymentConfirmationEmail(invoice_id);
 

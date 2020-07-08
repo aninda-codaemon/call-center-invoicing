@@ -26,6 +26,7 @@ import {
 import AuthContext from '../../context/auth/authContext';
 import InvoiceContext from '../../context/invoice/invoiceContext';
 import NumberInput from '../../components/input/numberInput';
+import ContentLoader from '../../components/ContentLoader/ContentLoader';
 
 const Purchaseorder = (props) => {
   const authContext = useContext(AuthContext);
@@ -82,6 +83,9 @@ const Purchaseorder = (props) => {
 
   // Show origin map
   const [showOriginMap, setShowOriginMap] = useState(false);
+
+  //show loader
+  const [showLoader, setLoader] = useState(false);
 
   // Handle locations data
   const handleLocation = ({ description, latlng, place, zip_code }) => {
@@ -283,6 +287,7 @@ const Purchaseorder = (props) => {
   // Calculate cost button click
   const calculateDistance = async () => {
     const additional_cost = refreshAdditionalCost();
+    setLoader(true);
     try {
       authContext.refreshSpinnerLoading(true);
       const price = await invoiceContext.get_invoice_price(newData);
@@ -295,9 +300,11 @@ const Purchaseorder = (props) => {
           "noOne"
         );
         setShowMap(false);
+        setLoader(false);
         return false;
       } else {
         const { total_miles, base_price, total_price, net_price, system, ctm_call_id } = price.data.data;
+
         setNewData({
           ...newData,
           tmiles: total_miles,
@@ -309,9 +316,11 @@ const Purchaseorder = (props) => {
           ctm_call_id: ctm_call_id
         });
         setShowMap(true);
+        setLoader(false);
       }
       setShowOriginMap(false); 
     } catch (error) {
+      setLoader(false);
       console.log('Price error');
       //console.log(error);    
     }    
@@ -865,7 +874,15 @@ const Purchaseorder = (props) => {
                           Calculate Cost
                         </Button>
                       )
-                    }                      
+                    } 
+
+                     {
+                  showLoader &&
+                  <ContentLoader
+                    color="red"
+                    visible="true"
+                  />
+                }                     
                   </div>
                     {
                       showOriginMap && (

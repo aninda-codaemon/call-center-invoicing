@@ -226,25 +226,29 @@ User.getApiData = async (tracking_number_id) => {
 
 // Save CTM API calls data with google add
 User.saveApiData = async (apiData) => {
-  let response = {};
+  let response = false;
   try {
     apiData.forEach(async (element) => {
       const [
         result,
         fields,
       ] = await pool.query(
-        "INSERT INTO `ctm_call_metrics` SET account_id=?, caller_id=?, tracking_number_id=?, tracking_number=?, is_add_word=?, api_full_response=?, datetime_pull= NOW()",
+        "INSERT INTO `ctm_call_metrics` SET account_id=?, caller_id=?, tracking_number_id=?, tracking_number=?, is_add_word=?, ctm_price=?, api_full_response=?, datetime_pull= NOW()",
         [
           element.account_id,
           element.caller_id,
           element.tracking_number_id,
           element.tracking_number,
           element.is_add_word,
+          element.ctm_price,
           element.api_full_response,
         ]
       );
+     
       // console.log(element.tracking_number);
     });
+    response = true;
+    return response;
   } catch (error) {
     console.log(`Error: ${error.sqlMessage}`);
     response.error = error.sqlMessage;

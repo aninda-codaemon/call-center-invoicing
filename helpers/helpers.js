@@ -694,6 +694,7 @@ const callCtmAuthApi = async (search_flag) => {
     response = JSON.parse(response);
     if (response.success == true) {
       callCtmApiCallsData(response.token, response.first_account.id,search_flag);
+      return true;
     } else {
       return null;
     }
@@ -742,6 +743,7 @@ const callCtmApiSaveData = async (responseData) => {
                 tracking_number_id: element.tracking_number_id,
                 tracking_number: element.caller_number_bare,
                 is_add_word: 1,
+                ctm_price: 3.00,
                 api_full_response: JSON.stringify(element),
               },
             ];

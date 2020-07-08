@@ -67,7 +67,7 @@ router.get('/payment-status', async (req, res) => {
       console.log('Payment response ', paymentResponseStored);
       if (paymentResponseStored.result && paymentResponseStored.result.length === 0) {
           var phraseResponseText = approval_code;
-          var responsePhrase = phraseResponseText.length === 6 ? true : false;
+          var responsePhrase = phraseResponseText.length === 7 ? true : false;
 
           if (responsePhrase && (response_code == 'A' || response_code == 'E')) {
               const payment = await PaymentModel.savePaymentResponse(newPaymentResponse);
@@ -83,6 +83,13 @@ router.get('/payment-status', async (req, res) => {
               responseText = "Payment Successfully Complete";
 
               // Call the dispatch helper function
+
+            //Check Invoice Id is CTM Google Addword or not and if yes update payment status 2
+             const is_invoice_addword = await InvoiceModel.checkInvoiceIdGoogleAddWord(invoice_id);
+             if(is_invoice_addword.result.length > 0){
+                let payment_status = '2';
+                const paymentStatus = await InvoiceModel.ctmInvoiceUpdate("",invoice_id,payment_status);
+            }
 
               // Send payment confirmation email
               sendPaymentConfirmationEmail(invoice_id);

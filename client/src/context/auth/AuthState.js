@@ -52,7 +52,8 @@ const AuthState = (props) => {
       } catch (error) {
         dispatch({
           type: AUTH_ERROR,
-          payload: error.response.data.errors
+          // payload: error.response.data.errors
+          payload: "Invalid login"
         });
       }
     } else {

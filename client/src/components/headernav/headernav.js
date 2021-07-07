@@ -1,7 +1,7 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Dropdown } from "react-bootstrap";
 import "./headernav.scss";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 import AuthContext from '../../context/auth/authContext';
 
@@ -10,12 +10,16 @@ function HeaderNav(props) {
   const { topSpinner } = authContext;
   const spin = (topSpinner) ? 'fa-counter-spin' : '';
 
+  // const handleRefresh = ()=>{
+  //   window.location.reload();
+  // }
+
   return (
     <ul className="headernav">
-      <li>
-        <i className={ `fa fa-undo ${spin}` } aria-hidden="true" />
-        {/* <i className="fa fa-undo fa-counter-spin" aria-hidden="true" /> */}
-      </li>
+      {/* <li>
+        <Link to="#" onClick={handleRefresh}><i className="fa fa-undo" aria-hidden="true" /></Link>
+        
+      </li> */}
       <li>
         <Dropdown alignRight>
           <Dropdown.Toggle variant="success" id="dropdown-basic">

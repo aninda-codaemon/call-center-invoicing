@@ -1,0 +1,15 @@
+@import "../../assets/sass/mixin";
+@import "../../assets/sass/variables";
+
+.footer-section{
+    background-color: #222222;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 18px 0;
+    @include font-size(14);
+    @include mobile-small {
+        padding: 10px 0;
+      }
+}

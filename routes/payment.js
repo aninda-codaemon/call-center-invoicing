@@ -81,7 +81,6 @@ router.get('/payment-status', async (req, res) => {
 
             contextFlag = 1;
             responseText = "Payment Successfully Complete";
-
             // Call the dispatch helper function
 
             // Send payment confirmation email

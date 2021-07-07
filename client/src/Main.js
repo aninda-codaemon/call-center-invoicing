@@ -24,6 +24,7 @@ import EditUser from "./pages/edit-user/edit-user";
 import Logout from './pages/login/logout';
 
 import PrivateRoute from './routing/PrivateRoute';
+import Footer from "./components/footer/footer";
 
 if (localStorage.getItem('xtoken')) {
   setAuthToken(localStorage.getItem('xtoken'));
@@ -93,6 +94,7 @@ const Main = (props) => {
                 </Col>
               </Row>
             </Container>
+            <Footer />
           </React.Fragment>
         </Route>
       </Switch>
